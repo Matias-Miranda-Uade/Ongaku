@@ -35,4 +35,5 @@ public class CategoriesController {
         return categoryService.createCategory(entity);
     }
     
+    
 }
