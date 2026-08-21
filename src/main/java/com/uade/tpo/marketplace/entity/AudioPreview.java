@@ -1,12 +1,22 @@
 package com.uade.tpo.marketplace.entity;
 
-import lombok.Builder;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import lombok.Data;
 
 @Data
-@Builder
+@Entity
 public class AudioPreview {
-    private int id;
-    private String url; 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column
+    private String url;
+
+    @Column
     private int durationSeconds;
 }

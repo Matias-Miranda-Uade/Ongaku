@@ -1,20 +1,45 @@
 package com.uade.tpo.marketplace.entity;
 
-import lombok.Builder;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
 import lombok.Data;
 
 @Data
-@Builder
+@Entity
 public class Vinyl {
 
-    private int id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column
     private String name;
+
+    @Column
     private String description;
+
+    @Column
     private int price;
+
+    @Column
     private int stock;
+
+    @Column
     private String image;
+
+    @ManyToOne
     private Category category;
+
+    @ManyToOne
     private Artist artist;
+
+    @ManyToOne
     private Genre genre;
+
+    @Column
     private int year;
 }
