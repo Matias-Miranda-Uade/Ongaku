@@ -3,7 +3,9 @@ package com.uade.tpo.marketplace.repository;
 import java.util.ArrayList;
 
 import com.uade.tpo.marketplace.entity.AudioPreview;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public class AudioPreviewRepository {
 
     public static ArrayList<AudioPreview> audioPreviews = new ArrayList<>();

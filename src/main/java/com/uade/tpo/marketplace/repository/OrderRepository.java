@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import com.uade.tpo.marketplace.entity.Order;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public class OrderRepository {
     public ArrayList<Order> orders = new ArrayList<>(Arrays.asList(
             Order.builder().id(1).userId(1).orderStatusId(2).orderDate("2026-08-10").total(15000.0).build(),

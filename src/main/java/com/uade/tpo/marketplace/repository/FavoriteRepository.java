@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import com.uade.tpo.marketplace.entity.Favorite;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public class FavoriteRepository {
     public ArrayList<Favorite> favorites = new ArrayList<>(Arrays.asList(
             Favorite.builder().id(1).userId(1).vinylId(10).build(),

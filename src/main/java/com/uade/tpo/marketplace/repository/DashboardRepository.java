@@ -5,14 +5,21 @@ import java.util.ArrayList;
 import com.uade.tpo.marketplace.entity.DashboardSummary;
 import com.uade.tpo.marketplace.entity.Order;
 import com.uade.tpo.marketplace.entity.Payment;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public class DashboardRepository {
+
+    private final OrderRepository orderRepository;
+    private final PaymentRepository paymentRepository;
+
+    public DashboardRepository(OrderRepository orderRepository, PaymentRepository paymentRepository) {
+        this.orderRepository = orderRepository;
+        this.paymentRepository = paymentRepository;
+    }
 
     // IDs de OrderStatus: 1 PENDIENTE, 2 PAGADA, 3 ENVIADA, 4 ENTREGADA, 5 CANCELADA
     public DashboardSummary getSummary() {
-        OrderRepository orderRepository = new OrderRepository();
-        PaymentRepository paymentRepository = new PaymentRepository();
-
         ArrayList<Order> orders = orderRepository.getOrders();
         ArrayList<Payment> payments = paymentRepository.getPayments();
 

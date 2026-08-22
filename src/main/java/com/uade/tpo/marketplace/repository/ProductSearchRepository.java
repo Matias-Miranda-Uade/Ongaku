@@ -3,10 +3,16 @@ package com.uade.tpo.marketplace.repository;
 import java.util.ArrayList;
 
 import com.uade.tpo.marketplace.entity.Product;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public class ProductSearchRepository {
 
-    private final ProductRepository productRepository = new ProductRepository();
+    private final ProductRepository productRepository;
+
+    public ProductSearchRepository(ProductRepository productRepository) {
+        this.productRepository = productRepository;
+    }
 
     public ArrayList<Product> searchByName(String query) {
         ArrayList<Product> result = new ArrayList<>();

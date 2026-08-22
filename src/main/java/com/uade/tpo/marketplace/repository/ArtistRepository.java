@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import com.uade.tpo.marketplace.entity.Artist;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public class ArtistRepository {
     public static ArrayList<Artist> artists = new ArrayList<>(
         Arrays.asList(

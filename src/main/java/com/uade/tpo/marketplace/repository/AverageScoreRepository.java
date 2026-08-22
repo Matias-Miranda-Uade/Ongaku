@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import com.uade.tpo.marketplace.entity.AverageScore;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public class AverageScoreRepository {
     public ArrayList<AverageScore> averageScores = new ArrayList<>(Arrays.asList(
             AverageScore.builder().id(1).vinylId(10).averageScore(4.5).build(),

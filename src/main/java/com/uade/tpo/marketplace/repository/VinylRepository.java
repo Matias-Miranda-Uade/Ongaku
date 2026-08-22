@@ -6,8 +6,10 @@ import java.util.Arrays;
 import com.uade.tpo.marketplace.entity.Artist;
 import com.uade.tpo.marketplace.entity.Genre;
 import com.uade.tpo.marketplace.entity.Vinyl;
+import org.springframework.stereotype.Repository;
 
 //A REVISAR TODO ESTO PORQUE USA OTROS BUILDER DENTRO DEL BUILDER DE CADA VINILO DE LA CLASE, SE HABLARÁ CON LA PROFE  
+@Repository
 public class VinylRepository {
     ArrayList<Vinyl> vinyls = new ArrayList<>(
         Arrays.asList(

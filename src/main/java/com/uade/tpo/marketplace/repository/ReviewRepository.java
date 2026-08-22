@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import com.uade.tpo.marketplace.entity.Review;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public class ReviewRepository {
     public ArrayList<Review> reviews = new ArrayList<>(Arrays.asList(
             Review.builder().id(1).userId(1).vinylId(10).comment("Muy bueno").build(),
