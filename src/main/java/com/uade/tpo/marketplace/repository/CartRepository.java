@@ -1,28 +1,16 @@
 package com.uade.tpo.marketplace.repository;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.List;
 
-import com.uade.tpo.marketplace.entity.Cart;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import com.uade.tpo.marketplace.entity.Cart;
+
 @Repository
-public class CartRepository {
-    public ArrayList<Cart> carts = new ArrayList<>(Arrays.asList(
-            Cart.builder().id(1).userId(1).vinylId(10).quantity(1).build(),
-            Cart.builder().id(2).userId(2).vinylId(11).quantity(2).build(),
-            Cart.builder().id(3).userId(3).vinylId(12).quantity(1).build()
-    ));
+public interface CartRepository extends JpaRepository<Cart, Long> {
 
-    public ArrayList<Cart> getCarts() {
-        return this.carts;
-    }
+    List<Cart> findByUserId(int userId);
 
-    public Cart getCartById(int cartId) {
-        return null;
-    }
-
-    public Cart createCart(String entity) {
-        return null;
-    }
+    List<Cart> findByUserIdAndVinylId(int userId, int vinylId);
 }

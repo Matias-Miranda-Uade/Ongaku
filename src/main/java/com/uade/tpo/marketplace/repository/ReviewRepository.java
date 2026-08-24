@@ -1,28 +1,16 @@
 package com.uade.tpo.marketplace.repository;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.List;
 
-import com.uade.tpo.marketplace.entity.Review;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import com.uade.tpo.marketplace.entity.Review;
+
 @Repository
-public class ReviewRepository {
-    public ArrayList<Review> reviews = new ArrayList<>(Arrays.asList(
-            Review.builder().id(1).userId(1).vinylId(10).comment("Muy bueno").build(),
-            Review.builder().id(2).userId(2).vinylId(11).comment("Excelente calidad").build(),
-            Review.builder().id(3).userId(3).vinylId(12).comment("Me gustó mucho").build()
-    ));
+public interface ReviewRepository extends JpaRepository<Review, Long> {
 
-    public ArrayList<Review> getReviews() {
-        return this.reviews;
-    }
+    List<Review> findByVinylId(int vinylId);
 
-    public Review getReviewById(int reviewId) {
-        return null;
-    }
-
-    public Review createReview(String entity) {
-        return null;
-    }
+    List<Review> findByUserId(int userId);
 }

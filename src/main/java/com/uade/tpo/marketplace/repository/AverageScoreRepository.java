@@ -1,28 +1,14 @@
 package com.uade.tpo.marketplace.repository;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.List;
 
-import com.uade.tpo.marketplace.entity.AverageScore;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import com.uade.tpo.marketplace.entity.AverageScore;
+
 @Repository
-public class AverageScoreRepository {
-    public ArrayList<AverageScore> averageScores = new ArrayList<>(Arrays.asList(
-            AverageScore.builder().id(1).vinylId(10).averageScore(4.5).build(),
-            AverageScore.builder().id(2).vinylId(11).averageScore(4.8).build(),
-            AverageScore.builder().id(3).vinylId(12).averageScore(4.2).build()
-    ));
+public interface AverageScoreRepository extends JpaRepository<AverageScore, Long> {
 
-    public ArrayList<AverageScore> getAverageScores() {
-        return this.averageScores;
-    }
-
-    public AverageScore getAverageScoreById(int averageScoreId) {
-        return null;
-    }
-
-    public AverageScore createAverageScore(String entity) {
-        return null;
-    }
+    List<AverageScore> findByVinylId(int vinylId);
 }
