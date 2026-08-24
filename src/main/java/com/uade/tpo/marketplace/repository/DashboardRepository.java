@@ -1,6 +1,6 @@
 package com.uade.tpo.marketplace.repository;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import com.uade.tpo.marketplace.entity.DashboardSummary;
 import com.uade.tpo.marketplace.entity.Order;
@@ -20,8 +20,8 @@ public class DashboardRepository {
 
     // IDs de OrderStatus: 1 PENDIENTE, 2 PAGADA, 3 ENVIADA, 4 ENTREGADA, 5 CANCELADA
     public DashboardSummary getSummary() {
-        ArrayList<Order> orders = orderRepository.getOrders();
-        ArrayList<Payment> payments = paymentRepository.getPayments();
+        List<Order> orders = orderRepository.findAll();
+        List<Payment> payments = paymentRepository.findAll();
 
         int pendingOrders = 0;
         int paidOrders = 0;
