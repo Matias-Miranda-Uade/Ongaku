@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -18,16 +19,16 @@ import com.uade.tpo.marketplace.service.ArtistService;
 @RestController
 @RequestMapping("artists")
 public class ArtistsController {
+    @Autowired
+    private ArtistService artistService;
 
     @GetMapping
     public ArrayList<Artist> getArtists() {
-        ArtistService artistService = new ArtistService();
         return artistService.getArtists();
     }
 
     @GetMapping("/{artistId}")
     public ResponseEntity<Artist> getArtistById(@PathVariable int artistId) {
-        ArtistService artistService = new ArtistService();
         Artist artist = artistService.getArtistById(artistId);
         if (artist == null) {
             return ResponseEntity.notFound().build();
@@ -37,13 +38,11 @@ public class ArtistsController {
 
     @PostMapping
     public Artist createArtist(@RequestBody Artist artist) {
-        ArtistService artistService = new ArtistService();
         return artistService.createArtist(artist);
     }
 
     @PutMapping("/{artistId}")
     public ResponseEntity<Artist> updateArtist(@PathVariable int artistId, @RequestBody Artist uArtist) {
-        ArtistService artistService = new ArtistService();
         Artist updated = artistService.updateArtist(artistId, uArtist);
         if (updated == null) {
             return ResponseEntity.notFound().build();
@@ -53,7 +52,6 @@ public class ArtistsController {
 
     @DeleteMapping("/{artistId}")
     public ResponseEntity<Void> deleteArtist(@PathVariable int artistId) {
-        ArtistService artistService = new ArtistService();
         artistService.deleteArtist(artistId);
         return ResponseEntity.noContent().build();
     }

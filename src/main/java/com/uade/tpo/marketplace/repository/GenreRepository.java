@@ -5,7 +5,9 @@ import java.util.Arrays;
 
 import com.uade.tpo.marketplace.entity.Genre;
 import com.uade.tpo.marketplace.entity.Vinyl;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public class GenreRepository {
     public ArrayList<Genre> genres = new ArrayList<>(
         Arrays.asList(

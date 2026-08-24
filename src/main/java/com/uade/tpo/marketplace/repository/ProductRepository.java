@@ -7,7 +7,9 @@ import com.uade.tpo.marketplace.entity.Artist;
 import com.uade.tpo.marketplace.entity.AudioPreview;
 import com.uade.tpo.marketplace.entity.Category;
 import com.uade.tpo.marketplace.entity.Product;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public class ProductRepository {
 
     public static ArrayList<Product> products = new ArrayList<>(

@@ -27,6 +27,8 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     public Category createCategory(String description) throws CategoryDuplicateException {
+        if (description == null || description.isBlank())
+            throw new IllegalArgumentException("La categoria debe tener descripcion");
         List<Category> categories = categoryRepository.findByDescription(description);
         if (categories.isEmpty())
             return categoryRepository.save(new Category(description));

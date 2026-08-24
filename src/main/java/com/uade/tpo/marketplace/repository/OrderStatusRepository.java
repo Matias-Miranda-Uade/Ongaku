@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import com.uade.tpo.marketplace.entity.OrderStatus;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public class OrderStatusRepository {
     public ArrayList<OrderStatus> orderStatuses = new ArrayList<>(Arrays.asList(
             OrderStatus.builder().id(1).name("PENDIENTE").description("La orden fue creada y espera confirmación de pago").build(),

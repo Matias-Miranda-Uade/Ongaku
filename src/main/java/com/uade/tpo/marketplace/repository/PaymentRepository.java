@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import com.uade.tpo.marketplace.entity.Payment;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public class PaymentRepository {
     public ArrayList<Payment> payments = new ArrayList<>(Arrays.asList(
             Payment.builder().id(1).orderId(1).amount(15000.0).method("TARJETA_CREDITO").paymentDate("2026-08-10").status("APROBADO").build(),

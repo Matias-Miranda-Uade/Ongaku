@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -16,16 +17,16 @@ import com.uade.tpo.marketplace.service.OrderStatusService;
 @RestController
 @RequestMapping("order-statuses")
 public class OrderStatusesController {
+    @Autowired
+    private OrderStatusService orderStatusService;
 
     @GetMapping
     public ArrayList<OrderStatus> getOrderStatuses() {
-        OrderStatusService orderStatusService = new OrderStatusService();
         return orderStatusService.getOrderStatuses();
     }
 
     @GetMapping("/{orderStatusId}")
     public ResponseEntity<OrderStatus> getOrderStatusById(@PathVariable int orderStatusId) {
-        OrderStatusService orderStatusService = new OrderStatusService();
         OrderStatus orderStatus = orderStatusService.getOrderStatusById(orderStatusId);
         if (orderStatus == null) {
             return ResponseEntity.notFound().build();
@@ -35,7 +36,6 @@ public class OrderStatusesController {
 
     @PostMapping
     public OrderStatus createOrderStatus(@RequestBody String entity) {
-        OrderStatusService orderStatusService = new OrderStatusService();
         return orderStatusService.createOrderStatus(entity);
     }
 }

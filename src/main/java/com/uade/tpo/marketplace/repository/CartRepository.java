@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import com.uade.tpo.marketplace.entity.Cart;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public class CartRepository {
     public ArrayList<Cart> carts = new ArrayList<>(Arrays.asList(
             Cart.builder().id(1).userId(1).vinylId(10).quantity(1).build(),

@@ -3,10 +3,16 @@ package com.uade.tpo.marketplace.repository;
 import java.util.ArrayList;
 
 import com.uade.tpo.marketplace.entity.Product;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public class ProductFilterRepository {
 
-    private final ProductRepository productRepository = new ProductRepository();
+    private final ProductRepository productRepository;
+
+    public ProductFilterRepository(ProductRepository productRepository) {
+        this.productRepository = productRepository;
+    }
     public ArrayList<Product> filter(Integer categoryId, Double minPrice, Double maxPrice, Boolean inStock, Integer artistId) {
         ArrayList<Product> result = new ArrayList<>();
         for (Product p : productRepository.getProducts()) {
