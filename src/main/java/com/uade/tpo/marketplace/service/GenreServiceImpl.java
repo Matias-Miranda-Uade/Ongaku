@@ -35,10 +35,9 @@ public class GenreServiceImpl implements GenreService {
         return genreRepository
                 .findById((long) id)
                 .orElse(null);
-    }
+        return genreRepository.findById((long) id).orElse(null);
 
-    @Override
-    public Genre createGenre(Genre genre) {
+    }
 
         if (genre == null ||
             genre.getName() == null ||
@@ -89,6 +88,7 @@ public class GenreServiceImpl implements GenreService {
     }
 
     @Override
+<<<<<<< HEAD
     public ArrayList<Vinyl> getVinylsByGenre(
             int id) {
 
@@ -107,5 +107,9 @@ public class GenreServiceImpl implements GenreService {
         }
 
         return result;
+=======
+    public ArrayList<Vinyl> getVinylsByGenre(int genreId) {
+        return new ArrayList<>(vinylRepository.findByGenre_Id((long) genreId));
+>>>>>>> origin/main
     }
 }
