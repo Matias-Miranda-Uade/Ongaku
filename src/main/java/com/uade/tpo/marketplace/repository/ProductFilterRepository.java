@@ -2,8 +2,9 @@ package com.uade.tpo.marketplace.repository;
 
 import java.util.ArrayList;
 
-import com.uade.tpo.marketplace.entity.Product;
 import org.springframework.stereotype.Repository;
+
+import com.uade.tpo.marketplace.entity.Product;
 
 @Repository
 public class ProductFilterRepository {
@@ -13,26 +14,48 @@ public class ProductFilterRepository {
     public ProductFilterRepository(ProductRepository productRepository) {
         this.productRepository = productRepository;
     }
-    public ArrayList<Product> filter(Integer categoryId, Double minPrice, Double maxPrice, Boolean inStock, Integer artistId) {
+
+    public ArrayList<Product> filter(
+            Integer categoryId,
+            Double minPrice,
+            Double maxPrice,
+            Boolean inStock,
+            Integer artistId) {
+
         ArrayList<Product> result = new ArrayList<>();
-        for (Product p : productRepository.getProducts()) {
-            if (categoryId != null && p.getCategory().getId() != categoryId) {
+
+        for (Product product : productRepository.findAll()) {
+
+            if (categoryId != null &&
+                (product.getCategory() == null ||
+                 !product.getCategory().getId().equals(categoryId.longValue()))) {
                 continue;
             }
-            if (minPrice != null && p.getPrice() < minPrice) {
+
+            if (minPrice != null &&
+                product.getPrice() < minPrice) {
                 continue;
             }
-            if (maxPrice != null && p.getPrice() > maxPrice) {
+
+            if (maxPrice != null &&
+                product.getPrice() > maxPrice) {
                 continue;
             }
-            if (inStock != null && inStock && p.getStock() <= 0) {
+
+            if (inStock != null &&
+                inStock != (product.getStock() > 0)) {
                 continue;
             }
-            if (artistId != null && (p.getArtist() == null || p.getArtist().getId() != artistId)) {
+
+            if (artistId != null &&
+                (product.getArtist() == null ||
+                 !product.getArtist().getId().equals(artistId.longValue()))) {
                 continue;
             }
-            result.add(p);
+
+            result.add(product);
         }
+
         return result;
     }
 }

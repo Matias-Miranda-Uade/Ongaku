@@ -2,8 +2,9 @@ package com.uade.tpo.marketplace.repository;
 
 import java.util.ArrayList;
 
-import com.uade.tpo.marketplace.entity.Product;
 import org.springframework.stereotype.Repository;
+
+import com.uade.tpo.marketplace.entity.Product;
 
 @Repository
 public class ProductSearchRepository {
@@ -15,17 +16,27 @@ public class ProductSearchRepository {
     }
 
     public ArrayList<Product> searchByName(String query) {
+
         ArrayList<Product> result = new ArrayList<>();
+
         if (query == null) {
             return result;
         }
+
         String normalizedQuery = query.toLowerCase();
-        for (Product p : productRepository.getProducts()) {
-            if (p.getName().toLowerCase().contains(normalizedQuery)
-                    || p.getDescription().toLowerCase().contains(normalizedQuery)) {
-                result.add(p);
+
+        for (Product product : productRepository.findAll()) {
+
+            if ((product.getName() != null &&
+                 product.getName().toLowerCase().contains(normalizedQuery))
+                ||
+                (product.getDescription() != null &&
+                 product.getDescription().toLowerCase().contains(normalizedQuery))) {
+
+                result.add(product);
             }
         }
+
         return result;
     }
 }

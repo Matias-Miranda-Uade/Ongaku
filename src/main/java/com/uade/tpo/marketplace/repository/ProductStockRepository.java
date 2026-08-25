@@ -1,7 +1,8 @@
 package com.uade.tpo.marketplace.repository;
 
-import com.uade.tpo.marketplace.entity.Product;
 import org.springframework.stereotype.Repository;
+
+import com.uade.tpo.marketplace.entity.Product;
 
 @Repository
 public class ProductStockRepository {
@@ -11,17 +12,25 @@ public class ProductStockRepository {
     public ProductStockRepository(ProductRepository productRepository) {
         this.productRepository = productRepository;
     }
-    
+
     public Product updateStock(int productId, int quantityDelta) {
-        Product product = productRepository.getProductById(productId);
+
+        Product product = productRepository
+                .findById((long) productId)
+                .orElse(null);
+
         if (product == null) {
             return null;
         }
+
         int newStock = product.getStock() + quantityDelta;
+
         if (newStock < 0) {
             return null;
         }
+
         product.setStock(newStock);
-        return product;
+
+        return productRepository.save(product);
     }
 }

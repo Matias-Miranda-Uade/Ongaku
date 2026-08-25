@@ -1,40 +1,14 @@
 package com.uade.tpo.marketplace.repository;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.List;
 
-import com.uade.tpo.marketplace.entity.Genre;
-import com.uade.tpo.marketplace.entity.Vinyl;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import com.uade.tpo.marketplace.entity.Genre;
+
 @Repository
-public class GenreRepository {
-    public ArrayList<Genre> genres = new ArrayList<>(
-        Arrays.asList(
-           Genre.builder().id(1).name("Rock").build(),
-              Genre.builder().id(2).name("Pop").build(),
-              Genre.builder().id(3).name("Hip-Hop").build() 
-        )
-    );
+public interface GenreRepository extends JpaRepository<Genre, Long> {
 
-    public ArrayList<Genre> getGenres(){
-        return this.genres;
-    }
-
-    public Genre getGenreById(int genreId){
-        return null;
-    }
-    
-    public Genre createGenre (Genre genre){
-        return null;
-    }
-
-    public Genre updateGenre (int id, Genre genre){
-        return null;
-    }
-    public void deleteGenre(int id){
-    }
-    public ArrayList<Vinyl> getVinylsByGenre(int genreId){
-        return null;
-    }
+    List<Genre> findByName(String name);
 }
