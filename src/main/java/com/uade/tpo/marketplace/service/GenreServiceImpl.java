@@ -15,40 +15,71 @@ public class GenreServiceImpl implements GenreService {
     private final GenreRepository genreRepository;
     private final VinylRepository vinylRepository;
 
-    public GenreServiceImpl(GenreRepository genreRepository, VinylRepository vinylRepository) {
-        this.genreRepository = genreRepository;
+    public GenreServiceImpl(
+            GenreRepository repository,
+            VinylRepository vinylRepository) {
+
+        this.genreRepository = repository;
         this.vinylRepository = vinylRepository;
     }
 
     @Override
     public ArrayList<Genre> getGenres() {
-        return new ArrayList<>(genreRepository.findAll());
+        return new ArrayList<>(
+            genreRepository.findAll()
+        );
     }
 
     @Override
     public Genre getGenreById(int id) {
-        return genreRepository.findById((long) id).orElse(null);
+        return genreRepository
+                .findById((long) id)
+                .orElse(null);
     }
 
     @Override
     public Genre createGenre(Genre genre) {
-        if (genre == null || genre.getName() == null || genre.getName().isBlank())
-            throw new IllegalArgumentException("El genero debe tener nombre");
-        if (!genreRepository.findByNameIgnoreCase(genre.getName()).isEmpty())
-            throw new IllegalArgumentException("El genero ya existe");
 
-        Genre newGenre = new Genre();
-        newGenre.setName(genre.getName());
-        return genreRepository.save(newGenre);
+        if (genre == null ||
+            genre.getName() == null ||
+            genre.getName().isBlank()) {
+
+            throw new IllegalArgumentException(
+                "El genero debe tener nombre"
+            );
+        }
+
+        if (!genreRepository
+                .findByName(genre.getName())
+                .isEmpty()) {
+
+            throw new IllegalArgumentException(
+                "El genero ya existe"
+            );
+        }
+
+        genre.setId(null);
+
+        return genreRepository.save(genre);
     }
 
     @Override
-    public Genre updateGenre(int id, Genre genre) {
+    public Genre updateGenre(
+            int id,
+            Genre genre) {
+
         Genre current = getGenreById(id);
-        if (current == null || genre == null)
+
+        if (current == null || genre == null) {
             return null;
-        if (genre.getName() != null && !genre.getName().isBlank())
+        }
+
+        if (genre.getName() != null &&
+            !genre.getName().isBlank()) {
+
             current.setName(genre.getName());
+        }
+
         return genreRepository.save(current);
     }
 
@@ -58,7 +89,23 @@ public class GenreServiceImpl implements GenreService {
     }
 
     @Override
-    public ArrayList<Vinyl> getVinylsByGenre(int genreId) {
-        return new ArrayList<>(vinylRepository.findByGenre_Id((long) genreId));
+    public ArrayList<Vinyl> getVinylsByGenre(
+            int id) {
+
+        ArrayList<Vinyl> result =
+                new ArrayList<>();
+
+        for (Vinyl vinyl : vinylRepository.findAll()) {
+
+            if (vinyl.getGenre() != null &&
+                vinyl.getGenre()
+                     .getId()
+                     .equals((long) id)) {
+
+                result.add(vinyl);
+            }
+        }
+
+        return result;
     }
 }

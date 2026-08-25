@@ -12,28 +12,48 @@ public class OrderStatusServiceImpl implements OrderStatusService {
 
     private final OrderStatusRepository orderStatusRepository;
 
-    public OrderStatusServiceImpl(OrderStatusRepository orderStatusRepository) {
-        this.orderStatusRepository = orderStatusRepository;
+    public OrderStatusServiceImpl(
+            OrderStatusRepository repository) {
+
+        this.orderStatusRepository = repository;
     }
 
     @Override
     public ArrayList<OrderStatus> getOrderStatuses() {
-        return new ArrayList<>(orderStatusRepository.findAll());
+        return new ArrayList<>(
+            orderStatusRepository.findAll()
+        );
     }
 
     @Override
-    public OrderStatus getOrderStatusById(int orderStatusId) {
-        return orderStatusRepository.findById((long) orderStatusId).orElse(null);
+    public OrderStatus getOrderStatusById(int id) {
+        return orderStatusRepository
+                .findById((long) id)
+                .orElse(null);
     }
 
     @Override
-    public OrderStatus createOrderStatus(String entity) {
-        if (entity == null || entity.isBlank())
-            throw new IllegalArgumentException("El estado debe tener nombre");
+    public OrderStatus createOrderStatus(
+            String entity) {
+
+        if (entity == null ||
+            entity.isBlank()) {
+
+            throw new IllegalArgumentException(
+                "El estado debe tener nombre"
+            );
+        }
 
         OrderStatus status = new OrderStatus();
-        status.setName(entity.trim().toUpperCase());
-        status.setDescription(entity.trim());
+
+        status.setName(
+            entity.trim().toUpperCase()
+        );
+
+        status.setDescription(
+            entity.trim()
+        );
+
         return orderStatusRepository.save(status);
     }
 }

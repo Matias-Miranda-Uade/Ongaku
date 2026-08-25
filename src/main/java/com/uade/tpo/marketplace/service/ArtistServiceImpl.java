@@ -23,34 +23,60 @@ public class ArtistServiceImpl implements ArtistService {
 
     @Override
     public Artist getArtistById(int artistId) {
-        return artistRepository.findById((long) artistId).orElse(null);
+        return artistRepository
+                .findById((long) artistId)
+                .orElse(null);
     }
 
     @Override
     public Artist createArtist(Artist artist) {
-        if (artist == null || artist.getName() == null || artist.getName().isBlank())
-            throw new IllegalArgumentException("El artista debe tener nombre");
-        if (!artistRepository.findByNameIgnoreCase(artist.getName()).isEmpty())
-            throw new IllegalArgumentException("El artista ya existe");
 
-        Artist newArtist = new Artist();
-        newArtist.setName(artist.getName());
-        newArtist.setDescription(artist.getDescription());
-        newArtist.setImage(artist.getImage());
-        return artistRepository.save(newArtist);
+        if (artist == null ||
+            artist.getName() == null ||
+            artist.getName().isBlank()) {
+
+            throw new IllegalArgumentException(
+                "El artista debe tener nombre"
+            );
+        }
+
+        Artist existingArtist =
+                artistRepository.findByName(artist.getName());
+
+        if (existingArtist != null) {
+            throw new IllegalArgumentException(
+                "El artista ya existe"
+            );
+        }
+
+        artist.setId(null);
+
+        return artistRepository.save(artist);
     }
 
     @Override
     public Artist updateArtist(int artistId, Artist artist) {
+
         Artist current = getArtistById(artistId);
-        if (current == null || artist == null)
+
+        if (current == null || artist == null) {
             return null;
-        if (artist.getName() != null && !artist.getName().isBlank())
+        }
+
+        if (artist.getName() != null &&
+            !artist.getName().isBlank()) {
+
             current.setName(artist.getName());
-        if (artist.getDescription() != null)
+        }
+
+        if (artist.getDescription() != null) {
             current.setDescription(artist.getDescription());
-        if (artist.getImage() != null)
+        }
+
+        if (artist.getImage() != null) {
             current.setImage(artist.getImage());
+        }
+
         return artistRepository.save(current);
     }
 
