@@ -1,28 +1,14 @@
 package com.uade.tpo.marketplace.repository;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.List;
 
-import com.uade.tpo.marketplace.entity.Favorite;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import com.uade.tpo.marketplace.entity.Favorite;
+
 @Repository
-public class FavoriteRepository {
-    public ArrayList<Favorite> favorites = new ArrayList<>(Arrays.asList(
-            Favorite.builder().id(1).userId(1).vinylId(10).build(),
-            Favorite.builder().id(2).userId(2).vinylId(11).build(),
-            Favorite.builder().id(3).userId(3).vinylId(12).build()
-    ));
+public interface FavoriteRepository extends JpaRepository<Favorite, Long> {
 
-    public ArrayList<Favorite> getFavorites() {
-        return this.favorites;
-    }
-
-    public Favorite getFavoriteById(int favoriteId) {
-        return null;
-    }
-
-    public Favorite createFavorite(String entity) {
-        return null;
-    }
+    List<Favorite> findByUserIdAndVinylId(int userId, int vinylId);
 }
