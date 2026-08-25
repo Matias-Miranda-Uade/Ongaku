@@ -12,20 +12,14 @@ public class FavoriteServiceImpl implements FavoriteService {
 
     private final FavoriteRepository favoriteRepository;
 
-<<<<<<< HEAD
     public FavoriteServiceImpl(
             FavoriteRepository repository) {
 
         this.favoriteRepository = repository;
-=======
-    public FavoriteServiceImpl(FavoriteRepository favoriteRepository) {
-        this.favoriteRepository = favoriteRepository;
->>>>>>> origin/main
     }
 
     @Override
     public ArrayList<Favorite> getFavorites() {
-<<<<<<< HEAD
         return new ArrayList<>(
             favoriteRepository.findAll()
         );
@@ -82,32 +76,6 @@ public class FavoriteServiceImpl implements FavoriteService {
         favorite.setUserId(userId);
         favorite.setVinylId(vinylId);
 
-=======
-        return new ArrayList<>(favoriteRepository.findAll());
-    }
-
-    @Override
-    public Favorite getFavoriteById(int favoriteId) {
-        return favoriteRepository.findById((long) favoriteId).orElse(null);
-    }
-
-    @Override
-    public Favorite createFavorite(String entity) {
-        String[] values = entity == null ? new String[0] : entity.split(",");
-        if (values.length < 2)
-            throw new IllegalArgumentException("El favorito requiere usuario y vinilo");
-
-        int userId = Integer.parseInt(values[0].trim());
-        int vinylId = Integer.parseInt(values[1].trim());
-        if (userId <= 0 || vinylId <= 0)
-            throw new IllegalArgumentException("Los identificadores deben ser positivos");
-        if (!favoriteRepository.findByUserIdAndVinylId(userId, vinylId).isEmpty())
-            throw new IllegalArgumentException("El vinilo ya esta en favoritos");
-
-        Favorite favorite = new Favorite();
-        favorite.setUserId(userId);
-        favorite.setVinylId(vinylId);
->>>>>>> origin/main
         return favoriteRepository.save(favorite);
     }
 }
