@@ -1,8 +1,10 @@
-package com.uade.tpo.marketplace.controllers;
+package com.uade.tpo.marketplace.controllers.domain;
 
 import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -46,6 +48,27 @@ public class VinylController {
     @GetMapping("search")
     public ArrayList<Vinyl> searchVinyls(@RequestParam String searchTerm){
         return vinylService.searchVinyls(searchTerm);
+    }
+
+    @GetMapping("filter")
+    public ArrayList<Vinyl> filterVinyls(
+            @RequestParam(required = false) Integer categoryId,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice,
+            @RequestParam(required = false) Boolean inStock,
+            @RequestParam(required = false) Integer artistId) {
+        return vinylService.filterVinyls(categoryId, minPrice, maxPrice, inStock, artistId);
+    }
+
+    @PatchMapping("/{vinylId}/stock")
+    public ResponseEntity<Vinyl> updateStock(
+            @PathVariable int vinylId,
+            @RequestParam int quantity) {
+        Vinyl vinyl = vinylService.updateStock(vinylId, quantity);
+        if (vinyl == null) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
+        return ResponseEntity.ok(vinyl);
     }
 
     @GetMapping("artist/{artistId}")

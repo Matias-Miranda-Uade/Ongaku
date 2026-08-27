@@ -10,6 +10,9 @@ public interface VinylService {
     Vinyl updateVinyl(int id, Vinyl vinyl);
     void deleteVinyl(int id);
     ArrayList<Vinyl> searchVinyls(String searchTerm);
+    ArrayList<Vinyl> filterVinyls(Integer categoryId, Double minPrice, Double maxPrice,
+            Boolean inStock, Integer artistId);
+    Vinyl updateStock(int vinylId, int quantityDelta);
     ArrayList<Vinyl> getVinylsByArtist(int artistId);
     ArrayList<Vinyl> getVinylsByGenre(int genreId);
     ArrayList<Vinyl> getVinylsByCategory(int categoryId);

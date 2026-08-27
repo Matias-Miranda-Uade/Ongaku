@@ -12,8 +12,8 @@ public class VinylServiceImpl implements VinylService {
 
     private final VinylRepository vinylRepository;
 
-    public VinylServiceImpl(VinylRepository repository) {
-        this.vinylRepository = repository;
+    public VinylServiceImpl(VinylRepository vinylRepository) {
+        this.vinylRepository = vinylRepository;
     }
 
     @Override
@@ -117,6 +117,10 @@ public class VinylServiceImpl implements VinylService {
             );
         }
 
+        if (vinyl.getAudioPreview() != null) {
+            current.setAudioPreview(vinyl.getAudioPreview());
+        }
+
         return vinylRepository.save(current);
     }
 
@@ -128,196 +132,89 @@ public class VinylServiceImpl implements VinylService {
     @Override
     public ArrayList<Vinyl> searchVinyls(
             String term) {
-
-        String q =
-                term == null
-                ? ""
-                : term.toLowerCase();
-
-        ArrayList<Vinyl> result =
-                new ArrayList<>();
-
-        for (Vinyl vinyl :
-                vinylRepository.findAll()) {
-
-            if ((vinyl.getName() != null &&
-                 vinyl.getName()
-                      .toLowerCase()
-                      .contains(q))
-                ||
-                (vinyl.getDescription() != null &&
-                 vinyl.getDescription()
-                      .toLowerCase()
-                      .contains(q))) {
-
-                result.add(vinyl);
-            }
+        if (term == null) {
+            return new ArrayList<>();
         }
+        return new ArrayList<>(vinylRepository.search(term));
+    }
 
-        return result;
+    @Override
+    public ArrayList<Vinyl> filterVinyls(
+            Integer categoryId,
+            Double minPrice,
+            Double maxPrice,
+            Boolean inStock,
+            Integer artistId) {
+        if (minPrice != null && maxPrice != null && minPrice > maxPrice) {
+            throw new IllegalArgumentException(
+                    "El precio minimo no puede superar al maximo");
+        }
+        return new ArrayList<>(vinylRepository.filter(
+                categoryId, minPrice, maxPrice, inStock, artistId));
+    }
+
+    @Override
+    public Vinyl updateStock(int vinylId, int quantityDelta) {
+        int updatedRows = vinylRepository.updateStock((long) vinylId, quantityDelta);
+        if (updatedRows == 0) {
+            return null;
+        }
+        return vinylRepository.findById((long) vinylId).orElse(null);
     }
 
     @Override
     public ArrayList<Vinyl> getVinylsByArtist(
             int id) {
 
-        ArrayList<Vinyl> result =
-                new ArrayList<>();
-
-        for (Vinyl vinyl :
-                vinylRepository.findAll()) {
-
-            if (vinyl.getArtist() != null &&
-                vinyl.getArtist()
-                     .getId()
-                     .equals((long) id)) {
-
-                result.add(vinyl);
-            }
-        }
-
-        return result;
+        return new ArrayList<>(vinylRepository.findByArtistId((long) id));
     }
 
     @Override
     public ArrayList<Vinyl> getVinylsByGenre(
             int id) {
 
-        ArrayList<Vinyl> result =
-                new ArrayList<>();
-
-        for (Vinyl vinyl :
-                vinylRepository.findAll()) {
-
-            if (vinyl.getGenre() != null &&
-                vinyl.getGenre()
-                     .getId()
-                     .equals((long) id)) {
-
-                result.add(vinyl);
-            }
-        }
-
-        return result;
+        return new ArrayList<>(vinylRepository.findByGenreId((long) id));
     }
 
     @Override
     public ArrayList<Vinyl> getVinylsByCategory(
             int id) {
 
-        ArrayList<Vinyl> result =
-                new ArrayList<>();
-
-        for (Vinyl vinyl :
-                vinylRepository.findAll()) {
-
-            if (vinyl.getCategory() != null &&
-                vinyl.getCategory()
-                     .getId()
-                     .equals((long) id)) {
-
-                result.add(vinyl);
-            }
-        }
-
-        return result;
+        return new ArrayList<>(vinylRepository.findByCategoryId((long) id));
     }
 
     @Override
     public ArrayList<Vinyl> getVinylsByYear(
             int year) {
 
-        ArrayList<Vinyl> result =
-                new ArrayList<>();
-
-        for (Vinyl vinyl :
-                vinylRepository.findAll()) {
-
-            if (vinyl.getYear() == year) {
-                result.add(vinyl);
-            }
-        }
-
-        return result;
+        return new ArrayList<>(vinylRepository.findByYear(year));
     }
 
     @Override
     public ArrayList<Vinyl> getVinylsSortedByPriceAsc(
             boolean ascending) {
 
-        ArrayList<Vinyl> result =
-                new ArrayList<>(
-                    vinylRepository.findAll()
-                );
-
-        result.sort(
-            (a, b) ->
-                Integer.compare(
-                    a.getPrice(),
-                    b.getPrice()
-                )
-        );
-
-        return result;
+        return new ArrayList<>(vinylRepository.findAllOrderByPriceAsc());
     }
 
     @Override
     public ArrayList<Vinyl> getVinylsSortedByPriceDesc(
             boolean descending) {
 
-        ArrayList<Vinyl> result =
-                new ArrayList<>(
-                    vinylRepository.findAll()
-                );
-
-        result.sort(
-            (a, b) ->
-                Integer.compare(
-                    b.getPrice(),
-                    a.getPrice()
-                )
-        );
-
-        return result;
+        return new ArrayList<>(vinylRepository.findAllOrderByPriceDesc());
     }
 
     @Override
     public ArrayList<Vinyl> getVinylsSortedByYearAsc(
             boolean ascending) {
 
-        ArrayList<Vinyl> result =
-                new ArrayList<>(
-                    vinylRepository.findAll()
-                );
-
-        result.sort(
-            (a, b) ->
-                Integer.compare(
-                    a.getYear(),
-                    b.getYear()
-                )
-        );
-
-        return result;
+        return new ArrayList<>(vinylRepository.findAllOrderByYearAsc());
     }
 
     @Override
     public ArrayList<Vinyl> getVinylsSortedByYearDesc(
             boolean descending) {
 
-        ArrayList<Vinyl> result =
-                new ArrayList<>(
-                    vinylRepository.findAll()
-                );
-
-        result.sort(
-            (a, b) ->
-                Integer.compare(
-                    b.getYear(),
-                    a.getYear()
-                )
-        );
-
-        return result;
+        return new ArrayList<>(vinylRepository.findAllOrderByYearDesc());
     }
 }

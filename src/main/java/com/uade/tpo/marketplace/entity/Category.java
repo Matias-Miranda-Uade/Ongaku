@@ -27,6 +27,4 @@ public class Category {
     @Column
     private String description;
 
-    @OneToOne(mappedBy = "category")
-    private Product product;
 }
