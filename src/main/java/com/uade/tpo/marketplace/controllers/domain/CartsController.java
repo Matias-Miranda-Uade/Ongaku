@@ -1,4 +1,4 @@
-package com.uade.tpo.marketplace.controllers;
+package com.uade.tpo.marketplace.controllers.domain;
 
 import java.util.ArrayList;
 

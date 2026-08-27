@@ -12,5 +12,6 @@ public class VinylRequest {
     private Long categoryId;
     private Long artistId;
     private Long genreId;
+    private Long audioPreviewId;
     private int year;
 }
