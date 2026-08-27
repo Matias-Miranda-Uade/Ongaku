@@ -44,7 +44,7 @@ public class User implements UserDetails {
     @Column(nullable = false, unique = true)
     private String lastName;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany
     private List<Order> orders;
 
     @Enumerated(EnumType.STRING)
