@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
 import lombok.Data;
 
 @Data
@@ -19,4 +20,7 @@ public class AudioPreview {
 
     @Column
     private int durationSeconds;
+
+    @OneToOne(mappedBy = "audioPreview")
+    private Vinyl vinyl;
 }
