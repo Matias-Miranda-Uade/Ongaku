@@ -5,6 +5,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import lombok.Data;
 
 @Data
@@ -15,11 +17,15 @@ public class Review {
     private Long id;
 
     @Column
-    private int userId;
-
-    @Column
-    private int vinylId;
-
-    @Column
     private String comment;
+
+    //relacion muchos a uno con vinyl
+    @ManyToOne
+    @JoinColumn(name = "vinyl_id")
+    private Vinyl vinyl;
+
+    //relacion muchos a uno con usuario
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 }

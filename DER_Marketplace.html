@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DER - Ongaku Marketplace</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .mermaid {
+            display: flex;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Diagrama Entidad-Relación (DER) - Ongaku Marketplace</h1>
+        <div class="mermaid">
+graph TD
+    USER["USER<br/>id: Long PK<br/>email: String<br/>name: String<br/>password: String<br/>firstName: String<br/>lastName: String<br/>role: Role"]
+    
+    ARTIST["ARTIST<br/>id: Long PK<br/>name: String<br/>description: String<br/>image: String"]
+    
+    CATEGORY["CATEGORY<br/>id: Long PK<br/>description: String"]
+    
+    GENRE["GENRE<br/>id: Long PK<br/>name: String<br/>vinyl_id: Long FK"]
+    
+    AUDIO_PREVIEW["AUDIO_PREVIEW<br/>id: Long PK<br/>url: String<br/>durationSeconds: int"]
+    
+    VINYL["VINYL<br/>id: Long PK<br/>name: String<br/>description: String<br/>price: int<br/>stock: int<br/>image: String<br/>year: int"]
+    
+    CART["CART<br/>id: Long PK<br/>user_id: Long FK"]
+    
+    ORDER["ORDER<br/>id: Long PK<br/>orderDate: String<br/>total: double<br/>user_id: Long FK<br/>order_status_id: Long FK"]
+    
+    ORDER_STATUS["ORDER_STATUS<br/>id: Long PK<br/>name: String<br/>description: String"]
+    
+    REVIEW["REVIEW<br/>id: Long PK<br/>comment: String<br/>vinyl_id: Long FK<br/>user_id: Long FK"]
+    
+    PAYMENT["PAYMENT<br/>id: Long PK<br/>amount: double<br/>method: String<br/>paymentDate: String<br/>status: String<br/>order_id: Long FK"]
+    
+    AVERAGE_SCORE["AVERAGE_SCORE<br/>id: Long PK<br/>averageScore: double<br/>vinyl_id: Long FK"]
+    
+    FAVORITE["FAVORITE<br/>id: Long PK<br/>user_id: Long FK<br/>vinyl_id: Long FK"]
+    
+    USER -->|1..N| ORDER
+    USER -->|1..N| REVIEW
+    USER -->|1..N| FAVORITE
+    USER -->|1..1| CART
+    
+    CART -->|M..N| VINYL
+    
+    VINYL -->|M..1| CATEGORY
+    VINYL -->|M..1| ARTIST
+    VINYL -->|M..1| GENRE
+    VINYL -->|1..1| AUDIO_PREVIEW
+    VINYL -->|1..N| REVIEW
+    VINYL -->|1..N| AVERAGE_SCORE
+    VINYL -->|1..N| FAVORITE
+    
+    ARTIST -->|1..N| VINYL
+    CATEGORY -->|1..N| VINYL
+    
+    ORDER -->|M..N| VINYL
+    ORDER -->|1..1| ORDER_STATUS
+    ORDER -->|1..N| PAYMENT
+    
+    ORDER_STATUS -->|1..N| ORDER
+        </div>
+    </div>
+    <script>
+        mermaid.initialize({ startOnLoad: true, theme: 'default' });
+        mermaid.contentLoaded();
+    </script>
+</body>
+</html>
