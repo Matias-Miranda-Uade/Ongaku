@@ -18,20 +18,33 @@ public class CategoryServiceImpl implements CategoryService {
     @Autowired
     private CategoryRepository categoryRepository;
 
+    @Override
     public Page<Category> getCategories(PageRequest pageable) {
         return categoryRepository.findAll(pageable);
     }
 
+    @Override
     public Optional<Category> getCategoryById(Long categoryId) {
         return categoryRepository.findById(categoryId);
     }
 
-    public Category createCategory(String description) throws CategoryDuplicateException {
-        if (description == null || description.isBlank())
-            throw new IllegalArgumentException("La categoria debe tener descripcion");
-        List<Category> categories = categoryRepository.findByDescription(description);
-        if (categories.isEmpty())
-            return categoryRepository.save(new Category(description));
+    @Override
+    public Category createCategory(String description)
+            throws CategoryDuplicateException {
+
+        if (description == null || description.isBlank()) {
+            throw new IllegalArgumentException(
+                    "La categoria debe tener descripcion");
+        }
+
+        List<Category> categories =
+                categoryRepository.findByDescription(description);
+
+        if (categories.isEmpty()) {
+            return categoryRepository.save(
+                    new Category(description));
+        }
+
         throw new CategoryDuplicateException();
     }
 }

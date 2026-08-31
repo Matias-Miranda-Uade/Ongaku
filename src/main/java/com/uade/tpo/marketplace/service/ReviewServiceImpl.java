@@ -5,24 +5,32 @@ import java.util.ArrayList;
 import org.springframework.stereotype.Service;
 
 import com.uade.tpo.marketplace.entity.Review;
+import com.uade.tpo.marketplace.entity.User;
+import com.uade.tpo.marketplace.entity.Vinyl;
 import com.uade.tpo.marketplace.repository.ReviewRepository;
+import com.uade.tpo.marketplace.repository.UserRepository;
+import com.uade.tpo.marketplace.repository.VinylRepository;
 
 @Service
 public class ReviewServiceImpl implements ReviewService {
 
     private final ReviewRepository reviewRepository;
+    private final UserRepository userRepository;
+    private final VinylRepository vinylRepository;
 
     public ReviewServiceImpl(
-            ReviewRepository repository) {
+            ReviewRepository reviewRepository,
+            UserRepository userRepository,
+            VinylRepository vinylRepository) {
 
-        this.reviewRepository = repository;
+        this.reviewRepository = reviewRepository;
+        this.userRepository = userRepository;
+        this.vinylRepository = vinylRepository;
     }
 
     @Override
     public ArrayList<Review> getReviews() {
-        return new ArrayList<>(
-            reviewRepository.findAll()
-        );
+        return new ArrayList<>(reviewRepository.findAll());
     }
 
     @Override
@@ -33,40 +41,44 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public Review createReview(
-            String entity) {
+    public Review createReview(String entity) {
 
-        String[] values =
-                entity == null
+        String[] values = entity == null
                 ? new String[0]
                 : entity.split(",", 3);
 
         if (values.length < 3 ||
-            values[2].trim().isBlank()) {
+                values[2].trim().isBlank()) {
 
             throw new IllegalArgumentException(
-                "La reseña requiere usuario, vinilo y comentario"
-            );
+                    "La reseña requiere usuario, vinilo y comentario");
         }
 
-        int userId =
-                Integer.parseInt(values[0].trim());
+        int userId = Integer.parseInt(values[0].trim());
+        int vinylId = Integer.parseInt(values[1].trim());
 
-        int vinylId =
-                Integer.parseInt(values[1].trim());
+        User user = userRepository
+                .findById((long) userId)
+                .orElse(null);
 
-        if (userId <= 0 ||
-            vinylId <= 0) {
-
+        if (user == null) {
             throw new IllegalArgumentException(
-                "Los identificadores deben ser positivos"
-            );
+                    "El usuario no existe");
+        }
+
+        Vinyl vinyl = vinylRepository
+                .findById((long) vinylId)
+                .orElse(null);
+
+        if (vinyl == null) {
+            throw new IllegalArgumentException(
+                    "El vinilo no existe");
         }
 
         Review review = new Review();
 
-        review.setUserId(userId);
-        review.setVinylId(vinylId);
+        review.setUser(user);
+        review.setVinyl(vinyl);
         review.setComment(values[2].trim());
 
         return reviewRepository.save(review);

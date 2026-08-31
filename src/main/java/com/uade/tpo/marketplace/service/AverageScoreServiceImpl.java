@@ -5,24 +5,27 @@ import java.util.ArrayList;
 import org.springframework.stereotype.Service;
 
 import com.uade.tpo.marketplace.entity.AverageScore;
+import com.uade.tpo.marketplace.entity.Vinyl;
 import com.uade.tpo.marketplace.repository.AverageScoreRepository;
+import com.uade.tpo.marketplace.repository.VinylRepository;
 
 @Service
 public class AverageScoreServiceImpl implements AverageScoreService {
 
     private final AverageScoreRepository averageScoreRepository;
+    private final VinylRepository vinylRepository;
 
     public AverageScoreServiceImpl(
-            AverageScoreRepository repository) {
+            AverageScoreRepository averageScoreRepository,
+            VinylRepository vinylRepository) {
 
-        this.averageScoreRepository = repository;
+        this.averageScoreRepository = averageScoreRepository;
+        this.vinylRepository = vinylRepository;
     }
 
     @Override
     public ArrayList<AverageScore> getAverageScores() {
-        return new ArrayList<>(
-            averageScoreRepository.findAll()
-        );
+        return new ArrayList<>(averageScoreRepository.findAll());
     }
 
     @Override
@@ -33,52 +36,47 @@ public class AverageScoreServiceImpl implements AverageScoreService {
     }
 
     @Override
-    public AverageScore createAverageScore(
-            String entity) {
+    public AverageScore createAverageScore(String entity) {
 
-        String[] values =
-                entity == null
+        String[] values = entity == null
                 ? new String[0]
                 : entity.split(",");
 
         if (values.length < 2) {
             throw new IllegalArgumentException(
-                "El promedio requiere vinilo y puntuacion"
-            );
+                    "El promedio requiere vinilo y puntuacion");
         }
 
-        int vinylId =
-                Integer.parseInt(values[0].trim());
+        int vinylId = Integer.parseInt(values[0].trim());
+        double score = Double.parseDouble(values[1].trim());
 
-        double score =
-                Double.parseDouble(values[1].trim());
-
-        if (vinylId <= 0 ||
-            score < 0 ||
-            score > 5) {
-
+        if (vinylId <= 0 || score < 0 || score > 5) {
             throw new IllegalArgumentException(
-                "La puntuacion debe estar entre 0 y 5"
-            );
+                    "La puntuacion debe estar entre 0 y 5");
         }
 
-        AverageScore current =
-                averageScoreRepository
-                    .findByVinylId(vinylId)
-                    .stream()
-                    .findFirst()
-                    .orElse(null);
+        Vinyl vinyl = vinylRepository
+                .findById((long) vinylId)
+                .orElse(null);
+
+        if (vinyl == null) {
+            throw new IllegalArgumentException(
+                    "El vinilo no existe");
+        }
+
+        AverageScore current = averageScoreRepository
+                .findByVinylId(vinylId)
+                .stream()
+                .findFirst()
+                .orElse(null);
 
         if (current != null) {
-
             current.setAverageScore(score);
-
             return averageScoreRepository.save(current);
         }
 
         AverageScore result = new AverageScore();
-
-        result.setVinylId(vinylId);
+        result.setVinyl(vinyl);
         result.setAverageScore(score);
 
         return averageScoreRepository.save(result);
