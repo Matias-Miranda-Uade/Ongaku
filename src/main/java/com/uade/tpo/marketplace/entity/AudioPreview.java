@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 @Data
@@ -22,5 +23,6 @@ public class AudioPreview {
     private int durationSeconds;
 
     @OneToOne(mappedBy = "audioPreview")
+    @JsonIgnore
     private Vinyl vinyl;
 }

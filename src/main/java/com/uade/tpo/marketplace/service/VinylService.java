@@ -17,8 +17,8 @@ public interface VinylService {
     ArrayList<Vinyl> getVinylsByGenre(int genreId);
     ArrayList<Vinyl> getVinylsByCategory(int categoryId);
     ArrayList<Vinyl> getVinylsByYear(int year);
-    ArrayList<Vinyl> getVinylsSortedByPriceAsc(boolean ascending);
-    ArrayList<Vinyl> getVinylsSortedByPriceDesc(boolean descending);
-    ArrayList<Vinyl> getVinylsSortedByYearAsc(boolean ascending);
-    ArrayList<Vinyl> getVinylsSortedByYearDesc(boolean descending);
+    ArrayList<Vinyl> getVinylsSortedByPriceAsc();
+    ArrayList<Vinyl> getVinylsSortedByPriceDesc();
+    ArrayList<Vinyl> getVinylsSortedByYearAsc();
+    ArrayList<Vinyl> getVinylsSortedByYearDesc();
 }

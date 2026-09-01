@@ -7,5 +7,6 @@ public interface OrderService {
     ArrayList<Order> getOrders();
     Order getOrderById(int orderId);
     Order createOrder(String entity);
+    Order createOrderFromCart(int cartId);
     Order updateOrderStatus(int orderId, int orderStatusId);
 }
