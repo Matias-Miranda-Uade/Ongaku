@@ -2,11 +2,15 @@ package com.uade.tpo.marketplace.service;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 
 import com.uade.tpo.marketplace.entity.Order;
 import com.uade.tpo.marketplace.entity.OrderStatus;
+import com.uade.tpo.marketplace.entity.Cart;
+import com.uade.tpo.marketplace.entity.Vinyl;
+import com.uade.tpo.marketplace.repository.CartRepository;
 import com.uade.tpo.marketplace.entity.User;
 import com.uade.tpo.marketplace.repository.OrderRepository;
 import com.uade.tpo.marketplace.repository.OrderStatusRepository;
@@ -18,15 +22,18 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
     private final OrderStatusRepository orderStatusRepository;
+    private final CartRepository cartRepository;
 
     public OrderServiceImpl(
             OrderRepository orderRepository,
             UserRepository userRepository,
-            OrderStatusRepository orderStatusRepository) {
+            OrderStatusRepository orderStatusRepository,
+            CartRepository cartRepository) {
 
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
         this.orderStatusRepository = orderStatusRepository;
+        this.cartRepository = cartRepository;
     }
 
     @Override
@@ -134,4 +141,34 @@ public class OrderServiceImpl implements OrderService {
 
         return orderRepository.save(order);
     }
+    @Override
+    public Order createOrderFromCart(int cartId) {
+        Cart cart = cartRepository.findById((long) cartId).orElse(null);
+        if (cart == null || cart.getUser() == null || cart.getItems() == null || cart.getItems().isEmpty()) {
+            return null;
+        }
+
+        OrderStatus status = orderStatusRepository.findById(1L).orElse(null);
+        if (status == null) return null;
+
+        List<Vinyl> items = new ArrayList<>(cart.getItems());
+        for (Vinyl vinyl : items) {
+            if (vinyl.getStock() <= 0) return null;
+        }
+
+        double total = items.stream().mapToDouble(Vinyl::getPrice).sum();
+        Order order = new Order();
+        order.setUser(cart.getUser());
+        order.setOrderStatus(status);
+        order.setOrderDate(LocalDate.now().toString());
+        order.setTotal(total);
+        order.setVinyl(items);
+
+        for (Vinyl vinyl : items) vinyl.setStock(vinyl.getStock() - 1);
+        Order saved = orderRepository.save(order);
+        cart.setItems(new ArrayList<>());
+        cartRepository.save(cart);
+        return saved;
+    }
+
 }

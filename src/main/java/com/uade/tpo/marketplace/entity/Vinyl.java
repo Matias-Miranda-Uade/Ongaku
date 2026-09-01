@@ -13,6 +13,7 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 @Data
@@ -63,14 +64,18 @@ public class Vinyl {
         joinColumns = @JoinColumn(name = "vinyl_id"),
         inverseJoinColumns = @JoinColumn(name = "order_id")
     )
+    @JsonIgnore
     private List<Order> orders;
 
     @OneToMany(mappedBy = "vinyl")
+    @JsonIgnore
     private List<Review> reviews;
 
     @OneToMany(mappedBy = "vinyl")
+    @JsonIgnore
     private List<AverageScore> averageScores;
 
     @OneToMany(mappedBy = "vinyl")
+    @JsonIgnore
     private List<Favorite> favorites;
 }

@@ -191,29 +191,25 @@ public class VinylServiceImpl implements VinylService {
     }
 
     @Override
-    public ArrayList<Vinyl> getVinylsSortedByPriceAsc(
-            boolean ascending) {
+    public ArrayList<Vinyl> getVinylsSortedByPriceAsc() {
 
         return new ArrayList<>(vinylRepository.findAllOrderByPriceAsc());
     }
 
     @Override
-    public ArrayList<Vinyl> getVinylsSortedByPriceDesc(
-            boolean descending) {
+    public ArrayList<Vinyl> getVinylsSortedByPriceDesc() {
 
         return new ArrayList<>(vinylRepository.findAllOrderByPriceDesc());
     }
 
     @Override
-    public ArrayList<Vinyl> getVinylsSortedByYearAsc(
-            boolean ascending) {
+    public ArrayList<Vinyl> getVinylsSortedByYearAsc() {
 
         return new ArrayList<>(vinylRepository.findAllOrderByYearAsc());
     }
 
     @Override
-    public ArrayList<Vinyl> getVinylsSortedByYearDesc(
-            boolean descending) {
+    public ArrayList<Vinyl> getVinylsSortedByYearDesc() {
 
         return new ArrayList<>(vinylRepository.findAllOrderByYearDesc());
     }

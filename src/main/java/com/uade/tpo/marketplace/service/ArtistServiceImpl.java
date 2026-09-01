@@ -3,17 +3,21 @@ package com.uade.tpo.marketplace.service;
 import java.util.ArrayList;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.uade.tpo.marketplace.entity.Artist;
 import com.uade.tpo.marketplace.repository.ArtistRepository;
+import com.uade.tpo.marketplace.repository.VinylRepository;
 
 @Service
 public class ArtistServiceImpl implements ArtistService {
 
     private final ArtistRepository artistRepository;
+    private final VinylRepository vinylRepository;
 
-    public ArtistServiceImpl(ArtistRepository artistRepository) {
+    public ArtistServiceImpl(ArtistRepository artistRepository, VinylRepository vinylRepository) {
         this.artistRepository = artistRepository;
+        this.vinylRepository = vinylRepository;
     }
 
     @Override
@@ -81,7 +85,14 @@ public class ArtistServiceImpl implements ArtistService {
     }
 
     @Override
+    @Transactional
     public void deleteArtist(int artistId) {
-        artistRepository.deleteById((long) artistId);
+        Artist artist = getArtistById(artistId);
+        if (artist == null) return;
+        if (artist.getVinyls() != null) {
+            artist.getVinyls().forEach(v -> v.setArtist(null));
+            vinylRepository.saveAll(artist.getVinyls());
+        }
+        artistRepository.delete(artist);
     }
 }
