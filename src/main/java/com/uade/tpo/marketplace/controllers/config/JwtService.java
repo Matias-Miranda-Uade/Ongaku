@@ -7,13 +7,17 @@ import java.util.function.Function;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import com.uade.tpo.marketplace.service.RevokedTokenService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import javax.crypto.SecretKey;
 import io.jsonwebtoken.security.Keys;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class JwtService {
+    private final RevokedTokenService revokedTokenService;
     @Value("${application.security.jwt.secretKey}")
     private String secretKey;
     @Value("${application.security.jwt.expiration}")
@@ -35,7 +39,9 @@ public class JwtService {
 
     public boolean isTokenValid(String token, UserDetails userDetails){
         final String username = extractClaim (token, Claims::getSubject);
-        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
+        return username.equals(userDetails.getUsername())
+                && !isTokenExpired(token)
+                && !revokedTokenService.isRevoked(token);
     }
 
     public boolean isTokenExpired (String token){
