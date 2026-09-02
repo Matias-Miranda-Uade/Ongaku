@@ -3,6 +3,7 @@ package com.uade.tpo.marketplace.controllers.config;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -24,10 +25,53 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(req-> req.requestMatchers("/api/v1/auth/**", "/dashboard", "/dashboard/**")
-                    .permitAll()
-                    .anyRequest()
-                    .authenticated())
+                .authorizeHttpRequests(req -> req
+                    .requestMatchers("/api/v1/auth/register", "/api/v1/auth/authenticate").permitAll()
+                    .requestMatchers(HttpMethod.GET,
+                            "/vinyls/**",
+                            "/artists/**",
+                            "/genres/**",
+                            "/categories/**",
+                            "/audio-previews/**",
+                            "/average-scores/**").permitAll()
+                    .requestMatchers("/dashboard", "/dashboard/**").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.POST,
+                            "/vinyls/**",
+                            "/artists/**",
+                            "/genres/**",
+                            "/categories/**",
+                            "/audio-previews/**",
+                            "/order-statuses/**").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.PUT,
+                            "/vinyls/**",
+                            "/artists/**",
+                            "/genres/**",
+                            "/categories/**",
+                            "/audio-previews/**").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.PATCH,
+                            "/vinyls/**",
+                            "/artists/**",
+                            "/genres/**",
+                            "/categories/**",
+                            "/audio-previews/**").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.DELETE,
+                            "/vinyls/**",
+                            "/artists/**",
+                            "/genres/**",
+                            "/categories/**",
+                            "/audio-previews/**").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.POST, "/carts/**", "/orders/**", "/favorites/**", "/reviews/**", "/payments/**")
+                            .hasRole("USER")
+                    .requestMatchers(HttpMethod.PATCH, "/carts/**", "/favorites/**", "/reviews/**")
+                            .hasRole("USER")
+                    .requestMatchers(HttpMethod.DELETE, "/carts/**", "/favorites/**", "/reviews/**")
+                            .hasRole("USER")
+                    .requestMatchers(HttpMethod.PATCH, "/orders/**").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.PUT, "/orders/**").hasRole("ADMIN")
+                    .requestMatchers("/carts/**", "/favorites/**", "/reviews/**", "/payments/**")
+                            .hasRole("USER")
+                    .requestMatchers("/users/me", "/users/me/**", "/api/v1/auth/logout").authenticated()
+                    .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
