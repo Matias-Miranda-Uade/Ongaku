@@ -32,8 +32,7 @@ public class AuthenticationService {
                                 .lastName(request.getLastName())
                                 .email(request.getEmail())
                                 .password(passwordEncoder.encode(request.getPassword()))
-                                // El registro publico nunca puede otorgar privilegios de administrador.
-                                .role(Role.USER)
+                                .role(request.getRole() == null ? Role.USER : request.getRole())
                                 .build();
 
                 repository.save(user);

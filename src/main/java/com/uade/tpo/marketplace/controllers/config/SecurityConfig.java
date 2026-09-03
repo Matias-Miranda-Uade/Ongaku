@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -25,53 +26,14 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(req -> req
-                    .requestMatchers("/api/v1/auth/register", "/api/v1/auth/authenticate").permitAll()
-                    .requestMatchers(HttpMethod.GET,
-                            "/vinyls/**",
-                            "/artists/**",
-                            "/genres/**",
-                            "/categories/**",
-                            "/audio-previews/**",
-                            "/average-scores/**").permitAll()
-                    .requestMatchers("/dashboard", "/dashboard/**").hasAuthority("ADMIN")
-                    .requestMatchers(HttpMethod.POST,
-                            "/vinyls/**",
-                            "/artists/**",
-                            "/genres/**",
-                            "/categories/**",
-                            "/audio-previews/**",
-                            "/order-statuses/**").hasAuthority("ADMIN")
-                    .requestMatchers(HttpMethod.PUT,
-                            "/vinyls/**",
-                            "/artists/**",
-                            "/genres/**",
-                            "/categories/**",
-                            "/audio-previews/**").hasAuthority("ADMIN")
-                    .requestMatchers(HttpMethod.PATCH,
-                            "/vinyls/**",
-                            "/artists/**",
-                            "/genres/**",
-                            "/categories/**",
-                            "/audio-previews/**").hasAuthority("ADMIN")
-                    .requestMatchers(HttpMethod.DELETE,
-                            "/vinyls/**",
-                            "/artists/**",
-                            "/genres/**",
-                            "/categories/**",
-                            "/audio-previews/**").hasAuthority("ADMIN")
-                    .requestMatchers(HttpMethod.POST, "/carts/**", "/orders/**", "/favorites/**", "/reviews/**", "/payments/**")
-                            .hasAuthority("USER")
-                    .requestMatchers(HttpMethod.PATCH, "/carts/**", "/favorites/**", "/reviews/**")
-                            .hasAuthority("USER")
-                    .requestMatchers(HttpMethod.DELETE, "/carts/**", "/favorites/**", "/reviews/**")
-                            .hasAuthority("USER")
-                    .requestMatchers(HttpMethod.PATCH, "/orders/**").hasAuthority("ADMIN")
-                    .requestMatchers(HttpMethod.PUT, "/orders/**").hasAuthority("ADMIN")
-                    .requestMatchers("/carts/**", "/favorites/**", "/reviews/**", "/payments/**")
-                            .hasAuthority("USER")
-                    .requestMatchers("/users/me", "/users/me/**", "/api/v1/auth/logout").authenticated()
-                    .anyRequest().authenticated())
+                .authorizeHttpRequests(req-> req.requestMatchers("/api/v1/auth/**", "/dashboard", "/dashboard/**", "/vinyls/**")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.GET, "/genres/**")
+                    .permitAll()
+                    .requestMatchers("/admin/vinyls/**")
+                    .hasAuthority("ADMIN")
+                    .anyRequest()
+                    .authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

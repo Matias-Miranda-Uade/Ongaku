@@ -91,21 +91,6 @@ public class GenreServiceImpl implements GenreService {
     @Override
     public ArrayList<Vinyl> getVinylsByGenre(
             int id) {
-
-        ArrayList<Vinyl> result =
-                new ArrayList<>();
-
-        for (Vinyl vinyl : vinylRepository.findAll()) {
-
-            if (vinyl.getGenre() != null &&
-                vinyl.getGenre()
-                     .getId()
-                     .equals((long) id)) {
-
-                result.add(vinyl);
-            }
-        }
-
-        return result;
+        return new ArrayList<>(vinylRepository.findPublicByGenreId((long) id));
     }
 }

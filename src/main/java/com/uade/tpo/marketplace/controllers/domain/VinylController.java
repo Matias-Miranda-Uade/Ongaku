@@ -16,41 +16,23 @@ public class VinylController {
     private VinylService vinylService;
 
     @GetMapping
-    public ArrayList<Vinyl> getVinyls() { return vinylService.getVinyls(); }
+    public ArrayList<Vinyl> getVinyls() { return vinylService.getPublicVinyls(); }
 
     @GetMapping("/{vinylId}")
     public ResponseEntity<Vinyl> getVinylById(@PathVariable int vinylId) {
-        Vinyl vinyl = vinylService.getVinylById(vinylId);
+        Vinyl vinyl = vinylService.getPublicVinylById(vinylId);
         return vinyl == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(vinyl);
-    }
-
-    @PostMapping({"", "/new"})
-    public ResponseEntity<Vinyl> createVinyl(@RequestBody Vinyl vinyl) {
-        return ResponseEntity.ok(vinylService.createVinyl(vinyl));
-    }
-
-    @PatchMapping("/{vinylId}")
-    public ResponseEntity<Vinyl> updateVinyl(@PathVariable int vinylId, @RequestBody Vinyl vinyl) {
-        Vinyl updated = vinylService.updateVinyl(vinylId, vinyl);
-        return updated == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(updated);
-    }
-
-    @DeleteMapping("/{vinylId}")
-    public ResponseEntity<Void> deleteVinyl(@PathVariable int vinylId) {
-        if (vinylService.getVinylById(vinylId) == null) return ResponseEntity.notFound().build();
-        vinylService.deleteVinyl(vinylId);
-        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/search")
     public ArrayList<Vinyl> searchVinyls(
             @RequestParam(required = false, defaultValue = "") String searchTerm) {
-        return vinylService.searchVinyls(searchTerm);
+        return vinylService.searchPublicVinyls(searchTerm);
     }
 
     @GetMapping("/search/{searchTerm}")
     public ArrayList<Vinyl> searchVinylsByPath(@PathVariable String searchTerm) {
-        return vinylService.searchVinyls(searchTerm);
+        return vinylService.searchPublicVinyls(searchTerm);
     }
 
     @GetMapping("/filter")
@@ -59,24 +41,19 @@ public class VinylController {
             @RequestParam(required=false) Double minPrice,
             @RequestParam(required=false) Double maxPrice,
             @RequestParam(required=false) Boolean inStock,
-            @RequestParam(required=false) Integer artistId) {
-        return vinylService.filterVinyls(categoryId, minPrice, maxPrice, inStock, artistId);
-    }
-
-    @PatchMapping("/{vinylId}/stock")
-    public ResponseEntity<Vinyl> updateStock(@PathVariable int vinylId, @RequestParam int quantity) {
-        Vinyl vinyl = vinylService.updateStock(vinylId, quantity);
-        return vinyl == null ? ResponseEntity.status(409).build() : ResponseEntity.ok(vinyl);
+            @RequestParam(required=false) Integer artistId,
+            @RequestParam(required=false) Integer genreId) {
+        return vinylService.filterPublicVinyls(categoryId, minPrice, maxPrice, artistId, genreId);
     }
 
     @GetMapping("/artist/{artistId}")
-    public ArrayList<Vinyl> getVinylsByArtist(@PathVariable int artistId) { return vinylService.getVinylsByArtist(artistId); }
+    public ArrayList<Vinyl> getVinylsByArtist(@PathVariable int artistId) { return vinylService.getPublicVinylsByArtist(artistId); }
 
     @GetMapping("/genre/{genreId}")
-    public ArrayList<Vinyl> getVinylsByGenre(@PathVariable int genreId) { return vinylService.getVinylsByGenre(genreId); }
+    public ArrayList<Vinyl> getVinylsByGenre(@PathVariable int genreId) { return vinylService.getPublicVinylsByGenre(genreId); }
 
     @GetMapping("/category/{categoryId}")
-    public ArrayList<Vinyl> getVinylsByCategory(@PathVariable int categoryId) { return vinylService.getVinylsByCategory(categoryId); }
+    public ArrayList<Vinyl> getVinylsByCategory(@PathVariable int categoryId) { return vinylService.getPublicVinylsByCategory(categoryId); }
 
     @GetMapping("/year/{year}")
     public ArrayList<Vinyl> getVinylsByYear(@PathVariable int year) { return vinylService.getVinylsByYear(year); }
