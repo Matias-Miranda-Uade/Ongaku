@@ -34,42 +34,42 @@ public class SecurityConfig {
                             "/categories/**",
                             "/audio-previews/**",
                             "/average-scores/**").permitAll()
-                    .requestMatchers("/dashboard", "/dashboard/**").hasRole("ADMIN")
+                    .requestMatchers("/dashboard", "/dashboard/**").hasAuthority("ADMIN")
                     .requestMatchers(HttpMethod.POST,
                             "/vinyls/**",
                             "/artists/**",
                             "/genres/**",
                             "/categories/**",
                             "/audio-previews/**",
-                            "/order-statuses/**").hasRole("ADMIN")
+                            "/order-statuses/**").hasAuthority("ADMIN")
                     .requestMatchers(HttpMethod.PUT,
                             "/vinyls/**",
                             "/artists/**",
                             "/genres/**",
                             "/categories/**",
-                            "/audio-previews/**").hasRole("ADMIN")
+                            "/audio-previews/**").hasAuthority("ADMIN")
                     .requestMatchers(HttpMethod.PATCH,
                             "/vinyls/**",
                             "/artists/**",
                             "/genres/**",
                             "/categories/**",
-                            "/audio-previews/**").hasRole("ADMIN")
+                            "/audio-previews/**").hasAuthority("ADMIN")
                     .requestMatchers(HttpMethod.DELETE,
                             "/vinyls/**",
                             "/artists/**",
                             "/genres/**",
                             "/categories/**",
-                            "/audio-previews/**").hasRole("ADMIN")
+                            "/audio-previews/**").hasAuthority("ADMIN")
                     .requestMatchers(HttpMethod.POST, "/carts/**", "/orders/**", "/favorites/**", "/reviews/**", "/payments/**")
-                            .hasRole("USER")
+                            .hasAuthority("USER")
                     .requestMatchers(HttpMethod.PATCH, "/carts/**", "/favorites/**", "/reviews/**")
-                            .hasRole("USER")
+                            .hasAuthority("USER")
                     .requestMatchers(HttpMethod.DELETE, "/carts/**", "/favorites/**", "/reviews/**")
-                            .hasRole("USER")
-                    .requestMatchers(HttpMethod.PATCH, "/orders/**").hasRole("ADMIN")
-                    .requestMatchers(HttpMethod.PUT, "/orders/**").hasRole("ADMIN")
+                            .hasAuthority("USER")
+                    .requestMatchers(HttpMethod.PATCH, "/orders/**").hasAuthority("ADMIN")
+                    .requestMatchers(HttpMethod.PUT, "/orders/**").hasAuthority("ADMIN")
                     .requestMatchers("/carts/**", "/favorites/**", "/reviews/**", "/payments/**")
-                            .hasRole("USER")
+                            .hasAuthority("USER")
                     .requestMatchers("/users/me", "/users/me/**", "/api/v1/auth/logout").authenticated()
                     .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
