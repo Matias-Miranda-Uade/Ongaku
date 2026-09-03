@@ -10,6 +10,7 @@ import com.uade.tpo.marketplace.controllers.auth.AuthenticationResponse;
 import com.uade.tpo.marketplace.controllers.auth.RegisterRequest;
 import com.uade.tpo.marketplace.controllers.config.JwtService;
 import com.uade.tpo.marketplace.entity.User;
+import com.uade.tpo.marketplace.entity.Role;
 import com.uade.tpo.marketplace.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -28,7 +29,7 @@ public class AuthenticationService {
                                 .lastName(request.getLastName())
                                 .email(request.getEmail())
                                 .password(passwordEncoder.encode(request.getPassword()))
-                                .role(request.getRole())
+                                .role(request.getRole() == null ? Role.USER : request.getRole())
                                 .build();
 
                 repository.save(user);

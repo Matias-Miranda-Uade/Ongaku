@@ -37,6 +37,9 @@ public class Vinyl {
     private int stock;
 
     @Column
+    private Boolean enabled = true;
+
+    @Column
     private String image;
 
     @ManyToOne

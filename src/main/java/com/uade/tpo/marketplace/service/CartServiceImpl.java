@@ -79,6 +79,14 @@ public class CartServiceImpl implements CartService {
                     "El vinilo no existe");
         }
 
+        if (Boolean.FALSE.equals(vinyl.getEnabled())) {
+            throw new IllegalArgumentException("El vinilo esta deshabilitado");
+        }
+
+        if (vinyl.getStock() <= 0) {
+            throw new IllegalArgumentException("El vinilo esta agotado");
+        }
+
         Cart cart = cartRepository.findAll()
                 .stream()
                 .filter(c -> c.getUser() != null
