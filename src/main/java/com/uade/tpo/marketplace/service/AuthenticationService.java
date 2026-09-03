@@ -1,5 +1,7 @@
 package com.uade.tpo.marketplace.service;
 
+import java.time.Instant;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,6 +24,7 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final RevokedTokenService revokedTokenService;
 
     public AuthenticationResponse register(RegisterRequest request) {
                 var user = User.builder()
@@ -50,5 +53,10 @@ public class AuthenticationService {
             return AuthenticationResponse.builder()
                             .accessToken(jwtToken)
                             .build();
+    }
+
+    public void logout(String token) {
+        Instant expiresAt = jwtService.extractClaim(token, claims -> claims.getExpiration().toInstant());
+        revokedTokenService.revoke(token, expiresAt);
     }
 }
