@@ -13,22 +13,20 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "reviews", uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "vinyl_id"}))
-public class Review {
+@Table(name = "cart_items", uniqueConstraints = @UniqueConstraint(columnNames = {"cart_id", "vinyl_id"}))
+public class CartItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
-    private String comment;
-
-    //relacion muchos a uno con vinyl
     @ManyToOne
-    @JoinColumn(name = "vinyl_id")
+    @JoinColumn(name = "cart_id", nullable = false)
+    private Cart cart;
+
+    @ManyToOne
+    @JoinColumn(name = "vinyl_id", nullable = false)
     private Vinyl vinyl;
 
-    //relacion muchos a uno con usuario
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    @Column(nullable = false)
+    private int quantity;
 }

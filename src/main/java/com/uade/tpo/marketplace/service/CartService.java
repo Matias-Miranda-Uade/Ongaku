@@ -1,10 +1,10 @@
 package com.uade.tpo.marketplace.service;
 
-import com.uade.tpo.marketplace.entity.Cart;
-import java.util.ArrayList;
+import com.uade.tpo.marketplace.entity.dto.CartResponse;
 
 public interface CartService {
-    ArrayList<Cart> getCarts();
-    Cart getCartById(int cartId);
-    Cart createCart(String entity);
+    CartResponse getCart(String email);
+    CartResponse addItem(String email, int vinylId, int quantity);
+    CartResponse updateItem(String email, int vinylId, int quantity);
+    CartResponse removeItem(String email, int vinylId);
 }

@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 public class CartResponse {
-    private Long id;
-    private Long userId;
-    private List<VinylPreviewResponse> items;
+    private List<CartItemResponse> items;
+    private double total;
+    private String message;
 }

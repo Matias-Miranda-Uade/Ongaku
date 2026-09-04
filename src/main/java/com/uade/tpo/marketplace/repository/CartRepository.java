@@ -1,16 +1,18 @@
 package com.uade.tpo.marketplace.repository;
 
-import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import com.uade.tpo.marketplace.entity.Cart;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
+import jakarta.persistence.LockModeType;
+import com.uade.tpo.marketplace.entity.Cart;
 
 public interface CartRepository extends JpaRepository<Cart, Long> {
 
-    @Query("SELECT c FROM Cart c WHERE c.user.id = :userId")
-    List<Cart> findByUserId(int userId);
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select c from Cart c where c.user.id = :userId")
+    Optional<Cart> findByUserIdForUpdate(Long userId);
 
-    @Query("SELECT c FROM Cart c JOIN c.items i WHERE c.user.id = :userId AND i.id = :vinylId")
-    List<Cart> findByUserIdAndVinylId(int userId, int vinylId);
+    Optional<Cart> findByUserId(Long userId);
 }

@@ -1,12 +1,14 @@
 package com.uade.tpo.marketplace.service;
 
-import com.uade.tpo.marketplace.entity.Order;
 import java.util.ArrayList;
 
+import com.uade.tpo.marketplace.entity.Order;
+import com.uade.tpo.marketplace.entity.dto.OrderResponse;
+
 public interface OrderService {
-    ArrayList<Order> getOrders();
-    Order getOrderById(int orderId);
-    Order createOrder(String entity);
-    Order createOrderFromCart(int cartId);
+    ArrayList<OrderResponse> getOrders(String email, boolean administrator);
+    OrderResponse getOrderById(int orderId, String email, boolean administrator);
+    Order createOrderFromCart(String email);
     Order updateOrderStatus(int orderId, int orderStatusId);
+    Order updateOrderStatus(int orderId, int orderStatusId, String email, boolean administrator);
 }

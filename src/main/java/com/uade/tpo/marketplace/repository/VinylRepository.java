@@ -1,7 +1,10 @@
 package com.uade.tpo.marketplace.repository;
 
 import java.util.List;
+import java.util.Optional;
 
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -10,6 +13,10 @@ import org.springframework.transaction.annotation.Transactional;
 import com.uade.tpo.marketplace.entity.Vinyl;
 
 public interface VinylRepository extends JpaRepository<Vinyl, Long> {
+
+        @Lock(LockModeType.PESSIMISTIC_WRITE)
+        @Query("select v from Vinyl v where v.id = :id")
+        Optional<Vinyl> findByIdForUpdate(Long id);
 
     @Query("select v from Vinyl v where lower(v.name) like lower(concat('%', ?1, '%')) " +
             "or lower(v.description) like lower(concat('%', ?1, '%'))")

@@ -1,6 +1,7 @@
 package com.uade.tpo.marketplace.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -14,4 +15,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     @Query("SELECT r FROM Review r WHERE r.user.id = :userId")
     List<Review> findByUserId(int userId);
+
+    Optional<Review> findByUserIdAndVinylId(Long userId, Long vinylId);
 }
