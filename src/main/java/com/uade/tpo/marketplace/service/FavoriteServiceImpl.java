@@ -7,25 +7,30 @@ import org.springframework.stereotype.Service;
 import com.uade.tpo.marketplace.entity.Favorite;
 import com.uade.tpo.marketplace.entity.User;
 import com.uade.tpo.marketplace.entity.Vinyl;
+import com.uade.tpo.marketplace.entity.dto.FavoriteRequest;
+import com.uade.tpo.marketplace.exceptions.badrequest.InvalidFieldException;
+import com.uade.tpo.marketplace.exceptions.badrequest.InvalidRequestException;
+import com.uade.tpo.marketplace.exceptions.conflict.FavoriteAlreadyExistsException;
+import com.uade.tpo.marketplace.exceptions.conflict.ProductDisabledException;
+import com.uade.tpo.marketplace.exceptions.notfound.ResourceNotFoundException;
 import com.uade.tpo.marketplace.repository.FavoriteRepository;
-import com.uade.tpo.marketplace.repository.UserRepository;
 import com.uade.tpo.marketplace.repository.VinylRepository;
 
 @Service
 public class FavoriteServiceImpl implements FavoriteService {
 
     private final FavoriteRepository favoriteRepository;
-    private final UserRepository userRepository;
     private final VinylRepository vinylRepository;
+    private final OwnershipGuard ownershipGuard;
 
     public FavoriteServiceImpl(
             FavoriteRepository favoriteRepository,
-            UserRepository userRepository,
-            VinylRepository vinylRepository) {
+            VinylRepository vinylRepository,
+            OwnershipGuard ownershipGuard) {
 
         this.favoriteRepository = favoriteRepository;
-        this.userRepository = userRepository;
         this.vinylRepository = vinylRepository;
+        this.ownershipGuard = ownershipGuard;
     }
 
     @Override
@@ -34,66 +39,47 @@ public class FavoriteServiceImpl implements FavoriteService {
     }
 
     @Override
-    public Favorite getFavoriteById(int id) {
-        return favoriteRepository
-                .findById((long) id)
-                .orElse(null);
+    public Favorite getFavoriteById(int id, String requesterEmail) {
+        Favorite favorite = favoriteRepository.findById((long) id)
+                .orElseThrow(() -> new ResourceNotFoundException("Favorito", id));
+
+        Long ownerId = favorite.getUser() != null ? favorite.getUser().getId() : null;
+        ownershipGuard.assertSelfOrAdmin(requesterEmail, ownerId);
+
+        return favorite;
     }
 
     @Override
-    public Favorite createFavorite(String entity) {
+    public Favorite createFavorite(FavoriteRequest request, String requesterEmail) {
 
-        String[] values = entity == null
-                ? new String[0]
-                : entity.split(",");
-
-        if (values.length < 2) {
-            throw new IllegalArgumentException(
-                    "El favorito requiere usuario y vinilo");
+        if (request == null) {
+            throw new InvalidRequestException("El favorito requiere usuario y vinilo");
+        }
+        if (request.getUserId() <= 0) {
+            throw new InvalidFieldException("userId", "debe ser un identificador positivo");
+        }
+        if (request.getVinylId() <= 0) {
+            throw new InvalidFieldException("vinylId", "debe ser un identificador positivo");
         }
 
-        int userId = Integer.parseInt(values[0].trim());
-        int vinylId = Integer.parseInt(values[1].trim());
+        User user = ownershipGuard.assertSelfOrAdmin(requesterEmail, (long) request.getUserId());
 
-        if (userId <= 0 || vinylId <= 0) {
-            throw new IllegalArgumentException(
-                    "Los identificadores deben ser positivos");
+        Vinyl vinyl = vinylRepository.findById((long) request.getVinylId())
+                .orElseThrow(() -> new ResourceNotFoundException("Vinilo", request.getVinylId()));
+
+        if (Boolean.FALSE.equals(vinyl.getEnabled())) {
+            throw new ProductDisabledException();
         }
 
-        User user = userRepository
-                .findById((long) userId)
-                .orElse(null);
-
-        if (user == null) {
-            throw new IllegalArgumentException(
-                    "El usuario no existe");
-        }
-
-        Vinyl vinyl = vinylRepository
-                .findById((long) vinylId)
-                .orElse(null);
-
-        if (vinyl == null) {
-            throw new IllegalArgumentException(
-                    "El vinilo no existe");
-        }
-
-        boolean alreadyExists = favoriteRepository
-                .findAll()
-                .stream()
-                .anyMatch(f ->
-                        f.getUser() != null
-                        && f.getVinyl() != null
-                        && f.getUser().getId().equals((long) userId)
-                        && f.getVinyl().getId().equals((long) vinylId));
+        boolean alreadyExists = !favoriteRepository
+                .findByUserIdAndVinylId(request.getUserId(), request.getVinylId())
+                .isEmpty();
 
         if (alreadyExists) {
-            throw new IllegalArgumentException(
-                    "El vinilo ya esta en favoritos");
+            throw new FavoriteAlreadyExistsException();
         }
 
         Favorite favorite = new Favorite();
-
         favorite.setUser(user);
         favorite.setVinyl(vinyl);
 

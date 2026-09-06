@@ -1,6 +1,7 @@
 package com.uade.tpo.marketplace.controllers.domain;
 
-import java.util.ArrayList;
+import java.security.Principal;
+import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,7 +12,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.uade.tpo.marketplace.entity.Payment;
+import com.uade.tpo.marketplace.common.ApiResponse;
+import com.uade.tpo.marketplace.entity.dto.PaymentRequest;
+import com.uade.tpo.marketplace.entity.dto.PaymentResponse;
+import com.uade.tpo.marketplace.entity.dto.mapper.PaymentMapper;
 import com.uade.tpo.marketplace.service.PaymentService;
 
 @RestController
@@ -21,21 +25,19 @@ public class PaymentsController {
     private PaymentService paymentService;
 
     @GetMapping
-    public ArrayList<Payment> getPayments() {
-        return paymentService.getPayments();
+    public ResponseEntity<ApiResponse<List<PaymentResponse>>> getPayments() {
+        List<PaymentResponse> payments = paymentService.getPayments().stream().map(PaymentMapper::toResponse).toList();
+        return ResponseEntity.ok(ApiResponse.list(payments, "No hay pagos registrados"));
     }
 
     @GetMapping("/{paymentId}")
-    public ResponseEntity<Payment> getPaymentById(@PathVariable int paymentId) {
-        Payment payment = paymentService.getPaymentById(paymentId);
-        if (payment == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(payment);
+    public ResponseEntity<ApiResponse<PaymentResponse>> getPaymentById(@PathVariable int paymentId, Principal principal) {
+        return ResponseEntity.ok(ApiResponse.ok(PaymentMapper.toResponse(paymentService.getPaymentById(paymentId, principal.getName()))));
     }
 
     @PostMapping
-    public Payment createPayment(@RequestBody String entity) {
-        return paymentService.createPayment(entity);
+    public ResponseEntity<ApiResponse<PaymentResponse>> createPayment(@RequestBody PaymentRequest request, Principal principal) {
+        PaymentResponse response = PaymentMapper.toResponse(paymentService.createPayment(request, principal.getName()));
+        return ResponseEntity.status(201).body(ApiResponse.created(response, "Pago registrado correctamente"));
     }
 }

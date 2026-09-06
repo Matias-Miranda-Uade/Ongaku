@@ -14,6 +14,11 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.uade.tpo.marketplace.exceptions.auth.ExpiredTokenException;
+import com.uade.tpo.marketplace.exceptions.auth.InvalidAuthorizationHeaderException;
+import com.uade.tpo.marketplace.exceptions.auth.InvalidTokenException;
+import com.uade.tpo.marketplace.exceptions.auth.RevokedTokenException;
+
 import jakarta.annotation.Nonnull;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -25,41 +30,61 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+    public static final String AUTH_ERROR_ATTRIBUTE = "jwt_auth_error";
+
     private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
 
     @Override
-    protected void doFilterInternal (@Nonnull HttpServletRequest request, @Nonnull HttpServletResponse response, @Nonnull FilterChain filterChain) throws ServletException, IOException{
+    protected void doFilterInternal(@Nonnull HttpServletRequest request, @Nonnull HttpServletResponse response,
+            @Nonnull FilterChain filterChain) throws ServletException, IOException {
+
         final String authHeader = request.getHeader("Authorization");
-        final String jwt;
-        final String userEmail;
-        if (authHeader == null || !authHeader.startsWith("Bearer ") || authHeader.length() <= 7){
-            log.warn("[JWT-DEBUG] Sin header Authorization o no empieza con Bearer. Header recibido: {}", authHeader);
+
+        if (authHeader == null) {
+
             filterChain.doFilter(request, response);
             return;
         }
-        jwt = authHeader.substring(7);
+
+        if (!authHeader.startsWith("Bearer ") || authHeader.length() <= 7) {
+            request.setAttribute(AUTH_ERROR_ATTRIBUTE, new InvalidAuthorizationHeaderException().getMessage());
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        String jwt = authHeader.substring(7);
+
         try {
-            userEmail = jwtService.extractUsername(jwt);
-            log.warn("[JWT-DEBUG] Email extraido del token: {}", userEmail);
-            if(userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null){
+            String userEmail = jwtService.extractUsername(jwt);
+            if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
-                log.warn("[JWT-DEBUG] Usuario encontrado en DB: {}", userDetails.getUsername());
                 boolean valid = jwtService.isTokenValid(jwt, userDetails);
-                log.warn("[JWT-DEBUG] Token valido?: {}", valid);
-                if (valid){
-                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userEmail, null, userDetails.getAuthorities());
+                if (valid) {
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userEmail, null, userDetails.getAuthorities());
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
-                    log.warn("[JWT-DEBUG] Autenticacion seteada correctamente en el contexto.");
+                } else {
+                    request.setAttribute(AUTH_ERROR_ATTRIBUTE, new RevokedTokenException().getMessage());
                 }
             }
-        } catch (Exception ex) {
-            log.error("[JWT-DEBUG] Excepcion al procesar el token: {} - {}", ex.getClass().getName(), ex.getMessage());
+        } catch (ExpiredJwtException ex) {
+            log.debug("Token JWT expirado: {}", ex.getMessage());
             SecurityContextHolder.clearContext();
+            request.setAttribute(AUTH_ERROR_ATTRIBUTE, new ExpiredTokenException().getMessage());
+        } catch (JwtException | IllegalArgumentException ex) {
+            log.debug("Token JWT invalido: {}", ex.getMessage());
+            SecurityContextHolder.clearContext();
+            request.setAttribute(AUTH_ERROR_ATTRIBUTE, new InvalidTokenException().getMessage());
+        } catch (Exception ex) {
+            log.warn("Error inesperado al procesar el token JWT", ex);
+            SecurityContextHolder.clearContext();
+            request.setAttribute(AUTH_ERROR_ATTRIBUTE, new InvalidTokenException().getMessage());
         }
+
         filterChain.doFilter(request, response);
     }
 }

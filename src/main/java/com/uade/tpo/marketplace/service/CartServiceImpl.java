@@ -8,25 +8,32 @@ import org.springframework.stereotype.Service;
 import com.uade.tpo.marketplace.entity.Cart;
 import com.uade.tpo.marketplace.entity.User;
 import com.uade.tpo.marketplace.entity.Vinyl;
+import com.uade.tpo.marketplace.entity.dto.CartRequest;
+import com.uade.tpo.marketplace.exceptions.badrequest.InvalidFieldException;
+import com.uade.tpo.marketplace.exceptions.badrequest.InvalidRequestException;
+import com.uade.tpo.marketplace.exceptions.conflict.CartItemAlreadyExistsException;
+import com.uade.tpo.marketplace.exceptions.conflict.InsufficientStockException;
+import com.uade.tpo.marketplace.exceptions.conflict.ProductDisabledException;
+import com.uade.tpo.marketplace.exceptions.forbidden.ResourceOwnershipException;
+import com.uade.tpo.marketplace.exceptions.notfound.ResourceNotFoundException;
 import com.uade.tpo.marketplace.repository.CartRepository;
-import com.uade.tpo.marketplace.repository.UserRepository;
 import com.uade.tpo.marketplace.repository.VinylRepository;
 
 @Service
 public class CartServiceImpl implements CartService {
 
     private final CartRepository cartRepository;
-    private final UserRepository userRepository;
     private final VinylRepository vinylRepository;
+    private final OwnershipGuard ownershipGuard;
 
     public CartServiceImpl(
             CartRepository cartRepository,
-            UserRepository userRepository,
-            VinylRepository vinylRepository) {
+            VinylRepository vinylRepository,
+            OwnershipGuard ownershipGuard) {
 
         this.cartRepository = cartRepository;
-        this.userRepository = userRepository;
         this.vinylRepository = vinylRepository;
+        this.ownershipGuard = ownershipGuard;
     }
 
     @Override
@@ -35,62 +42,44 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public Cart getCartById(int id) {
-        return cartRepository
-                .findById((long) id)
-                .orElse(null);
+    public Cart getCartById(int id, String requesterEmail) {
+        Cart cart = cartRepository.findById((long) id)
+                .orElseThrow(() -> new ResourceNotFoundException("Carrito", id));
+
+        Long ownerId = cart.getUser() != null ? cart.getUser().getId() : null;
+        ownershipGuard.assertSelfOrAdmin(requesterEmail, ownerId);
+
+        return cart;
     }
 
     @Override
-    public Cart createCart(String entity) {
+    public Cart createCart(CartRequest request, String requesterEmail) {
 
-        String[] values = entity == null
-                ? new String[0]
-                : entity.split(",");
-
-        if (values.length < 2) {
-            throw new IllegalArgumentException(
-                    "El carrito requiere usuario y vinilo");
+        if (request == null) {
+            throw new InvalidRequestException("El carrito requiere usuario y vinilo");
+        }
+        if (request.getUserId() <= 0) {
+            throw new InvalidFieldException("userId", "debe ser un identificador positivo");
+        }
+        if (request.getVinylId() <= 0) {
+            throw new InvalidFieldException("vinylId", "debe ser un identificador positivo");
         }
 
-        int userId = Integer.parseInt(values[0].trim());
-        int vinylId = Integer.parseInt(values[1].trim());
+        User user = ownershipGuard.assertSelfOrAdmin(requesterEmail, (long) request.getUserId());
 
-        if (userId <= 0 || vinylId <= 0) {
-            throw new IllegalArgumentException(
-                    "Los identificadores deben ser positivos");
-        }
-
-        User user = userRepository
-                .findById((long) userId)
-                .orElse(null);
-
-        if (user == null) {
-            throw new IllegalArgumentException(
-                    "El usuario no existe");
-        }
-
-        Vinyl vinyl = vinylRepository
-                .findById((long) vinylId)
-                .orElse(null);
-
-        if (vinyl == null) {
-            throw new IllegalArgumentException(
-                    "El vinilo no existe");
-        }
+        Vinyl vinyl = vinylRepository.findById((long) request.getVinylId())
+                .orElseThrow(() -> new ResourceNotFoundException("Vinilo", request.getVinylId()));
 
         if (Boolean.FALSE.equals(vinyl.getEnabled())) {
-            throw new IllegalArgumentException("El vinilo esta deshabilitado");
+            throw new ProductDisabledException();
         }
 
         if (vinyl.getStock() <= 0) {
-            throw new IllegalArgumentException("El vinilo esta agotado");
+            throw new InsufficientStockException("El vinilo esta agotado");
         }
 
-        Cart cart = cartRepository.findAll()
+        Cart cart = cartRepository.findByUserId(request.getUserId())
                 .stream()
-                .filter(c -> c.getUser() != null
-                        && c.getUser().getId().equals((long) userId))
                 .findFirst()
                 .orElse(null);
 
@@ -107,9 +96,11 @@ public class CartServiceImpl implements CartService {
             cart.setItems(items);
         }
 
-        if (!items.contains(vinyl)) {
-            items.add(vinyl);
+        if (items.contains(vinyl)) {
+            throw new CartItemAlreadyExistsException();
         }
+
+        items.add(vinyl);
 
         return cartRepository.save(cart);
     }

@@ -1,6 +1,7 @@
 package com.uade.tpo.marketplace.service;
 
 import com.uade.tpo.marketplace.entity.Vinyl;
+import com.uade.tpo.marketplace.entity.dto.VinylRequest;
 import java.util.ArrayList;
 
 public interface VinylService {
@@ -8,14 +9,14 @@ public interface VinylService {
     ArrayList<Vinyl> getAllVinyls();
     Vinyl getPublicVinylById(int id);
     Vinyl getVinylById(int id);
-    Vinyl createVinyl(Vinyl vinyl);
-    Vinyl updateVinyl(int id, Vinyl vinyl);
+    Vinyl createVinyl(VinylRequest request);
+    Vinyl updateVinyl(int id, VinylRequest request);
     Vinyl setEnabled(int id, boolean enabled);
     void deleteVinyl(int id);
-        ArrayList<Vinyl> searchPublicVinyls(String searchTerm);
-        ArrayList<Vinyl> searchAllVinyls(String searchTerm);
-            ArrayList<Vinyl> filterPublicVinyls(Integer categoryId, Double minPrice, Double maxPrice,
-                Integer artistId, Integer genreId);
+    ArrayList<Vinyl> searchPublicVinyls(String searchTerm);
+    ArrayList<Vinyl> searchAllVinyls(String searchTerm);
+    ArrayList<Vinyl> filterPublicVinyls(Integer categoryId, Double minPrice, Double maxPrice,
+            Integer artistId, Integer genreId);
     ArrayList<Vinyl> filterVinyls(Integer categoryId, Double minPrice, Double maxPrice,
             Boolean inStock, Integer artistId, Integer genreId);
     Vinyl updateStock(int vinylId, int quantityDelta);

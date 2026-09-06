@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.uade.tpo.marketplace.common.ApiResponse;
 import com.uade.tpo.marketplace.entity.dto.ChangePasswordRequest;
 import com.uade.tpo.marketplace.entity.dto.UpdateProfileRequest;
 import com.uade.tpo.marketplace.entity.dto.UserResponse;
@@ -23,22 +24,23 @@ public class UsersController {
     private final UserProfileService userProfileService;
 
     @GetMapping
-    public ResponseEntity<UserResponse> getProfile(Principal principal) {
-        return ResponseEntity.ok(userProfileService.getProfile(principal.getName()));
+    public ResponseEntity<ApiResponse<UserResponse>> getProfile(Principal principal) {
+        return ResponseEntity.ok(ApiResponse.ok(userProfileService.getProfile(principal.getName())));
     }
 
     @PatchMapping
-    public ResponseEntity<UserResponse> updateProfile(
+    public ResponseEntity<ApiResponse<UserResponse>> updateProfile(
             Principal principal,
             @RequestBody UpdateProfileRequest request) {
-        return ResponseEntity.ok(userProfileService.updateProfile(principal.getName(), request));
+        UserResponse response = userProfileService.updateProfile(principal.getName(), request);
+        return ResponseEntity.ok(ApiResponse.ok(response, "Perfil actualizado correctamente"));
     }
 
     @PatchMapping("/password")
-    public ResponseEntity<Void> changePassword(
+    public ResponseEntity<ApiResponse<Void>> changePassword(
             Principal principal,
             @RequestBody ChangePasswordRequest request) {
         userProfileService.changePassword(principal.getName(), request);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ApiResponse.ok(null, "Contraseña actualizada correctamente"));
     }
 }

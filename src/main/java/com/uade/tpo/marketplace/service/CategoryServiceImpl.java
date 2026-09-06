@@ -1,7 +1,6 @@
 package com.uade.tpo.marketplace.service;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -9,7 +8,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import com.uade.tpo.marketplace.entity.Category;
-import com.uade.tpo.marketplace.exceptions.CategoryDuplicateException;
+import com.uade.tpo.marketplace.exceptions.badrequest.InvalidFieldException;
+import com.uade.tpo.marketplace.exceptions.conflict.DuplicateResourceException;
+import com.uade.tpo.marketplace.exceptions.notfound.ResourceNotFoundException;
 import com.uade.tpo.marketplace.repository.CategoryRepository;
 
 @Service
@@ -24,27 +25,24 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public Optional<Category> getCategoryById(Long categoryId) {
-        return categoryRepository.findById(categoryId);
+    public Category getCategoryById(Long categoryId) {
+        return categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new ResourceNotFoundException("Categoria", categoryId));
     }
 
     @Override
-    public Category createCategory(String description)
-            throws CategoryDuplicateException {
+    public Category createCategory(String description) {
 
         if (description == null || description.isBlank()) {
-            throw new IllegalArgumentException(
-                    "La categoria debe tener descripcion");
+            throw new InvalidFieldException("description", "no puede estar vacia");
         }
 
-        List<Category> categories =
-                categoryRepository.findByDescription(description);
+        List<Category> categories = categoryRepository.findByDescription(description);
 
-        if (categories.isEmpty()) {
-            return categoryRepository.save(
-                    new Category(description));
+        if (!categories.isEmpty()) {
+            throw new DuplicateResourceException("Categoria", description);
         }
 
-        throw new CategoryDuplicateException();
+        return categoryRepository.save(new Category(description));
     }
 }
