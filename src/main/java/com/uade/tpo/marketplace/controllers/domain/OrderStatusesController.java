@@ -5,14 +5,11 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.uade.tpo.marketplace.common.ApiResponse;
-import com.uade.tpo.marketplace.entity.dto.OrderStatusRequest;
 import com.uade.tpo.marketplace.entity.dto.OrderStatusResponse;
 import com.uade.tpo.marketplace.entity.dto.mapper.OrderStatusMapper;
 import com.uade.tpo.marketplace.service.OrderStatusService;
@@ -35,9 +32,4 @@ public class OrderStatusesController {
         return ResponseEntity.ok(ApiResponse.ok(OrderStatusMapper.toResponse(orderStatusService.getOrderStatusById(orderStatusId))));
     }
 
-    @PostMapping
-    public ResponseEntity<ApiResponse<OrderStatusResponse>> createOrderStatus(@RequestBody OrderStatusRequest request) {
-        OrderStatusResponse response = OrderStatusMapper.toResponse(orderStatusService.createOrderStatus(request));
-        return ResponseEntity.status(201).body(ApiResponse.created(response, "Estado de orden creado correctamente"));
-    }
 }

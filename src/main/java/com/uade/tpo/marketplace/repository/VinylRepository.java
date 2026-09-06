@@ -11,7 +11,14 @@ import com.uade.tpo.marketplace.entity.Vinyl;
 
 public interface VinylRepository extends JpaRepository<Vinyl, Long> {
 
-        @Query("select v from Vinyl v where (v.enabled is null or v.enabled = true) and v.stock > 0 and " +
+    @Modifying
+    @Transactional
+    @Query("update Vinyl v set v.stock = v.stock - :quantity where v.id = :vinylId " +
+            "and (v.enabled is null or v.enabled = true) and v.stock >= :quantity")
+    int reserveStock(Long vinylId, int quantity);
+
+
+        @Query("select v from Vinyl v where (v.enabled is null or v.enabled = true) and " +
             "(lower(v.name) like lower(concat('%', ?1, '%')) or " +
             "lower(v.description) like lower(concat('%', ?1, '%')))")
     List<Vinyl> searchPublic(String query);
@@ -20,7 +27,7 @@ public interface VinylRepository extends JpaRepository<Vinyl, Long> {
             "or lower(v.description) like lower(concat('%', ?1, '%'))")
     List<Vinyl> searchAll(String query);
 
-        @Query("select v from Vinyl v where (v.enabled is null or v.enabled = true) and v.stock > 0 and " +
+        @Query("select v from Vinyl v where (v.enabled is null or v.enabled = true) and " +
             "(?1 is null or v.category.id = ?1) and " +
             "(?2 is null or v.price >= ?2) and " +
             "(?3 is null or v.price <= ?3) and (?4 is null or v.artist.id = ?4) and " +
@@ -48,19 +55,19 @@ public interface VinylRepository extends JpaRepository<Vinyl, Long> {
             "where v.id = ?1 and v.stock + ?2 >= 0")
     int updateStock(Long vinylId, int quantityDelta);
 
-        @Query("select v from Vinyl v where (v.enabled is null or v.enabled = true) and v.stock > 0 and v.artist.id = ?1")
+        @Query("select v from Vinyl v where (v.enabled is null or v.enabled = true) and v.artist.id = ?1")
         List<Vinyl> findPublicByArtistId(Long artistId);
 
         @Query("select v from Vinyl v where v.artist.id = ?1")
         List<Vinyl> findAllByArtistId(Long artistId);
 
-        @Query("select v from Vinyl v where (v.enabled is null or v.enabled = true) and v.stock > 0 and v.genre.id = ?1")
+        @Query("select v from Vinyl v where (v.enabled is null or v.enabled = true) and v.genre.id = ?1")
         List<Vinyl> findPublicByGenreId(Long genreId);
 
         @Query("select v from Vinyl v where v.genre.id = ?1")
         List<Vinyl> findAllByGenreId(Long genreId);
 
-        @Query("select v from Vinyl v where (v.enabled is null or v.enabled = true) and v.stock > 0 and v.category.id = ?1")
+        @Query("select v from Vinyl v where (v.enabled is null or v.enabled = true) and v.category.id = ?1")
         List<Vinyl> findPublicByCategoryId(Long categoryId);
 
         @Query("select v from Vinyl v where v.category.id = ?1")

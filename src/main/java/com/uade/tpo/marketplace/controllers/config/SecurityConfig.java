@@ -5,7 +5,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -21,19 +20,42 @@ import lombok.RequiredArgsConstructor;
 public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final AuthenticationProvider authenticationProvider;
+    private final RestAuthenticationEntryPoint authenticationEntryPoint;
+    private final RestAccessDeniedHandler accessDeniedHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(req-> req.requestMatchers("/api/v1/auth/**", "/dashboard", "/dashboard/**", "/vinyls/**")
-                    .permitAll()
-                    .requestMatchers(HttpMethod.GET, "/genres/**")
-                    .permitAll()
-                    .requestMatchers("/admin/vinyls/**")
-                    .hasAuthority("ADMIN")
-                    .anyRequest()
-                    .authenticated())
+                .authorizeHttpRequests(req -> req
+                    .dispatcherTypeMatchers(jakarta.servlet.DispatcherType.ERROR).permitAll()
+                    .requestMatchers(HttpMethod.POST, "/api/v1/auth/register", "/api/v1/auth/authenticate").permitAll()
+                    // Listados, busquedas y filtros publicos. El detalle requiere login.
+                    .requestMatchers(HttpMethod.GET, "/vinyls", "/vinyls/search", "/vinyls/search/*",
+                            "/vinyls/filter", "/vinyls/artist/*", "/vinyls/genre/*", "/vinyls/category/*",
+                            "/vinyls/year/*", "/vinyls/price/*", "/artists", "/genres",
+                            "/reviews", "/reviews/*", "/categories", "/categories/*",
+                            "/audio-previews", "/audio-previews/*", "/average-scores", "/average-scores/*").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/vinyls/*", "/artists/*", "/genres/*", "/genres/*/vinyls",
+                            "/orders", "/orders/*", "/payments", "/payments/*",
+                            "/order-statuses", "/order-statuses/*").hasAnyAuthority("USER", "ADMIN")
+                    // Los servicios verifican ademas que los recursos pertenezcan al usuario.
+                    .requestMatchers("/carts", "/carts/**", "/favorites", "/favorites/**").hasAuthority("USER")
+                    .requestMatchers(HttpMethod.POST, "/reviews", "/payments", "/orders",
+                            "/orders/cart/*", "/orders/from-cart").hasAuthority("USER")
+                    .requestMatchers(HttpMethod.PATCH, "/orders/*/status", "/orders/*/status/*").hasAuthority("ADMIN")
+                    .requestMatchers(HttpMethod.PUT, "/orders/*").hasAuthority("ADMIN")
+                    .requestMatchers("/dashboard", "/dashboard/**", "/admin/vinyls", "/admin/vinyls/**").hasAuthority("ADMIN")
+                    .requestMatchers(HttpMethod.POST, "/artists", "/genres", "/categories", "/audio-previews").hasAuthority("ADMIN")
+                    .requestMatchers(HttpMethod.PUT, "/artists/*").hasAuthority("ADMIN")
+                    .requestMatchers(HttpMethod.PATCH, "/genres/*").hasAuthority("ADMIN")
+                    .requestMatchers(HttpMethod.DELETE, "/artists/*", "/genres/*").hasAuthority("ADMIN")
+                    .requestMatchers(HttpMethod.GET, "/users/me").hasAnyAuthority("USER", "ADMIN")
+                    .requestMatchers(HttpMethod.PATCH, "/users/me", "/users/me/password").hasAnyAuthority("USER", "ADMIN")
+                    .requestMatchers(HttpMethod.POST, "/api/v1/auth/logout").hasAnyAuthority("USER", "ADMIN")
+                    .anyRequest().denyAll())
+                .exceptionHandling(errors -> errors.authenticationEntryPoint(authenticationEntryPoint)
+                        .accessDeniedHandler(accessDeniedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

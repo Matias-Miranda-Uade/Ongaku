@@ -7,4 +7,5 @@ public class ReviewRequest {
     private int userId;
     private int vinylId;
     private String comment;
+    private Integer score;
 }

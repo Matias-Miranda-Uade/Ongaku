@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,8 +26,8 @@ public class FavoritesController {
     private FavoriteService favoriteService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<FavoriteResponse>>> getFavorites() {
-        List<FavoriteResponse> favorites = favoriteService.getFavorites().stream().map(FavoriteMapper::toResponse).toList();
+    public ResponseEntity<ApiResponse<List<FavoriteResponse>>> getFavorites(Principal principal) {
+        List<FavoriteResponse> favorites = favoriteService.getFavorites(principal.getName()).stream().map(FavoriteMapper::toResponse).toList();
         return ResponseEntity.ok(ApiResponse.list(favorites, "No hay favoritos cargados"));
     }
 
@@ -39,5 +40,10 @@ public class FavoritesController {
     public ResponseEntity<ApiResponse<FavoriteResponse>> createFavorite(@RequestBody FavoriteRequest request, Principal principal) {
         FavoriteResponse response = FavoriteMapper.toResponse(favoriteService.createFavorite(request, principal.getName()));
         return ResponseEntity.status(201).body(ApiResponse.created(response, "Vinilo agregado a favoritos"));
+    }
+    @DeleteMapping("/{favoriteId}")
+    public ResponseEntity<Void> deleteFavorite(@PathVariable int favoriteId, Principal principal) {
+        favoriteService.deleteFavorite(favoriteId, principal.getName());
+        return ResponseEntity.noContent().build();
     }
 }

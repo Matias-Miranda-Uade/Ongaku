@@ -9,6 +9,8 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
+    List<Payment> findByOrderUserId(Long userId);
+
     @Query("SELECT p FROM Payment p WHERE p.order.id = :orderId")
     List<Payment> findByOrderId(int orderId);
 }

@@ -28,4 +28,27 @@ public class OwnershipGuard {
         }
         return requester;
     }
+
+    public User requireCustomer(String email) {
+        User user = requireUser(email);
+        if (user.getRole() != Role.USER) {
+            throw new ResourceOwnershipException();
+        }
+        return user;
+    }
+
+    public User requireCustomerForUpdate(String email) {
+        User user = userRepository.findForUpdateByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario", email));
+        if (user.getRole() != Role.USER) throw new ResourceOwnershipException();
+        return user;
+    }
+
+    public User assertOwner(String requesterEmail, Long targetUserId) {
+        User user = requireCustomer(requesterEmail);
+        if (!user.getId().equals(targetUserId)) {
+            throw new ResourceOwnershipException();
+        }
+        return user;
+    }
 }

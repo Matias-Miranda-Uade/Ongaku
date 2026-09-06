@@ -19,6 +19,11 @@ public final class CartMapper {
                 ? Collections.emptyList()
                 : cart.getItems().stream().map(VinylMapper::toPreviewResponse).toList();
         response.setItems(items);
+        java.util.Map<Long, Integer> quantities = new java.util.LinkedHashMap<>();
+        if (cart.getItems() != null) {
+            cart.getItems().forEach(vinyl -> quantities.put(vinyl.getId(), cart.quantityOf(vinyl.getId())));
+        }
+        response.setQuantities(quantities);
         return response;
     }
 }

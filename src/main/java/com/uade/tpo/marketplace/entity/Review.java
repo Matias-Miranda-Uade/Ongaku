@@ -19,6 +19,9 @@ public class Review {
     @Column
     private String comment;
 
+    @Column
+    private Integer score;
+
     //relacion muchos a uno con vinyl
     @ManyToOne
     @JoinColumn(name = "vinyl_id")

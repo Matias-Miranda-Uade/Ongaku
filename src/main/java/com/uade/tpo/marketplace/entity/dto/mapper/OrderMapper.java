@@ -22,6 +22,11 @@ public final class OrderMapper {
                 ? Collections.emptyList()
                 : order.getVinyl().stream().map(com.uade.tpo.marketplace.entity.Vinyl::getId).toList();
         response.setVinylIds(vinylIds);
+        java.util.Map<Long, Integer> quantities = new java.util.LinkedHashMap<>();
+        if (order.getVinyl() != null) {
+            order.getVinyl().forEach(vinyl -> quantities.put(vinyl.getId(), order.quantityOf(vinyl.getId())));
+        }
+        response.setQuantities(quantities);
         return response;
     }
 }

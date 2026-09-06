@@ -1,11 +1,9 @@
 package com.uade.tpo.marketplace.service;
 
-import com.uade.tpo.marketplace.entity.AverageScore;
-import com.uade.tpo.marketplace.entity.dto.AverageScoreRequest;
-import java.util.ArrayList;
+import com.uade.tpo.marketplace.entity.dto.AverageScoreResponse;
+import java.util.List;
 
 public interface AverageScoreService {
-    ArrayList<AverageScore> getAverageScores();
-    AverageScore getAverageScoreById(int averageScoreId);
-    AverageScore createAverageScore(AverageScoreRequest request);
+    List<AverageScoreResponse> getAverageScores();
+    AverageScoreResponse getAverageScoreById(int vinylId);
 }

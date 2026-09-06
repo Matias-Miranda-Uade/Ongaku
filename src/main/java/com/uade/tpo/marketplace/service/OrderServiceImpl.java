@@ -9,11 +9,8 @@ import org.springframework.stereotype.Service;
 import com.uade.tpo.marketplace.entity.Order;
 import com.uade.tpo.marketplace.entity.OrderStatus;
 import com.uade.tpo.marketplace.entity.Cart;
-import com.uade.tpo.marketplace.entity.User;
 import com.uade.tpo.marketplace.entity.Vinyl;
-import com.uade.tpo.marketplace.entity.dto.OrderRequest;
 import com.uade.tpo.marketplace.exceptions.badrequest.InvalidFieldException;
-import com.uade.tpo.marketplace.exceptions.badrequest.InvalidRequestException;
 import com.uade.tpo.marketplace.exceptions.conflict.EmptyCartException;
 import com.uade.tpo.marketplace.exceptions.conflict.InsufficientStockException;
 import com.uade.tpo.marketplace.exceptions.conflict.InvalidOrderStatusTransitionException;
@@ -50,8 +47,10 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public ArrayList<Order> getOrders() {
-        return new ArrayList<>(orderRepository.findAll());
+    public ArrayList<Order> getOrders(String requesterEmail) {
+        var user = ownershipGuard.requireUser(requesterEmail);
+        return new ArrayList<>(user.getRole() == com.uade.tpo.marketplace.entity.Role.ADMIN
+                ? orderRepository.findAll() : orderRepository.findByUserId(Math.toIntExact(user.getId())));
     }
 
     @Override
@@ -66,51 +65,27 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Order createOrder(OrderRequest request, String requesterEmail) {
-
-        if (request == null) {
-            throw new InvalidRequestException("La orden requiere usuario y total");
-        }
-        if (request.getUserId() <= 0) {
-            throw new InvalidFieldException("userId", "debe ser un identificador positivo");
-        }
-        if (request.getTotal() <= 0) {
-            throw new InvalidFieldException("total", "debe ser mayor a cero");
-        }
-
-        User user = ownershipGuard.assertSelfOrAdmin(requesterEmail, (long) request.getUserId());
-
-        long statusId = request.getOrderStatusId() > 0 ? request.getOrderStatusId() : 1L;
-        OrderStatus status = orderStatusRepository.findById(statusId)
-                .orElseThrow(() -> new ResourceNotFoundException("Estado de orden", statusId));
-
-        Order order = new Order();
-        order.setUser(user);
-        order.setOrderStatus(status);
-        order.setOrderDate(request.getOrderDate() != null ? request.getOrderDate() : LocalDate.now().toString());
-        order.setTotal(request.getTotal());
-
-        return orderRepository.save(order);
-    }
-
-    @Override
+    @org.springframework.transaction.annotation.Transactional
     public Order updateOrderStatus(int orderId, int statusId) {
 
-        Order order = orderRepository.findById((long) orderId)
+        Order order = orderRepository.findForUpdateById((long) orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Orden", orderId));
 
-        if (statusId < 1) {
-            throw new InvalidFieldException("orderStatusId", "debe ser un identificador positivo");
+        if (statusId < 1 || statusId > 5) {
+            throw new InvalidFieldException("orderStatusId", "debe estar entre 1 y 5");
         }
-
-        OrderStatus currentStatus = order.getOrderStatus();
-
-        if (currentStatus != null && currentStatus.getId() == CANCELLED_STATUS_ID) {
-            throw new OrderAlreadyCancelledException();
-        }
-
-        if (currentStatus != null && statusId < currentStatus.getId() && statusId != CANCELLED_STATUS_ID) {
-            throw new InvalidOrderStatusTransitionException("La orden no puede retroceder de estado");
+        Long current = order.getOrderStatus() == null ? null : order.getOrderStatus().getId();
+        if (current == null) throw new InvalidOrderStatusTransitionException("La orden no tiene estado inicial");
+        if (current == CANCELLED_STATUS_ID) throw new OrderAlreadyCancelledException();
+        if (current == statusId) return order;
+        boolean allowed = (current == 1 && (statusId == 2 || statusId == 5))
+                || (current == 2 && (statusId == 3 || statusId == 5))
+                || (current == 3 && statusId == 4);
+        if (!allowed) throw new InvalidOrderStatusTransitionException("Transicion de estado no permitida");
+        if (statusId == CANCELLED_STATUS_ID && order.getVinyl() != null) {
+            for (Vinyl vinyl : order.getVinyl()) {
+                vinylRepository.updateStock(vinyl.getId(), order.quantityOf(vinyl.getId()));
+            }
         }
 
         OrderStatus newStatus = orderStatusRepository.findById((long) statusId)
@@ -122,12 +97,13 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @org.springframework.transaction.annotation.Transactional
     public Order createOrderFromCart(int cartId, String requesterEmail) {
-        Cart cart = cartRepository.findById((long) cartId)
+        Cart cart = cartRepository.findForUpdateById((long) cartId)
                 .orElseThrow(() -> new ResourceNotFoundException("Carrito", cartId));
 
         Long ownerId = cart.getUser() != null ? cart.getUser().getId() : null;
-        ownershipGuard.assertSelfOrAdmin(requesterEmail, ownerId);
+        ownershipGuard.assertOwner(requesterEmail, ownerId);
 
         if (cart.getItems() == null || cart.getItems().isEmpty()) {
             throw new EmptyCartException();
@@ -138,33 +114,33 @@ public class OrderServiceImpl implements OrderService {
 
         List<Vinyl> items = new ArrayList<>(cart.getItems());
 
-        List<Long> alreadyDiscounted = new ArrayList<>();
-        try {
-            for (Vinyl vinyl : items) {
-                int updated = vinylRepository.updateStock(vinyl.getId(), -1);
-                if (updated == 0) {
-                    throw new InsufficientStockException("El vinilo '" + vinyl.getName() + "' ya no tiene stock disponible");
-                }
-                alreadyDiscounted.add(vinyl.getId());
+        java.util.Map<Long, Integer> quantities = new java.util.HashMap<>();
+        double total = 0;
+        // Stable lock order avoids deadlocks between checkouts sharing products.
+        items.sort(java.util.Comparator.comparing(Vinyl::getId));
+        for (Vinyl vinyl : items) {
+            int quantity = cart.quantityOf(vinyl.getId());
+            if (quantity <= 0) throw new InvalidFieldException("quantity", "debe ser mayor a cero");
+            if (Boolean.FALSE.equals(vinyl.getEnabled())) {
+                throw new com.uade.tpo.marketplace.exceptions.conflict.ProductDisabledException();
             }
-        } catch (InsufficientStockException ex) {
-
-            for (Long vinylId : alreadyDiscounted) {
-                vinylRepository.updateStock(vinylId, 1);
+            if (vinylRepository.reserveStock(vinyl.getId(), quantity) == 0) {
+                throw new InsufficientStockException("El vinilo '" + vinyl.getName() + "' no tiene stock disponible");
             }
-            throw ex;
+            quantities.put(vinyl.getId(), quantity);
+            total += (double) vinyl.getPrice() * quantity;
         }
-
-        double total = items.stream().mapToDouble(Vinyl::getPrice).sum();
         Order order = new Order();
         order.setUser(cart.getUser());
         order.setOrderStatus(status);
         order.setOrderDate(LocalDate.now().toString());
         order.setTotal(total);
         order.setVinyl(items);
+        order.setQuantities(quantities);
 
         Order saved = orderRepository.save(order);
-        cart.setItems(new ArrayList<>());
+        cart.getItems().clear();
+        cart.getQuantities().clear();
         cartRepository.save(cart);
         return saved;
     }
