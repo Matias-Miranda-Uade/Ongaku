@@ -25,8 +25,8 @@ public class PaymentsController {
     private PaymentService paymentService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<PaymentResponse>>> getPayments() {
-        List<PaymentResponse> payments = paymentService.getPayments().stream().map(PaymentMapper::toResponse).toList();
+    public ResponseEntity<ApiResponse<List<PaymentResponse>>> getPayments(Principal principal) {
+        List<PaymentResponse> payments = paymentService.getPayments(principal.getName()).stream().map(PaymentMapper::toResponse).toList();
         return ResponseEntity.ok(ApiResponse.list(payments, "No hay pagos registrados"));
     }
 

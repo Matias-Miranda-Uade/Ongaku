@@ -47,7 +47,7 @@ public class VinylServiceImpl implements VinylService {
     @Override
     public ArrayList<Vinyl> getPublicVinyls() {
         return new ArrayList<>(vinylRepository.findAll().stream()
-                .filter(vinyl -> !Boolean.FALSE.equals(vinyl.getEnabled()) && vinyl.getStock() > 0)
+                .filter(vinyl -> !Boolean.FALSE.equals(vinyl.getEnabled()))
                 .toList());
     }
 
@@ -65,7 +65,7 @@ public class VinylServiceImpl implements VinylService {
     @Override
     public Vinyl getPublicVinylById(int id) {
         Vinyl vinyl = getVinylById(id);
-        if (Boolean.FALSE.equals(vinyl.getEnabled()) || vinyl.getStock() <= 0) {
+        if (Boolean.FALSE.equals(vinyl.getEnabled())) {
             throw new ResourceNotFoundException("Vinilo", id);
         }
         return vinyl;
@@ -288,7 +288,7 @@ public class VinylServiceImpl implements VinylService {
 
     private ArrayList<Vinyl> available(List<Vinyl> vinyls) {
         return new ArrayList<>(vinyls.stream()
-                .filter(vinyl -> !Boolean.FALSE.equals(vinyl.getEnabled()) && vinyl.getStock() > 0)
+                .filter(vinyl -> !Boolean.FALSE.equals(vinyl.getEnabled()))
                 .toList());
     }
 }

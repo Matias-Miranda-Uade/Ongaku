@@ -20,8 +20,8 @@ public class OrdersController {
     @Autowired private OrderService orderService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<OrderResponse>>> getOrders() {
-        List<OrderResponse> orders = orderService.getOrders().stream().map(OrderMapper::toResponse).toList();
+    public ResponseEntity<ApiResponse<List<OrderResponse>>> getOrders(Principal principal) {
+        List<OrderResponse> orders = orderService.getOrders(principal.getName()).stream().map(OrderMapper::toResponse).toList();
         return ResponseEntity.ok(ApiResponse.list(orders, "No hay ordenes cargadas"));
     }
 
@@ -43,8 +43,8 @@ public class OrdersController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<OrderResponse>> createOrder(@RequestBody OrderRequest request, Principal principal) {
-        OrderResponse response = OrderMapper.toResponse(orderService.createOrder(request, principal.getName()));
+    public ResponseEntity<ApiResponse<OrderResponse>> createOrder(@RequestBody com.uade.tpo.marketplace.entity.dto.CheckoutRequest request, Principal principal) {
+        OrderResponse response = OrderMapper.toResponse(orderService.createOrderFromCart(request.cartId(), principal.getName()));
         return ResponseEntity.status(201).body(ApiResponse.created(response, "Orden creada correctamente"));
     }
 

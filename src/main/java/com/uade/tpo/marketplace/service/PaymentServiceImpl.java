@@ -43,8 +43,10 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public ArrayList<Payment> getPayments() {
-        return new ArrayList<>(paymentRepository.findAll());
+    public ArrayList<Payment> getPayments(String requesterEmail) {
+        var user = ownershipGuard.requireUser(requesterEmail);
+        return new ArrayList<>(user.getRole() == com.uade.tpo.marketplace.entity.Role.ADMIN
+                ? paymentRepository.findAll() : paymentRepository.findByOrderUserId(user.getId()));
     }
 
     @Override
@@ -61,6 +63,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
+    @org.springframework.transaction.annotation.Transactional
     public Payment createPayment(PaymentRequest request, String requesterEmail) {
 
         if (request == null) {
@@ -76,11 +79,11 @@ public class PaymentServiceImpl implements PaymentService {
             throw new InvalidFieldException("method", "no puede estar vacio");
         }
 
-        Order order = orderRepository.findById((long) request.getOrderId())
+        Order order = orderRepository.findForUpdateById((long) request.getOrderId())
                 .orElseThrow(() -> new ResourceNotFoundException("Orden", request.getOrderId()));
 
         Long ownerId = order.getUser() != null ? order.getUser().getId() : null;
-        ownershipGuard.assertSelfOrAdmin(requesterEmail, ownerId);
+        ownershipGuard.assertOwner(requesterEmail, ownerId);
 
         Long statusId = order.getOrderStatus() != null ? order.getOrderStatus().getId() : null;
 
@@ -90,6 +93,11 @@ public class PaymentServiceImpl implements PaymentService {
         if (statusId != null && statusId == PAID_STATUS_ID) {
             throw new OrderAlreadyPaidException();
         }
+        if (statusId == null || statusId != 1L) {
+            throw new PaymentNotAllowedException("Solo se pueden pagar ordenes pendientes");
+        }
+        var paidStatus = orderStatusRepository.findById(PAID_STATUS_ID)
+                .orElseThrow(() -> new ResourceNotFoundException("Estado de orden", PAID_STATUS_ID));
         if (order.getPayment() != null && !order.getPayment().isEmpty()) {
             throw new DuplicatePaymentException();
         }
@@ -102,12 +110,12 @@ public class PaymentServiceImpl implements PaymentService {
         payment.setOrder(order);
         payment.setAmount(request.getAmount());
         payment.setMethod(request.getMethod().trim().toUpperCase());
-        payment.setPaymentDate(request.getPaymentDate() != null ? request.getPaymentDate() : LocalDate.now().toString());
-        payment.setStatus(request.getStatus() != null ? request.getStatus().trim().toUpperCase() : "APROBADO");
+        payment.setPaymentDate(LocalDate.now().toString());
+        payment.setStatus("APROBADO");
 
         Payment saved = paymentRepository.save(payment);
 
-        orderStatusRepository.findById(PAID_STATUS_ID).ifPresent(order::setOrderStatus);
+        order.setOrderStatus(paidStatus);
         orderRepository.save(order);
 
         return saved;

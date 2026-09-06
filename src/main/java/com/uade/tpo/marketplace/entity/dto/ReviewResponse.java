@@ -6,6 +6,7 @@ import lombok.Data;
 public class ReviewResponse {
     private Long id;
     private String comment;
+    private Integer score;
     private Long userId;
     private String userName;
     private Long vinylId;

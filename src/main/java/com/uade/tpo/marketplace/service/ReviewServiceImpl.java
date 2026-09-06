@@ -65,7 +65,11 @@ public class ReviewServiceImpl implements ReviewService {
             throw new InvalidFieldException("comment", "no puede estar vacio");
         }
 
-        User user = ownershipGuard.assertSelfOrAdmin(requesterEmail, (long) request.getUserId());
+        if (request.getScore() == null || request.getScore() < 1 || request.getScore() > 5) {
+            throw new InvalidFieldException("score", "debe ser un entero entre 1 y 5");
+        }
+
+        User user = ownershipGuard.assertOwner(requesterEmail, (long) request.getUserId());
 
         Vinyl vinyl = vinylRepository.findById((long) request.getVinylId())
                 .orElseThrow(() -> new ResourceNotFoundException("Vinilo", request.getVinylId()));
@@ -77,6 +81,8 @@ public class ReviewServiceImpl implements ReviewService {
         }
 
         boolean purchased = orderRepository.findByUserId(request.getUserId()).stream()
+                .filter(order -> order.getOrderStatus() != null && order.getOrderStatus().getId() >= 2
+                        && order.getOrderStatus().getId() <= 4)
                 .filter(order -> order.getVinyl() != null)
                 .flatMap(order -> order.getVinyl().stream())
                 .anyMatch(v -> v.getId().equals(vinyl.getId()));
@@ -88,6 +94,7 @@ public class ReviewServiceImpl implements ReviewService {
         review.setUser(user);
         review.setVinyl(vinyl);
         review.setComment(request.getComment().trim());
+        review.setScore(request.getScore());
 
         return reviewRepository.save(review);
     }

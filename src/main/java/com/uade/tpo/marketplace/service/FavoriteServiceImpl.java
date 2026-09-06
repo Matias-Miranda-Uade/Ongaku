@@ -34,8 +34,9 @@ public class FavoriteServiceImpl implements FavoriteService {
     }
 
     @Override
-    public ArrayList<Favorite> getFavorites() {
-        return new ArrayList<>(favoriteRepository.findAll());
+    public ArrayList<Favorite> getFavorites(String requesterEmail) {
+        var user = ownershipGuard.requireCustomer(requesterEmail);
+        return new ArrayList<>(favoriteRepository.findByUserId(Math.toIntExact(user.getId())));
     }
 
     @Override
@@ -44,7 +45,7 @@ public class FavoriteServiceImpl implements FavoriteService {
                 .orElseThrow(() -> new ResourceNotFoundException("Favorito", id));
 
         Long ownerId = favorite.getUser() != null ? favorite.getUser().getId() : null;
-        ownershipGuard.assertSelfOrAdmin(requesterEmail, ownerId);
+        ownershipGuard.assertOwner(requesterEmail, ownerId);
 
         return favorite;
     }
@@ -62,7 +63,7 @@ public class FavoriteServiceImpl implements FavoriteService {
             throw new InvalidFieldException("vinylId", "debe ser un identificador positivo");
         }
 
-        User user = ownershipGuard.assertSelfOrAdmin(requesterEmail, (long) request.getUserId());
+        User user = ownershipGuard.assertOwner(requesterEmail, (long) request.getUserId());
 
         Vinyl vinyl = vinylRepository.findById((long) request.getVinylId())
                 .orElseThrow(() -> new ResourceNotFoundException("Vinilo", request.getVinylId()));
@@ -84,5 +85,9 @@ public class FavoriteServiceImpl implements FavoriteService {
         favorite.setVinyl(vinyl);
 
         return favoriteRepository.save(favorite);
+    }
+    @Override
+    public void deleteFavorite(int favoriteId, String requesterEmail) {
+        favoriteRepository.delete(getFavoriteById(favoriteId, requesterEmail));
     }
 }

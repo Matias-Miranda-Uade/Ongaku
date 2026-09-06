@@ -1,6 +1,7 @@
 package com.uade.tpo.marketplace.entity.dto;
 
 import java.util.List;
+import java.util.Map;
 
 import lombok.Data;
 
@@ -12,4 +13,5 @@ public class OrderResponse {
     private Long userId;
     private OrderStatusResponse orderStatus;
     private List<Long> vinylIds;
+    private Map<Long, Integer> quantities;
 }
