@@ -1,7 +1,8 @@
 package com.uade.tpo.marketplace.controllers.domain;
 
-import java.util.ArrayList;
+import java.util.List;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -10,7 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.uade.tpo.marketplace.entity.AverageScore;
+import com.uade.tpo.marketplace.common.ApiResponse;
+import com.uade.tpo.marketplace.entity.dto.AverageScoreRequest;
+import com.uade.tpo.marketplace.entity.dto.AverageScoreResponse;
+import com.uade.tpo.marketplace.entity.dto.mapper.AverageScoreMapper;
 import com.uade.tpo.marketplace.service.AverageScoreService;
 
 @RestController
@@ -20,17 +24,20 @@ public class AverageScoresController {
     private AverageScoreService averageScoreService;
 
     @GetMapping
-    public ArrayList<AverageScore> getAverageScores() {
-        return averageScoreService.getAverageScores();
+    public ResponseEntity<ApiResponse<List<AverageScoreResponse>>> getAverageScores() {
+        List<AverageScoreResponse> scores = averageScoreService.getAverageScores().stream()
+                .map(AverageScoreMapper::toResponse).toList();
+        return ResponseEntity.ok(ApiResponse.list(scores, "No hay puntuaciones promedio cargadas"));
     }
 
-    @GetMapping("/{id}")
-    public AverageScore getAverageScoreById(@PathVariable int averageScoreId) {
-        return averageScoreService.getAverageScoreById(averageScoreId);
+    @GetMapping("/{averageScoreId}")
+    public ResponseEntity<ApiResponse<AverageScoreResponse>> getAverageScoreById(@PathVariable int averageScoreId) {
+        return ResponseEntity.ok(ApiResponse.ok(AverageScoreMapper.toResponse(averageScoreService.getAverageScoreById(averageScoreId))));
     }
 
     @PostMapping
-    public AverageScore createAverageScore(@RequestBody String entity) {
-        return averageScoreService.createAverageScore(entity);
+    public ResponseEntity<ApiResponse<AverageScoreResponse>> createAverageScore(@RequestBody AverageScoreRequest request) {
+        AverageScoreResponse response = AverageScoreMapper.toResponse(averageScoreService.createAverageScore(request));
+        return ResponseEntity.status(201).body(ApiResponse.created(response, "Puntuacion promedio actualizada"));
     }
 }

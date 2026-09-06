@@ -6,6 +6,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.uade.tpo.marketplace.entity.Artist;
+import com.uade.tpo.marketplace.entity.dto.ArtistRequest;
+import com.uade.tpo.marketplace.entity.dto.mapper.ArtistMapper;
+import com.uade.tpo.marketplace.exceptions.badrequest.InvalidFieldException;
+import com.uade.tpo.marketplace.exceptions.badrequest.InvalidRequestException;
+import com.uade.tpo.marketplace.exceptions.conflict.DuplicateResourceException;
+import com.uade.tpo.marketplace.exceptions.notfound.ResourceNotFoundException;
 import com.uade.tpo.marketplace.repository.ArtistRepository;
 import com.uade.tpo.marketplace.repository.VinylRepository;
 
@@ -27,59 +33,34 @@ public class ArtistServiceImpl implements ArtistService {
 
     @Override
     public Artist getArtistById(int artistId) {
-        return artistRepository
-                .findById((long) artistId)
-                .orElse(null);
+        return artistRepository.findById((long) artistId)
+                .orElseThrow(() -> new ResourceNotFoundException("Artista", artistId));
     }
 
     @Override
-    public Artist createArtist(Artist artist) {
-
-        if (artist == null ||
-            artist.getName() == null ||
-            artist.getName().isBlank()) {
-
-            throw new IllegalArgumentException(
-                "El artista debe tener nombre"
-            );
+    public Artist createArtist(ArtistRequest request) {
+        if (request == null) {
+            throw new InvalidRequestException("Los datos del artista son obligatorios");
+        }
+        if (request.getName() == null || request.getName().isBlank()) {
+            throw new InvalidFieldException("name", "no puede estar vacio");
+        }
+        if (artistRepository.findByName(request.getName()) != null) {
+            throw new DuplicateResourceException("Artista", request.getName());
         }
 
-        Artist existingArtist =
-                artistRepository.findByName(artist.getName());
-
-        if (existingArtist != null) {
-            throw new IllegalArgumentException(
-                "El artista ya existe"
-            );
-        }
-
-        artist.setId(null);
-
-        return artistRepository.save(artist);
+        return artistRepository.save(ArtistMapper.toEntity(request));
     }
 
     @Override
-    public Artist updateArtist(int artistId, Artist artist) {
-
+    public Artist updateArtist(int artistId, ArtistRequest request) {
         Artist current = getArtistById(artistId);
 
-        if (current == null || artist == null) {
-            return null;
+        if (request == null) {
+            throw new InvalidRequestException("Los datos del artista son obligatorios");
         }
 
-        if (artist.getName() != null &&
-            !artist.getName().isBlank()) {
-
-            current.setName(artist.getName());
-        }
-
-        if (artist.getDescription() != null) {
-            current.setDescription(artist.getDescription());
-        }
-
-        if (artist.getImage() != null) {
-            current.setImage(artist.getImage());
-        }
+        ArtistMapper.applyFields(current, request);
 
         return artistRepository.save(current);
     }
@@ -88,7 +69,6 @@ public class ArtistServiceImpl implements ArtistService {
     @Transactional
     public void deleteArtist(int artistId) {
         Artist artist = getArtistById(artistId);
-        if (artist == null) return;
         if (artist.getVinyls() != null) {
             artist.getVinyls().forEach(v -> v.setArtist(null));
             vinylRepository.saveAll(artist.getVinyls());

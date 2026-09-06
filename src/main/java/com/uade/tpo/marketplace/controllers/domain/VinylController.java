@@ -1,12 +1,14 @@
 package com.uade.tpo.marketplace.controllers.domain;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.uade.tpo.marketplace.entity.Vinyl;
+import com.uade.tpo.marketplace.common.ApiResponse;
+import com.uade.tpo.marketplace.entity.dto.VinylResponse;
+import com.uade.tpo.marketplace.entity.dto.mapper.VinylMapper;
 import com.uade.tpo.marketplace.service.VinylService;
 
 @RestController
@@ -16,57 +18,86 @@ public class VinylController {
     private VinylService vinylService;
 
     @GetMapping
-    public ArrayList<Vinyl> getVinyls() { return vinylService.getPublicVinyls(); }
+    public ResponseEntity<ApiResponse<List<VinylResponse>>> getVinyls() {
+        return ResponseEntity.ok(ApiResponse.list(map(vinylService.getPublicVinyls()), "No hay vinilos disponibles"));
+    }
 
     @GetMapping("/{vinylId}")
-    public ResponseEntity<Vinyl> getVinylById(@PathVariable int vinylId) {
-        Vinyl vinyl = vinylService.getPublicVinylById(vinylId);
-        return vinyl == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(vinyl);
+    public ResponseEntity<ApiResponse<VinylResponse>> getVinylById(@PathVariable int vinylId) {
+        return ResponseEntity.ok(ApiResponse.ok(VinylMapper.toResponse(vinylService.getPublicVinylById(vinylId))));
     }
 
     @GetMapping("/search")
-    public ArrayList<Vinyl> searchVinyls(
+    public ResponseEntity<ApiResponse<List<VinylResponse>>> searchVinyls(
             @RequestParam(required = false, defaultValue = "") String searchTerm) {
-        return vinylService.searchPublicVinyls(searchTerm);
+        return ResponseEntity.ok(ApiResponse.list(map(vinylService.searchPublicVinyls(searchTerm)),
+                "No se encontraron vinilos para \"" + searchTerm + "\""));
     }
 
     @GetMapping("/search/{searchTerm}")
-    public ArrayList<Vinyl> searchVinylsByPath(@PathVariable String searchTerm) {
-        return vinylService.searchPublicVinyls(searchTerm);
+    public ResponseEntity<ApiResponse<List<VinylResponse>>> searchVinylsByPath(@PathVariable String searchTerm) {
+        return ResponseEntity.ok(ApiResponse.list(map(vinylService.searchPublicVinyls(searchTerm)),
+                "No se encontraron vinilos para \"" + searchTerm + "\""));
     }
 
     @GetMapping("/filter")
-    public ArrayList<Vinyl> filterVinyls(
+    public ResponseEntity<ApiResponse<List<VinylResponse>>> filterVinyls(
             @RequestParam(required=false) Integer categoryId,
             @RequestParam(required=false) Double minPrice,
             @RequestParam(required=false) Double maxPrice,
             @RequestParam(required=false) Boolean inStock,
             @RequestParam(required=false) Integer artistId,
             @RequestParam(required=false) Integer genreId) {
-        return vinylService.filterPublicVinyls(categoryId, minPrice, maxPrice, artistId, genreId);
+        return ResponseEntity.ok(ApiResponse.list(
+                map(vinylService.filterPublicVinyls(categoryId, minPrice, maxPrice, artistId, genreId)),
+                "No hay vinilos que cumplan los filtros indicados"));
     }
 
     @GetMapping("/artist/{artistId}")
-    public ArrayList<Vinyl> getVinylsByArtist(@PathVariable int artistId) { return vinylService.getPublicVinylsByArtist(artistId); }
+    public ResponseEntity<ApiResponse<List<VinylResponse>>> getVinylsByArtist(@PathVariable int artistId) {
+        return ResponseEntity.ok(ApiResponse.list(map(vinylService.getPublicVinylsByArtist(artistId)),
+                "Este artista no tiene vinilos disponibles"));
+    }
 
     @GetMapping("/genre/{genreId}")
-    public ArrayList<Vinyl> getVinylsByGenre(@PathVariable int genreId) { return vinylService.getPublicVinylsByGenre(genreId); }
+    public ResponseEntity<ApiResponse<List<VinylResponse>>> getVinylsByGenre(@PathVariable int genreId) {
+        return ResponseEntity.ok(ApiResponse.list(map(vinylService.getPublicVinylsByGenre(genreId)),
+                "Este genero no tiene vinilos disponibles"));
+    }
 
     @GetMapping("/category/{categoryId}")
-    public ArrayList<Vinyl> getVinylsByCategory(@PathVariable int categoryId) { return vinylService.getPublicVinylsByCategory(categoryId); }
+    public ResponseEntity<ApiResponse<List<VinylResponse>>> getVinylsByCategory(@PathVariable int categoryId) {
+        return ResponseEntity.ok(ApiResponse.list(map(vinylService.getPublicVinylsByCategory(categoryId)),
+                "Esta categoria no tiene vinilos disponibles"));
+    }
 
     @GetMapping("/year/{year}")
-    public ArrayList<Vinyl> getVinylsByYear(@PathVariable int year) { return vinylService.getVinylsByYear(year); }
+    public ResponseEntity<ApiResponse<List<VinylResponse>>> getVinylsByYear(@PathVariable int year) {
+        return ResponseEntity.ok(ApiResponse.list(map(vinylService.getVinylsByYear(year)),
+                "No hay vinilos del año " + year));
+    }
 
     @GetMapping("/price/asc")
-    public ArrayList<Vinyl> getVinylsSortedByPriceAsc() { return vinylService.getVinylsSortedByPriceAsc(); }
+    public ResponseEntity<ApiResponse<List<VinylResponse>>> getVinylsSortedByPriceAsc() {
+        return ResponseEntity.ok(ApiResponse.list(map(vinylService.getVinylsSortedByPriceAsc())));
+    }
 
     @GetMapping("/price/desc")
-    public ArrayList<Vinyl> getVinylsSortedByPriceDesc() { return vinylService.getVinylsSortedByPriceDesc(); }
+    public ResponseEntity<ApiResponse<List<VinylResponse>>> getVinylsSortedByPriceDesc() {
+        return ResponseEntity.ok(ApiResponse.list(map(vinylService.getVinylsSortedByPriceDesc())));
+    }
 
     @GetMapping("/year/asc")
-    public ArrayList<Vinyl> getVinylsSortedByYearAsc() { return vinylService.getVinylsSortedByYearAsc(); }
+    public ResponseEntity<ApiResponse<List<VinylResponse>>> getVinylsSortedByYearAsc() {
+        return ResponseEntity.ok(ApiResponse.list(map(vinylService.getVinylsSortedByYearAsc())));
+    }
 
     @GetMapping("/year/desc")
-    public ArrayList<Vinyl> getVinylsSortedByYearDesc() { return vinylService.getVinylsSortedByYearDesc(); }
+    public ResponseEntity<ApiResponse<List<VinylResponse>>> getVinylsSortedByYearDesc() {
+        return ResponseEntity.ok(ApiResponse.list(map(vinylService.getVinylsSortedByYearDesc())));
+    }
+
+    private List<VinylResponse> map(List<com.uade.tpo.marketplace.entity.Vinyl> vinyls) {
+        return vinyls.stream().map(VinylMapper::toResponse).toList();
+    }
 }
