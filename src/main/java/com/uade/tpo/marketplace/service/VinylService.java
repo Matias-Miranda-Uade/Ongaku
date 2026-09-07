@@ -18,7 +18,7 @@ public interface VinylService {
     ArrayList<Vinyl> filterPublicVinyls(Integer categoryId, Double minPrice, Double maxPrice,
             Integer artistId, Integer genreId);
     ArrayList<Vinyl> filterVinyls(Integer categoryId, Double minPrice, Double maxPrice,
-            Boolean inStock, Integer artistId, Integer genreId);
+            Boolean inStock, Integer artistId, Integer genreId, Boolean enabled);
     Vinyl updateStock(int vinylId, int quantityDelta);
     ArrayList<Vinyl> getVinylsByArtist(int artistId);
     ArrayList<Vinyl> getVinylsByGenre(int genreId);

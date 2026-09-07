@@ -40,14 +40,16 @@ public interface VinylRepository extends JpaRepository<Vinyl, Long> {
             "(?2 is null or v.price >= ?2) and " +
             "(?3 is null or v.price <= ?3) and " +
             "(?4 is null or (?4 = true and v.stock > 0) or (?4 = false and v.stock <= 0)) and " +
-            "(?5 is null or v.artist.id = ?5) and (?6 is null or v.genre.id = ?6)")
+            "(?5 is null or v.artist.id = ?5) and (?6 is null or v.genre.id = ?6) and " +
+            "(?7 is null or coalesce(v.enabled, true) = ?7)")
     List<Vinyl> filterAll(
             Integer categoryId,
             Double minPrice,
             Double maxPrice,
             Boolean inStock,
             Integer artistId,
-            Integer genreId);
+            Integer genreId,
+            Boolean enabled);
 
     @Modifying
     @Transactional

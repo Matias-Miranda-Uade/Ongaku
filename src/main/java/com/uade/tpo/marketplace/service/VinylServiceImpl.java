@@ -191,10 +191,11 @@ public class VinylServiceImpl implements VinylService {
             Double maxPrice,
             Boolean inStock,
             Integer artistId,
-            Integer genreId) {
+            Integer genreId,
+            Boolean enabled) {
         validatePriceRange(minPrice, maxPrice);
         return new ArrayList<>(vinylRepository.filterAll(
-            categoryId, minPrice, maxPrice, inStock, artistId, genreId));
+            categoryId, minPrice, maxPrice, inStock, artistId, genreId, enabled));
     }
 
     private void validatePriceRange(Double minPrice, Double maxPrice) {
