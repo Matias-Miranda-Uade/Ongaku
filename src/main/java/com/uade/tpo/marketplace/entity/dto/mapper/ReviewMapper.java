@@ -14,7 +14,7 @@ public final class ReviewMapper {
         response.setComment(review.getComment());
         response.setScore(review.getScore());
         response.setUserId(review.getUser() != null ? review.getUser().getId() : null);
-        response.setUserName(review.getUser() != null ? review.getUser().getName() : null);
+        response.setUserName(review.getUser() != null ? review.getUser().getFullName() : null);
         response.setVinylId(review.getVinyl() != null ? review.getVinyl().getId() : null);
         return response;
     }
