@@ -1,11 +1,10 @@
 package com.uade.tpo.marketplace;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
 import java.util.ArrayList;
 import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,19 +13,38 @@ import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.web.FilterChainProxy;
 import org.springframework.test.web.servlet.MockMvc;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.context.WebApplicationContext;
-import jakarta.persistence.EntityManager;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.uade.tpo.marketplace.controllers.config.JwtService;
-import com.uade.tpo.marketplace.entity.*;
-import com.uade.tpo.marketplace.entity.dto.*;
-import com.uade.tpo.marketplace.repository.*;
-import com.uade.tpo.marketplace.service.*;
+import com.uade.tpo.marketplace.entity.Cart;
+import com.uade.tpo.marketplace.entity.Favorite;
+import com.uade.tpo.marketplace.entity.Review;
+import com.uade.tpo.marketplace.entity.Role;
+import com.uade.tpo.marketplace.entity.User;
+import com.uade.tpo.marketplace.entity.Vinyl;
 import com.uade.tpo.marketplace.exceptions.conflict.InsufficientStockException;
+import com.uade.tpo.marketplace.repository.CartRepository;
+import com.uade.tpo.marketplace.repository.FavoriteRepository;
+import com.uade.tpo.marketplace.repository.OrderRepository;
+import com.uade.tpo.marketplace.repository.ReviewRepository;
+import com.uade.tpo.marketplace.repository.UserRepository;
+import com.uade.tpo.marketplace.repository.VinylRepository;
+import com.uade.tpo.marketplace.service.CartService;
+import com.uade.tpo.marketplace.service.OrderService;
+
+import jakarta.persistence.EntityManager;
 
 @SpringBootTest
 @Transactional
@@ -228,11 +246,39 @@ class MarketplaceSecurityTests {
             assertThat(orders.findById(id).orElseThrow().quantityOf(vinyl.getId())).isEqualTo(3);
         });
         mvc.perform(get("/orders/" + id).header("Authorization", otherToken)).andExpect(status().isForbidden());
+        mvc.perform(get("/orders/" + id).header("Authorization", ownerToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.id").value(id));
         mvc.perform(get("/orders/" + id).header("Authorization", adminToken)).andExpect(status().isOk());
         mvc.perform(get("/orders").header("Authorization", otherToken)).andExpect(jsonPath("$.data.length()").value(0));
         mvc.perform(get("/orders").header("Authorization", ownerToken)).andExpect(jsonPath("$.data.length()").value(1));
         mvc.perform(post("/orders/cart/" + cart.getId()).header("Authorization", ownerToken)).andExpect(status().isConflict());
     }
+
+        @Test
+        void emptyCartListReturnsExpectedMessage() throws Exception {
+                mvc.perform(get("/carts").header("Authorization", ownerToken))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.message").value("El carrito está vacío"))
+                                .andExpect(jsonPath("$.data.length()").value(0));
+        }
+
+        @Test
+        @Transactional(propagation = Propagation.NOT_SUPPORTED)
+        void checkoutCanUseTheAuthenticatedUsersCartWithoutAnId() throws Exception {
+                transactions.execute(status -> cart(owner, 1));
+
+                mvc.perform(post("/orders/cart").header("Authorization", ownerToken))
+                                .andExpect(status().isCreated())
+                                .andExpect(jsonPath("$.data.userId").value(owner.getId()));
+        }
+
+        @Test
+        void checkoutWithoutCartReturnsEmptyCartMessage() throws Exception {
+                mvc.perform(post("/orders/cart").header("Authorization", ownerToken))
+                                .andExpect(status().isConflict())
+                                .andExpect(jsonPath("$.message").value("El carrito está vacío"));
+        }
 
     @Test
     @Transactional(propagation = Propagation.NOT_SUPPORTED)

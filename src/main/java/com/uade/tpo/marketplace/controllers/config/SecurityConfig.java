@@ -8,9 +8,9 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.config.http.SessionCreationPolicy;
 
 import lombok.RequiredArgsConstructor;
 
@@ -42,7 +42,7 @@ public class SecurityConfig {
                     // Los servicios verifican ademas que los recursos pertenezcan al usuario.
                     .requestMatchers("/carts", "/carts/**", "/favorites", "/favorites/**").hasAuthority("USER")
                     .requestMatchers(HttpMethod.POST, "/reviews", "/payments", "/orders",
-                            "/orders/cart/*", "/orders/from-cart").hasAuthority("USER")
+                            "/orders/cart", "/orders/cart/*", "/orders/from-cart").hasAuthority("USER")
                     .requestMatchers(HttpMethod.PATCH, "/orders/*/status", "/orders/*/status/*").hasAuthority("ADMIN")
                     .requestMatchers(HttpMethod.PUT, "/orders/*").hasAuthority("ADMIN")
                     .requestMatchers("/dashboard", "/dashboard/**", "/admin/vinyls", "/admin/vinyls/**").hasAuthority("ADMIN")

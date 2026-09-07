@@ -3,10 +3,13 @@ package com.uade.tpo.marketplace.repository;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import com.uade.tpo.marketplace.entity.Cart;
 import org.springframework.data.jpa.repository.Query;
 
+import com.uade.tpo.marketplace.entity.Cart;
+
 public interface CartRepository extends JpaRepository<Cart, Long> {
+
+    java.util.Optional<Cart> findFirstByUser_Id(Long userId);
 
     @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
     @Query("select e from Cart e where e.id = :id")
