@@ -6,9 +6,9 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.uade.tpo.marketplace.entity.Cart;
 import com.uade.tpo.marketplace.entity.Order;
 import com.uade.tpo.marketplace.entity.OrderStatus;
-import com.uade.tpo.marketplace.entity.Cart;
 import com.uade.tpo.marketplace.entity.Vinyl;
 import com.uade.tpo.marketplace.exceptions.badrequest.InvalidFieldException;
 import com.uade.tpo.marketplace.exceptions.conflict.EmptyCartException;
@@ -62,6 +62,15 @@ public class OrderServiceImpl implements OrderService {
         ownershipGuard.assertSelfOrAdmin(requesterEmail, ownerId);
 
         return order;
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public Order createOrderFromCurrentUserCart(String requesterEmail) {
+        var user = ownershipGuard.requireCustomer(requesterEmail);
+        Cart cart = cartRepository.findFirstByUser_Id(user.getId())
+            .orElseThrow(EmptyCartException::new);
+        return createOrderFromCart(Math.toIntExact(cart.getId()), requesterEmail);
     }
 
     @Override

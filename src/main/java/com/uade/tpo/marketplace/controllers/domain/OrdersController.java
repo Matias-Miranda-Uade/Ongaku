@@ -5,7 +5,15 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.uade.tpo.marketplace.common.ApiResponse;
 import com.uade.tpo.marketplace.entity.dto.OrderRequest;
@@ -33,6 +41,12 @@ public class OrdersController {
     @PostMapping("/cart/{cartId}")
     public ResponseEntity<ApiResponse<OrderResponse>> createOrderFromCart(@PathVariable int cartId, Principal principal) {
         OrderResponse response = OrderMapper.toResponse(orderService.createOrderFromCart(cartId, principal.getName()));
+        return ResponseEntity.status(201).body(ApiResponse.created(response, "Orden creada a partir del carrito"));
+    }
+
+    @PostMapping("/cart")
+    public ResponseEntity<ApiResponse<OrderResponse>> createOrderFromCurrentUserCart(Principal principal) {
+        OrderResponse response = OrderMapper.toResponse(orderService.createOrderFromCurrentUserCart(principal.getName()));
         return ResponseEntity.status(201).body(ApiResponse.created(response, "Orden creada a partir del carrito"));
     }
 

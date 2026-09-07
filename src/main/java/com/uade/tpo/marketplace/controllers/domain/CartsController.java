@@ -5,7 +5,14 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.uade.tpo.marketplace.common.ApiResponse;
 import com.uade.tpo.marketplace.entity.dto.CartRequest;
@@ -21,7 +28,7 @@ public class CartsController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<CartResponse>>> getCarts(Principal principal) {
         List<CartResponse> carts = cartService.getCarts(principal.getName()).stream().map(CartMapper::toResponse).toList();
-        return ResponseEntity.ok(ApiResponse.list(carts, "No hay carritos cargados"));
+        return ResponseEntity.ok(ApiResponse.list(carts, "El carrito está vacío"));
     }
 
     @GetMapping("/{cartId}")

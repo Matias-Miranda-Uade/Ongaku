@@ -4,6 +4,6 @@ import com.uade.tpo.marketplace.exceptions.ConflictException;
 
 public class EmptyCartException extends ConflictException {
     public EmptyCartException() {
-        super("El carrito esta vacio");
+        super("El carrito está vacío");
     }
 }
