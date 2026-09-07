@@ -14,4 +14,8 @@ public interface FavoriteRepository extends JpaRepository<Favorite, Long> {
 
     @Query("SELECT f FROM Favorite f WHERE f.user.id = :userId AND f.vinyl.id = :vinylId")
     List<Favorite> findByUserIdAndVinylId(int userId, int vinylId);
+
+    @org.springframework.data.jpa.repository.Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("delete from Favorite f where f.vinyl.id = :vinylId")
+    int deleteByVinylId(Long vinylId);
 }

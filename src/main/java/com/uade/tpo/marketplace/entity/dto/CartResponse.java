@@ -1,7 +1,6 @@
 package com.uade.tpo.marketplace.entity.dto;
 
 import java.util.List;
-import java.util.Map;
 
 import lombok.Data;
 
@@ -9,6 +8,12 @@ import lombok.Data;
 public class CartResponse {
     private Long id;
     private Long userId;
-    private List<VinylPreviewResponse> items;
-    private Map<Long, Integer> quantities;
+    private List<CartItemResponse> items;
+    /** Cantidad de productos distintos. */
+    private int totalProducts;
+    /** Suma de las cantidades de cada linea. */
+    private int totalUnits;
+    /** Importe total del carrito. */
+    private int total;
+    private boolean empty;
 }

@@ -1,50 +1,79 @@
 package com.uade.tpo.marketplace.entity;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.CollectionTable;
-import jakarta.persistence.MapKeyColumn;
-import jakarta.persistence.Column;
+import java.util.Optional;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
-import lombok.Data;
+import jakarta.persistence.OrderBy;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+/** Carrito del usuario. Se crea vacio al registrarse y hay exactamente uno por usuario. */
+@Getter
+@Setter
 @Entity
 public class Cart {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @OneToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", unique = true)
     private User user;
 
-    @ManyToMany
-    @JoinTable(
-        name = "cart_vinyl",
-        joinColumns = @JoinColumn(name = "cart_id"),
-        inverseJoinColumns = @JoinColumn(name = "vinyl_id")
-    )
-    private List<Vinyl> items;
-    // Existing items without a quantity entry represent one unit.
-    @ElementCollection
-    @CollectionTable(name = "cart_item_quantities", joinColumns = @JoinColumn(name = "cart_id"))
-    @MapKeyColumn(name = "vinyl_id")
-    @Column(name = "quantity", nullable = false)
-    private Map<Long, Integer> quantities = new HashMap<>();
+    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("id asc")
+    @JsonIgnore
+    private List<CartItem> items = new ArrayList<>();
 
-    public int quantityOf(Long vinylId) {
-        return quantities.getOrDefault(vinylId, 1);
+    public Optional<CartItem> findItem(Long vinylId) {
+        return items.stream()
+                .filter(item -> item.getVinyl() != null && item.getVinyl().getId().equals(vinylId))
+                .findFirst();
+    }
+
+    public CartItem addItem(Vinyl vinyl, int quantity) {
+        CartItem item = new CartItem(this, vinyl, quantity);
+        items.add(item);
+        return item;
+    }
+
+    public void removeItem(CartItem item) {
+        items.remove(item);
+        item.setCart(null);
+    }
+
+    public void clear() {
+        items.forEach(item -> item.setCart(null));
+        items.clear();
+    }
+
+    public boolean isEmpty() {
+        return items.isEmpty();
+    }
+
+    /** Cantidad de lineas distintas (productos) del carrito. */
+    public int getTotalProducts() {
+        return items.size();
+    }
+
+    /** Cantidad total de unidades sumando las cantidades de cada linea. */
+    public int getTotalUnits() {
+        return items.stream().mapToInt(CartItem::getQuantity).sum();
+    }
+
+    public int getTotal() {
+        return items.stream().mapToInt(CartItem::getSubtotal).sum();
     }
 }

@@ -1,14 +1,23 @@
 package com.uade.tpo.marketplace.service;
 
 import com.uade.tpo.marketplace.entity.Cart;
-import com.uade.tpo.marketplace.entity.dto.CartRequest;
-import java.util.ArrayList;
+import com.uade.tpo.marketplace.entity.User;
 
 public interface CartService {
-    ArrayList<Cart> getCarts(String requesterEmail);
-    Cart getCartById(int cartId, String requesterEmail);
-    Cart createCart(CartRequest request, String requesterEmail);
-    Cart addItem(int cartId, int vinylId, int quantity, String requesterEmail);
-    Cart updateQuantity(int cartId, int vinylId, int quantity, String requesterEmail);
-    Cart removeItem(int cartId, int vinylId, String requesterEmail);
+
+    /** Crea el carrito vacio del usuario. Se invoca al registrarse. */
+    Cart createCartFor(User user);
+
+    /** Carrito del usuario autenticado (se crea vacio si todavia no existe). */
+    Cart getMyCart(String requesterEmail);
+
+    Cart getCartById(long cartId, String requesterEmail);
+
+    Cart addItem(String requesterEmail, long vinylId, int quantity);
+
+    Cart updateQuantity(String requesterEmail, long vinylId, int quantity);
+
+    Cart removeItem(String requesterEmail, long vinylId);
+
+    Cart clear(String requesterEmail);
 }
