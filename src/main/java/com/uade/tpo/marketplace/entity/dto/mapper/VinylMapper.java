@@ -5,6 +5,7 @@ import com.uade.tpo.marketplace.entity.AudioPreview;
 import com.uade.tpo.marketplace.entity.Category;
 import com.uade.tpo.marketplace.entity.Genre;
 import com.uade.tpo.marketplace.entity.Vinyl;
+import com.uade.tpo.marketplace.entity.dto.AdminVinylResponse;
 import com.uade.tpo.marketplace.entity.dto.VinylPreviewResponse;
 import com.uade.tpo.marketplace.entity.dto.VinylRequest;
 import com.uade.tpo.marketplace.entity.dto.VinylResponse;
@@ -17,6 +18,19 @@ public final class VinylMapper {
     public static VinylResponse toResponse(Vinyl vinyl) {
         if (vinyl == null) return null;
         VinylResponse response = new VinylResponse();
+        populateResponse(vinyl, response);
+        return response;
+    }
+
+    public static AdminVinylResponse toAdminResponse(Vinyl vinyl) {
+        if (vinyl == null) return null;
+        AdminVinylResponse response = new AdminVinylResponse();
+        populateResponse(vinyl, response);
+        response.setEnabled(!Boolean.FALSE.equals(vinyl.getEnabled()));
+        return response;
+    }
+
+    private static void populateResponse(Vinyl vinyl, VinylResponse response) {
         response.setId(vinyl.getId());
         response.setName(vinyl.getName());
         response.setDescription(vinyl.getDescription());
@@ -28,7 +42,6 @@ public final class VinylMapper {
         response.setArtistId(vinyl.getArtist() != null ? vinyl.getArtist().getId() : null);
         response.setGenreId(vinyl.getGenre() != null ? vinyl.getGenre().getId() : null);
         response.setAudioPreviewId(vinyl.getAudioPreview() != null ? vinyl.getAudioPreview().getId() : null);
-        return response;
     }
 
     public static VinylPreviewResponse toPreviewResponse(Vinyl vinyl) {

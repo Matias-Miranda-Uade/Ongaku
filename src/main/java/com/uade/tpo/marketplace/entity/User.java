@@ -43,6 +43,7 @@ public class User implements UserDetails {
     private String lastName;
 
     @Enumerated(EnumType.STRING)
+    @Column(columnDefinition = "ENUM('USER','ADMIN')")
     private Role role;
 
     @OneToOne(mappedBy = "user")

@@ -85,6 +85,39 @@ class MarketplaceSecurityTests {
     }
 
     @Test
+    void adminCanFilterVinylsByEnabledState() throws Exception {
+        Vinyl disabled = new Vinyl();
+        disabled.setName("Disabled vinyl"); disabled.setEnabled(false); disabled.setStock(0);
+        disabled = vinyls.saveAndFlush(disabled);
+        Vinyl legacy = new Vinyl();
+        legacy.setName("Legacy vinyl"); legacy.setEnabled(null);
+        legacy = vinyls.saveAndFlush(legacy);
+        String path = "/admin/vinyls/filter";
+        mvc.perform(get(path).param("enabled", "false")).andExpect(status().isUnauthorized());
+        mvc.perform(get(path).param("enabled", "false").header("Authorization", ownerToken))
+                .andExpect(status().isForbidden());
+        mvc.perform(get(path).param("enabled", "false").header("Authorization", adminToken))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.length()").value(1))
+                .andExpect(jsonPath("$.data[0].id").value(disabled.getId()))
+                .andExpect(jsonPath("$.data[0].enabled").value(false));
+        mvc.perform(get(path).param("enabled", "true").header("Authorization", adminToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[?(@.id == " + vinyl.getId() + ")]").isNotEmpty())
+                .andExpect(jsonPath("$.data[?(@.id == " + legacy.getId() + ")].enabled")
+                        .value(org.hamcrest.Matchers.contains(true)))
+                .andExpect(jsonPath("$.data[?(@.id == " + disabled.getId() + ")]").isEmpty());
+        mvc.perform(get(path).header("Authorization", adminToken)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[?(@.id == " + disabled.getId() + ")]").isNotEmpty());
+        mvc.perform(get(path).param("enabled", "false").param("inStock", "true")
+                .header("Authorization", adminToken)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").isEmpty());
+        mvc.perform(get("/vinyls/filter").param("enabled", "false"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[?(@.id == " + disabled.getId() + ")]").isEmpty())
+                .andExpect(jsonPath("$.data[*].enabled").isEmpty());
+    }
+
+    @Test
     void publicListsAndAuthenticatedDetails() throws Exception {
         for (String path : new String[]{"/vinyls", "/vinyls/search", "/vinyls/filter", "/vinyls/search/test",
                 "/vinyls/artist/1", "/vinyls/genre/1", "/vinyls/category/1", "/vinyls/year/2020",
