@@ -190,10 +190,10 @@ class MarketplaceSecurityTests {
     }
 
     @Test
-    void registrationCannotChooseAdminAndCreatesAnEmptyCart() throws Exception {
+    void registrationCreatesAnEmptyCartForARegularUser() throws Exception {
         String email = UUID.randomUUID() + "@test.local";
         String body = "{\"email\":\"" + email + "\",\"password\":\"test-password\",\"firstName\":\"New\","
-                + "\"lastName\":\"" + email + "\",\"role\":\"ADMIN\"}";
+                + "\"lastName\":\"" + email + "\"}";
         mvc.perform(post("/api/v1/auth/register").contentType(MediaType.APPLICATION_JSON).content(body))
                 .andExpect(status().isOk());
 
@@ -215,6 +215,18 @@ class MarketplaceSecurityTests {
         mvc.perform(post("/api/v1/auth/register").contentType(MediaType.APPLICATION_JSON)
                 .content("{\"email\":\"x" + email + "\",\"password\":\"short\",\"firstName\":\"New\",\"lastName\":\"X\"}"))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void registrationHonorsTheRequestedRole() throws Exception {
+        String email = UUID.randomUUID() + "@test.local";
+        String body = "{\"email\":\"" + email + "\",\"password\":\"test-password\",\"firstName\":\"New\","
+                + "\"lastName\":\"" + email + "\",\"role\":\"ADMIN\"}";
+        mvc.perform(post("/api/v1/auth/register").contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isOk());
+
+        User created = users.findByEmail(email).orElseThrow();
+        assertThat(created.getRole()).isEqualTo(Role.ADMIN);
     }
 
     @Test

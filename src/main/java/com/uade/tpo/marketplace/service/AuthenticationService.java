@@ -48,13 +48,12 @@ public class AuthenticationService {
                         throw new EmailAlreadyRegisteredException();
                 }
 
-                // El rol nunca se toma del cuerpo: cualquiera podria pedir ADMIN.
                 var user = User.builder()
                                 .firstName(requireText(request.getFirstName(), "firstName"))
                                 .lastName(requireText(request.getLastName(), "lastName"))
                                 .email(email)
                                 .password(passwordEncoder.encode(password))
-                                .role(Role.USER)
+                                .role(request.getRole() != null ? request.getRole() : Role.USER)
                                 .build();
 
                 repository.save(user);
