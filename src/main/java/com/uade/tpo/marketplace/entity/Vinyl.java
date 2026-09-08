@@ -8,8 +8,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
@@ -60,15 +58,6 @@ public class Vinyl {
 
     @Column
     private int year;
-
-    @ManyToMany
-    @JoinTable(
-        name = "order_vinyl",
-        joinColumns = @JoinColumn(name = "vinyl_id"),
-        inverseJoinColumns = @JoinColumn(name = "order_id")
-    )
-    @JsonIgnore
-    private List<Order> orders;
 
     @OneToMany(mappedBy = "vinyl")
     @JsonIgnore

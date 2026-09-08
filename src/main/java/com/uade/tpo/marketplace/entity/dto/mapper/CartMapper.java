@@ -1,12 +1,15 @@
 package com.uade.tpo.marketplace.entity.dto.mapper;
 
-import java.util.Collections;
 import java.util.List;
 
 import com.uade.tpo.marketplace.entity.Cart;
+import com.uade.tpo.marketplace.entity.CartItem;
+import com.uade.tpo.marketplace.entity.Vinyl;
+import com.uade.tpo.marketplace.entity.dto.CartItemResponse;
 import com.uade.tpo.marketplace.entity.dto.CartResponse;
 
 public final class CartMapper {
+
     private CartMapper() {
     }
 
@@ -15,15 +18,27 @@ public final class CartMapper {
         CartResponse response = new CartResponse();
         response.setId(cart.getId());
         response.setUserId(cart.getUser() != null ? cart.getUser().getId() : null);
-        List<com.uade.tpo.marketplace.entity.dto.VinylPreviewResponse> items = cart.getItems() == null
-                ? Collections.emptyList()
-                : cart.getItems().stream().map(VinylMapper::toPreviewResponse).toList();
+        List<CartItemResponse> items = cart.getItems().stream().map(CartMapper::toItemResponse).toList();
         response.setItems(items);
-        java.util.Map<Long, Integer> quantities = new java.util.LinkedHashMap<>();
-        if (cart.getItems() != null) {
-            cart.getItems().forEach(vinyl -> quantities.put(vinyl.getId(), cart.quantityOf(vinyl.getId())));
-        }
-        response.setQuantities(quantities);
+        response.setTotalProducts(cart.getTotalProducts());
+        response.setTotalUnits(cart.getTotalUnits());
+        response.setTotal(cart.getTotal());
+        response.setEmpty(cart.isEmpty());
+        return response;
+    }
+
+    public static CartItemResponse toItemResponse(CartItem item) {
+        CartItemResponse response = new CartItemResponse();
+        Vinyl vinyl = item.getVinyl();
+        response.setVinylId(vinyl != null ? vinyl.getId() : null);
+        response.setName(vinyl != null ? vinyl.getName() : null);
+        response.setArtistName(vinyl != null && vinyl.getArtist() != null ? vinyl.getArtist().getName() : null);
+        response.setImage(vinyl != null ? vinyl.getImage() : null);
+        response.setUnitPrice(vinyl != null ? vinyl.getPrice() : 0);
+        response.setQuantity(item.getQuantity());
+        response.setSubtotal(item.getSubtotal());
+        response.setStock(vinyl != null ? vinyl.getStock() : 0);
+        response.setAvailable(item.isAvailable());
         return response;
     }
 }

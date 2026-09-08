@@ -1,6 +1,5 @@
 package com.uade.tpo.marketplace;
 
-import java.util.ArrayList;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,6 +29,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.uade.tpo.marketplace.controllers.config.JwtService;
 import com.uade.tpo.marketplace.entity.Cart;
 import com.uade.tpo.marketplace.entity.Favorite;
+import com.uade.tpo.marketplace.entity.OrderStatusType;
 import com.uade.tpo.marketplace.entity.Review;
 import com.uade.tpo.marketplace.entity.Role;
 import com.uade.tpo.marketplace.entity.User;
@@ -73,10 +73,6 @@ class MarketplaceSecurityTests {
     void setup() {
         mvc = MockMvcBuilders.webAppContextSetup(context).addFilters(security).build();
         transactions.executeWithoutResult(status -> {
-            String[] names = {"PENDIENTE", "PAGADA", "ENVIADA", "ENTREGADA", "CANCELADA"};
-            for (int i = 0; i < names.length; i++) {
-                jdbc.update("MERGE INTO order_status (id, name, description) KEY(id) VALUES (?, ?, ?)", i + 1, names[i], names[i]);
-            }
             owner = user(Role.USER); other = user(Role.USER); admin = user(Role.ADMIN);
             vinyl = new Vinyl(); vinyl.setName("Test vinyl"); vinyl.setPrice(100); vinyl.setStock(10); vinyl.setYear(2020);
             vinyl = vinyls.saveAndFlush(vinyl);
@@ -93,13 +89,27 @@ class MarketplaceSecurityTests {
     }
 
     Cart cart(User user, int quantity) {
-        Cart cart = new Cart(); cart.setUser(user); cart.setItems(new ArrayList<>());
-        cart.getItems().add(vinyl); cart.getQuantities().put(vinyl.getId(), quantity);
+        Cart cart = new Cart();
+        cart.setUser(user);
+        cart.addItem(vinyl, quantity);
         return carts.saveAndFlush(cart);
     }
 
     long dataId(org.springframework.test.web.servlet.MvcResult result) throws Exception {
         return json.readTree(result.getResponse().getContentAsString()).path("data").path("id").asLong();
+    }
+
+    String statusBody(OrderStatusType status) {
+        return "{\"status\":\"" + status + "\"}";
+    }
+
+    @Test
+    void orderStatusCatalogIsSeededOnStartup() throws Exception {
+        for (OrderStatusType type : OrderStatusType.values()) {
+            mvc.perform(get("/order-statuses/" + type.getId()).header("Authorization", ownerToken))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.name").value(type.name()));
+        }
     }
 
     @Test
@@ -140,10 +150,12 @@ class MarketplaceSecurityTests {
         for (String path : new String[]{"/vinyls", "/vinyls/search", "/vinyls/filter", "/vinyls/search/test",
                 "/vinyls/artist/1", "/vinyls/genre/1", "/vinyls/category/1", "/vinyls/year/2020",
                 "/vinyls/year/asc", "/vinyls/year/desc", "/vinyls/price/asc", "/vinyls/price/desc",
-                "/artists", "/genres", "/reviews", "/categories", "/audio-previews", "/average-scores"}) {
+                "/artists", "/genres", "/reviews", "/reviews/vinyl/" + vinyl.getId(), "/categories",
+                "/audio-previews", "/average-scores"}) {
             mvc.perform(get(path)).andExpect(status().isOk());
         }
-        for (String path : new String[]{"/vinyls/" + vinyl.getId(), "/artists/1", "/genres/1", "/genres/1/vinyls"}) {
+        for (String path : new String[]{"/vinyls/" + vinyl.getId(), "/artists/1", "/genres/1", "/genres/1/vinyls",
+                "/reviews/me"}) {
             mvc.perform(get(path)).andExpect(status().isUnauthorized());
         }
         mvc.perform(get("/vinyls/" + vinyl.getId()).header("Authorization", ownerToken)).andExpect(status().isOk());
@@ -178,12 +190,43 @@ class MarketplaceSecurityTests {
     }
 
     @Test
-    void registrationCannotChooseAdmin() throws Exception {
+    void registrationCreatesAnEmptyCartForARegularUser() throws Exception {
         String email = UUID.randomUUID() + "@test.local";
-        mvc.perform(post("/api/v1/auth/register").contentType(MediaType.APPLICATION_JSON).content(
-                "{\"email\":\"" + email + "\",\"password\":\"test-password\",\"firstName\":\"New\",\"lastName\":\"" + email + "\",\"role\":\"ADMIN\"}"))
+        String body = "{\"email\":\"" + email + "\",\"password\":\"test-password\",\"firstName\":\"New\","
+                + "\"lastName\":\"" + email + "\"}";
+        mvc.perform(post("/api/v1/auth/register").contentType(MediaType.APPLICATION_JSON).content(body))
                 .andExpect(status().isOk());
-        assertThat(users.findByEmail(email).orElseThrow().getRole()).isEqualTo(Role.USER);
+
+        User created = users.findByEmail(email).orElseThrow();
+        assertThat(created.getRole()).isEqualTo(Role.USER);
+        assertThat(carts.findFirstByUser_IdOrderByIdAsc(created.getId())).isPresent();
+
+        mvc.perform(get("/carts").header("Authorization", "Bearer " + jwt.generateToken(created)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("El carrito está vacío"))
+                .andExpect(jsonPath("$.data.userId").value(created.getId()))
+                .andExpect(jsonPath("$.data.items.length()").value(0))
+                .andExpect(jsonPath("$.data.total").value(0));
+
+        // El mismo email no se puede registrar dos veces.
+        mvc.perform(post("/api/v1/auth/register").contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isConflict());
+        // Contraseña demasiado corta.
+        mvc.perform(post("/api/v1/auth/register").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"email\":\"x" + email + "\",\"password\":\"short\",\"firstName\":\"New\",\"lastName\":\"X\"}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void registrationHonorsTheRequestedRole() throws Exception {
+        String email = UUID.randomUUID() + "@test.local";
+        String body = "{\"email\":\"" + email + "\",\"password\":\"test-password\",\"firstName\":\"New\","
+                + "\"lastName\":\"" + email + "\",\"role\":\"ADMIN\"}";
+        mvc.perform(post("/api/v1/auth/register").contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isOk());
+
+        User created = users.findByEmail(email).orElseThrow();
+        assertThat(created.getRole()).isEqualTo(Role.ADMIN);
     }
 
     @Test
@@ -194,8 +237,9 @@ class MarketplaceSecurityTests {
             mvc.perform(get(path)).andExpect(status().isUnauthorized());
             mvc.perform(get(path).header("Authorization", adminToken)).andExpect(status().isForbidden());
         }
-        mvc.perform(get("/carts").header("Authorization", ownerToken)).andExpect(jsonPath("$.data.length()").value(1))
-                .andExpect(jsonPath("$.data[0].userId").value(owner.getId()));
+        mvc.perform(get("/carts").header("Authorization", ownerToken))
+                .andExpect(jsonPath("$.data.userId").value(owner.getId()))
+                .andExpect(jsonPath("$.data.items.length()").value(1));
         mvc.perform(get("/favorites").header("Authorization", otherToken)).andExpect(jsonPath("$.data.length()").value(0));
         mvc.perform(get("/carts/" + own.getId()).header("Authorization", otherToken)).andExpect(status().isForbidden());
         mvc.perform(delete("/favorites/" + favorite.getId()).header("Authorization", otherToken)).andExpect(status().isForbidden());
@@ -207,78 +251,110 @@ class MarketplaceSecurityTests {
     }
 
     @Test
-    void cartSupportsEmptyCreationAddingUpdatingAndRemovingQuantities() throws Exception {
-        long id = dataId(mvc.perform(post("/carts").header("Authorization", ownerToken))
-                .andExpect(status().isCreated()).andReturn());
-        String path = "/carts/" + id + "/items";
-        String itemPath = path + "/" + vinyl.getId();
-        mvc.perform(post(path).header("Authorization", ownerToken).contentType(MediaType.APPLICATION_JSON)
-                .content("{\"vinylId\":" + vinyl.getId() + ",\"quantity\":2}" )).andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.quantities['" + vinyl.getId() + "']").value(2));
-        mvc.perform(patch(itemPath).header("Authorization", otherToken).contentType(MediaType.APPLICATION_JSON)
-                .content("{\"quantity\":3}")).andExpect(status().isForbidden());
+    void cartShowsTotalsAndSupportsAddingUpdatingAndRemoving() throws Exception {
+        String itemsPath = "/carts/items";
+        String itemPath = itemsPath + "/" + vinyl.getId();
+
+        mvc.perform(get("/carts").header("Authorization", ownerToken)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("El carrito está vacío"))
+                .andExpect(jsonPath("$.data.empty").value(true));
+
+        mvc.perform(post(itemsPath).header("Authorization", ownerToken).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"vinylId\":" + vinyl.getId() + ",\"quantity\":2}")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.items[0].vinylId").value(vinyl.getId()))
+                .andExpect(jsonPath("$.data.items[0].name").value("Test vinyl"))
+                .andExpect(jsonPath("$.data.items[0].quantity").value(2))
+                .andExpect(jsonPath("$.data.items[0].unitPrice").value(100))
+                .andExpect(jsonPath("$.data.items[0].subtotal").value(200))
+                .andExpect(jsonPath("$.data.items[0].available").value(true))
+                .andExpect(jsonPath("$.data.totalProducts").value(1))
+                .andExpect(jsonPath("$.data.totalUnits").value(2))
+                .andExpect(jsonPath("$.data.total").value(200));
+
+        // Volver a agregar el mismo vinilo acumula, no duplica la linea.
+        mvc.perform(post(itemsPath).header("Authorization", ownerToken).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"vinylId\":" + vinyl.getId() + ",\"quantity\":1}")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.items.length()").value(1))
+                .andExpect(jsonPath("$.data.totalUnits").value(3));
+
         mvc.perform(patch(itemPath).header("Authorization", ownerToken).contentType(MediaType.APPLICATION_JSON)
-                .content("{\"quantity\":3}")).andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.quantities['" + vinyl.getId() + "']").value(3));
+                .content("{\"quantity\":4}")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.items[0].quantity").value(4))
+                .andExpect(jsonPath("$.data.total").value(400));
+
         for (int quantity : new int[]{0, -1, 11}) {
             int expected = quantity > 10 ? 409 : 400;
             mvc.perform(patch(itemPath).header("Authorization", ownerToken).contentType(MediaType.APPLICATION_JSON)
                     .content("{\"quantity\":" + quantity + "}")).andExpect(status().is(expected));
         }
+
         mvc.perform(delete(itemPath).header("Authorization", ownerToken)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.items.length()").value(0))
+                .andExpect(jsonPath("$.data.total").value(0));
+        // Ya no esta en el carrito.
+        mvc.perform(delete(itemPath).header("Authorization", ownerToken)).andExpect(status().isNotFound());
+    }
+
+    @Test
+    void cartOperationsRequireACustomerAndOnlyTouchTheOwnCart() throws Exception {
+        cart(owner, 2);
+        String itemPath = "/carts/items/" + vinyl.getId();
+        // El admin no tiene carrito de compras.
+        mvc.perform(post("/carts/items").header("Authorization", adminToken).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"vinylId\":" + vinyl.getId() + ",\"quantity\":1}")).andExpect(status().isForbidden());
+        // El otro usuario opera sobre SU carrito, no sobre el ajeno: el vinilo no esta ahi.
+        mvc.perform(patch(itemPath).header("Authorization", otherToken).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"quantity\":3}")).andExpect(status().isNotFound());
+        mvc.perform(get("/carts").header("Authorization", otherToken)).andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.items.length()").value(0));
+        // Vaciar el carrito.
+        mvc.perform(delete("/carts/items").header("Authorization", ownerToken)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.empty").value(true));
     }
 
     @Test
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    void checkoutCalculatesTotalAndIgnoresClientStateAndPrice() throws Exception {
+    void checkoutBuildsTheOrderFromTheCartAndIgnoresClientState() throws Exception {
         Cart cart = transactions.execute(status -> cart(owner, 3));
-        mvc.perform(post("/orders/cart/" + cart.getId()).header("Authorization", otherToken)).andExpect(status().isForbidden());
-        mvc.perform(post("/orders/cart/" + cart.getId()).header("Authorization", adminToken)).andExpect(status().isForbidden());
-        long id = dataId(mvc.perform(post("/orders").header("Authorization", ownerToken).contentType(MediaType.APPLICATION_JSON)
-                .content("{\"cartId\":" + cart.getId() + ",\"total\":1,\"orderStatusId\":4,\"userId\":" + other.getId() + "}"))
-                .andExpect(status().isCreated()).andExpect(jsonPath("$.data.total").value(300))
-                .andExpect(jsonPath("$.data.orderStatus.id").value(1)).andExpect(jsonPath("$.data.userId").value(owner.getId()))
-                .andExpect(jsonPath("$.data.quantities['" + vinyl.getId() + "']").value(3)).andReturn());
+        mvc.perform(post("/orders").header("Authorization", adminToken)).andExpect(status().isForbidden());
+
+        long id = dataId(mvc.perform(post("/orders").header("Authorization", ownerToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"total\":1,\"orderStatusId\":4,\"userId\":" + other.getId() + "}"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.total").value(300))
+                .andExpect(jsonPath("$.data.orderStatus.name").value("PENDIENTE"))
+                .andExpect(jsonPath("$.data.userId").value(owner.getId()))
+                .andExpect(jsonPath("$.data.items[0].name").value("Test vinyl"))
+                .andExpect(jsonPath("$.data.items[0].unitPrice").value(100))
+                .andExpect(jsonPath("$.data.items[0].quantity").value(3))
+                .andExpect(jsonPath("$.data.items[0].subtotal").value(300))
+                .andExpect(jsonPath("$.data.totalUnits").value(3))
+                .andExpect(jsonPath("$.data.createdAt").isNotEmpty())
+                .andReturn());
+
         transactions.executeWithoutResult(status -> {
             assertThat(vinyls.findById(vinyl.getId()).orElseThrow().getStock()).isEqualTo(7);
-            assertThat(carts.findById(cart.getId()).orElseThrow().getItems().size()).isZero();
-            assertThat(orders.findById(id).orElseThrow().quantityOf(vinyl.getId())).isEqualTo(3);
+            assertThat(carts.findById(cart.getId()).orElseThrow().getItems()).isEmpty();
+            assertThat(orders.findById(id).orElseThrow().getItems().get(0).getQuantity()).isEqualTo(3);
         });
+
         mvc.perform(get("/orders/" + id).header("Authorization", otherToken)).andExpect(status().isForbidden());
         mvc.perform(get("/orders/" + id).header("Authorization", ownerToken))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.id").value(id));
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.id").value(id));
         mvc.perform(get("/orders/" + id).header("Authorization", adminToken)).andExpect(status().isOk());
         mvc.perform(get("/orders").header("Authorization", otherToken)).andExpect(jsonPath("$.data.length()").value(0));
         mvc.perform(get("/orders").header("Authorization", ownerToken)).andExpect(jsonPath("$.data.length()").value(1));
-        mvc.perform(post("/orders/cart/" + cart.getId()).header("Authorization", ownerToken)).andExpect(status().isConflict());
+        // El carrito quedo vacio: no se puede volver a comprar lo mismo.
+        mvc.perform(post("/orders").header("Authorization", ownerToken)).andExpect(status().isConflict());
     }
 
-        @Test
-        void emptyCartListReturnsExpectedMessage() throws Exception {
-                mvc.perform(get("/carts").header("Authorization", ownerToken))
-                                .andExpect(status().isOk())
-                                .andExpect(jsonPath("$.message").value("El carrito está vacío"))
-                                .andExpect(jsonPath("$.data.length()").value(0));
-        }
-
-        @Test
-        @Transactional(propagation = Propagation.NOT_SUPPORTED)
-        void checkoutCanUseTheAuthenticatedUsersCartWithoutAnId() throws Exception {
-                transactions.execute(status -> cart(owner, 1));
-
-                mvc.perform(post("/orders/cart").header("Authorization", ownerToken))
-                                .andExpect(status().isCreated())
-                                .andExpect(jsonPath("$.data.userId").value(owner.getId()));
-        }
-
-        @Test
-        void checkoutWithoutCartReturnsEmptyCartMessage() throws Exception {
-                mvc.perform(post("/orders/cart").header("Authorization", ownerToken))
-                                .andExpect(status().isConflict())
-                                .andExpect(jsonPath("$.message").value("El carrito está vacío"));
-        }
+    @Test
+    void checkoutWithoutCartReturnsEmptyCartMessage() throws Exception {
+        mvc.perform(post("/orders").header("Authorization", ownerToken))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message").value("El carrito está vacío"));
+    }
 
     @Test
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
@@ -286,21 +362,23 @@ class MarketplaceSecurityTests {
         Long cartId = transactions.execute(status -> {
             Cart cart = cart(owner, 2);
             Vinyl second = new Vinyl(); second.setName("Sold out"); second.setPrice(40); second.setStock(0);
-            vinyls.saveAndFlush(second); cart.getItems().add(second);
+            second = vinyls.saveAndFlush(second);
+            cart.addItem(second, 1);
             return carts.saveAndFlush(cart).getId();
         });
-        assertThatThrownBy(() -> orderService.createOrderFromCart(Math.toIntExact(cartId), owner.getEmail()))
+        assertThatThrownBy(() -> orderService.createOrder(owner.getEmail()))
                 .isInstanceOf(InsufficientStockException.class);
         transactions.executeWithoutResult(status -> {
             assertThat(vinyls.findById(vinyl.getId()).orElseThrow().getStock()).isEqualTo(10);
             assertThat(carts.findById(cartId).orElseThrow().getItems()).hasSize(2);
-            assertThat(orders.findByUserId(Math.toIntExact(owner.getId()))).isEmpty();
+            assertThat(orders.findByUserId(owner.getId())).isEmpty();
         });
     }
 
     @Test
-    void paymentAndStatusChangesRespectOwnershipAndRoles() throws Exception {
-        long orderId = orderService.createOrderFromCart(Math.toIntExact(cart(owner, 2).getId()), owner.getEmail()).getId();
+    void paymentAndAdminStatusChangesRespectOwnershipAndRoles() throws Exception {
+        cart(owner, 2);
+        long orderId = orderService.createOrder(owner.getEmail()).getId();
         String payment = "{\"orderId\":" + orderId + ",\"amount\":200,\"method\":\"card\",\"status\":\"RECHAZADO\"}";
         mvc.perform(post("/payments").header("Authorization", otherToken).contentType(MediaType.APPLICATION_JSON).content(payment))
                 .andExpect(status().isForbidden());
@@ -311,44 +389,176 @@ class MarketplaceSecurityTests {
         mvc.perform(get("/payments/" + paymentId).header("Authorization", adminToken)).andExpect(status().isOk());
         mvc.perform(get("/payments").header("Authorization", otherToken)).andExpect(jsonPath("$.data.length()").value(0));
         mvc.perform(get("/payments").header("Authorization", ownerToken)).andExpect(jsonPath("$.data.length()").value(1));
-        mvc.perform(patch("/orders/" + orderId + "/status").param("orderStatusId", "3").header("Authorization", ownerToken))
-                .andExpect(status().isForbidden());
-        mvc.perform(patch("/orders/" + orderId + "/status/3").header("Authorization", ownerToken)).andExpect(status().isForbidden());
-        mvc.perform(put("/orders/" + orderId).param("orderStatusId", "3").header("Authorization", ownerToken)).andExpect(status().isForbidden());
-        mvc.perform(patch("/orders/" + orderId + "/status/4").header("Authorization", adminToken)).andExpect(status().isConflict());
-        mvc.perform(patch("/orders/" + orderId + "/status/3").header("Authorization", adminToken)).andExpect(status().isOk());
-        mvc.perform(put("/orders/" + orderId).param("orderStatusId", "4").header("Authorization", adminToken)).andExpect(status().isOk());
-        mvc.perform(patch("/orders/" + orderId + "/status/1").header("Authorization", adminToken)).andExpect(status().isConflict());
+
+        String statusPath = "/orders/" + orderId + "/status";
+        // El comprador no puede mover la orden por el flujo logistico.
+        for (OrderStatusType target : new OrderStatusType[]{OrderStatusType.ENVIADA, OrderStatusType.ENTREGADA,
+                OrderStatusType.CANCELADA}) {
+            mvc.perform(patch(statusPath).header("Authorization", ownerToken)
+                    .contentType(MediaType.APPLICATION_JSON).content(statusBody(target)))
+                    .andExpect(status().isForbidden());
+        }
+        // Un tercero no puede tocar una orden ajena.
+        mvc.perform(patch(statusPath).header("Authorization", otherToken).contentType(MediaType.APPLICATION_JSON)
+                .content(statusBody(OrderStatusType.CANCELADA))).andExpect(status().isForbidden());
+        // El admin tampoco puede saltearse pasos.
+        mvc.perform(patch(statusPath).header("Authorization", adminToken).contentType(MediaType.APPLICATION_JSON)
+                .content(statusBody(OrderStatusType.ENTREGADA))).andExpect(status().isConflict());
+        mvc.perform(patch(statusPath).header("Authorization", adminToken).contentType(MediaType.APPLICATION_JSON)
+                .content(statusBody(OrderStatusType.ENVIADA))).andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.orderStatus.name").value("ENVIADA"));
+        // Tambien se acepta el id del catalogo.
+        mvc.perform(patch(statusPath).header("Authorization", adminToken).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"orderStatusId\":4}")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.orderStatus.name").value("ENTREGADA"));
+        // Una orden entregada ya no vuelve atras.
+        mvc.perform(patch(statusPath).header("Authorization", adminToken).contentType(MediaType.APPLICATION_JSON)
+                .content(statusBody(OrderStatusType.PENDIENTE))).andExpect(status().isConflict());
+        mvc.perform(patch(statusPath).header("Authorization", adminToken).contentType(MediaType.APPLICATION_JSON)
+                .content("{}")).andExpect(status().isBadRequest());
     }
 
     @Test
-    void cancellationRestoresQuantitiesOnlyOnce() throws Exception {
-        long id = orderService.createOrderFromCart(Math.toIntExact(cart(owner, 3).getId()), owner.getEmail()).getId();
-        mvc.perform(patch("/orders/" + id + "/status/5").header("Authorization", adminToken)).andExpect(status().isOk());
-        mvc.perform(patch("/orders/" + id + "/status/5").header("Authorization", adminToken)).andExpect(status().isConflict());
+    void userCanCancelOwnPendingOrderButNothingElse() throws Exception {
+        cart(owner, 3);
+        long orderId = orderService.createOrder(owner.getEmail()).getId();
+        String statusPath = "/orders/" + orderId + "/status";
+
+        // Pasar a PAGADA es potestad del admin (o del flujo de pago).
+        mvc.perform(patch(statusPath).header("Authorization", ownerToken).contentType(MediaType.APPLICATION_JSON)
+                .content(statusBody(OrderStatusType.PAGADA))).andExpect(status().isForbidden());
+        mvc.perform(patch(statusPath).header("Authorization", otherToken).contentType(MediaType.APPLICATION_JSON)
+                .content(statusBody(OrderStatusType.CANCELADA))).andExpect(status().isForbidden());
+
+        mvc.perform(patch(statusPath).header("Authorization", ownerToken).contentType(MediaType.APPLICATION_JSON)
+                .content(statusBody(OrderStatusType.CANCELADA))).andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.orderStatus.name").value("CANCELADA"));
+        mvc.perform(patch(statusPath).header("Authorization", ownerToken).contentType(MediaType.APPLICATION_JSON)
+                .content(statusBody(OrderStatusType.CANCELADA))).andExpect(status().isConflict());
+
         em.flush(); em.clear();
         assertThat(vinyls.findById(vinyl.getId()).orElseThrow().getStock()).isEqualTo(10);
     }
 
     @Test
-    void reviewsProduceAverageAndCannotImpersonateAnotherUser() throws Exception {
-        long orderId = orderService.createOrderFromCart(Math.toIntExact(cart(owner, 1).getId()), owner.getEmail()).getId();
-        orderService.updateOrderStatus(Math.toIntExact(orderId), 2);
+    void cancellationRestoresQuantitiesOnlyOnce() throws Exception {
+        cart(owner, 3);
+        long id = orderService.createOrder(owner.getEmail()).getId();
+        String statusPath = "/orders/" + id + "/status";
+        mvc.perform(patch(statusPath).header("Authorization", adminToken).contentType(MediaType.APPLICATION_JSON)
+                .content(statusBody(OrderStatusType.CANCELADA))).andExpect(status().isOk());
+        mvc.perform(patch(statusPath).header("Authorization", adminToken).contentType(MediaType.APPLICATION_JSON)
+                .content(statusBody(OrderStatusType.CANCELADA))).andExpect(status().isConflict());
+        em.flush(); em.clear();
+        assertThat(vinyls.findById(vinyl.getId()).orElseThrow().getStock()).isEqualTo(10);
+    }
+
+    @Test
+    void reviewsRequireAPurchaseAndCannotImpersonateAnotherUser() throws Exception {
+        cart(owner, 1);
+        long orderId = orderService.createOrder(owner.getEmail()).getId();
         String body = "{\"userId\":" + owner.getId() + ",\"vinylId\":" + vinyl.getId() + ",\"comment\":\"Great\",\"score\":5}";
+
+        // Todavia no pago: no puede reseñar.
+        mvc.perform(post("/reviews").header("Authorization", ownerToken).contentType(MediaType.APPLICATION_JSON)
+                .content(body)).andExpect(status().isUnprocessableEntity());
+
+        orderService.updateStatus(orderId, OrderStatusType.PAGADA, admin.getEmail());
+
         mvc.perform(post("/reviews").contentType(MediaType.APPLICATION_JSON).content(body)).andExpect(status().isUnauthorized());
         mvc.perform(post("/reviews").header("Authorization", otherToken).contentType(MediaType.APPLICATION_JSON).content(body))
                 .andExpect(status().isForbidden());
         mvc.perform(post("/reviews").header("Authorization", adminToken).contentType(MediaType.APPLICATION_JSON).content(body))
                 .andExpect(status().isForbidden());
-        mvc.perform(post("/reviews").header("Authorization", ownerToken).contentType(MediaType.APPLICATION_JSON).content(body.replace("\"score\":5", "\"score\":6")))
-                .andExpect(status().isBadRequest());
-        mvc.perform(post("/reviews").header("Authorization", ownerToken).contentType(MediaType.APPLICATION_JSON).content(body))
-                .andExpect(status().isCreated()).andExpect(jsonPath("$.data.score").value(5));
+        mvc.perform(post("/reviews").header("Authorization", ownerToken).contentType(MediaType.APPLICATION_JSON)
+                .content(body.replace("\"score\":5", "\"score\":6"))).andExpect(status().isBadRequest());
+        mvc.perform(post("/reviews").header("Authorization", ownerToken).contentType(MediaType.APPLICATION_JSON)
+                .content(body.replace("\"comment\":\"Great\"", "\"comment\":\"   \""))).andExpect(status().isBadRequest());
+
+        long reviewId = dataId(mvc.perform(post("/reviews").header("Authorization", ownerToken)
+                .contentType(MediaType.APPLICATION_JSON).content(body)).andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.score").value(5))
+                .andExpect(jsonPath("$.data.vinylName").value("Test vinyl"))
+                .andExpect(jsonPath("$.data.userId").value(owner.getId()))
+                .andExpect(jsonPath("$.data.edited").value(false))
+                .andExpect(jsonPath("$.data.createdAt").isNotEmpty()).andReturn());
+
+        // Una sola reseña por producto.
+        mvc.perform(post("/reviews").header("Authorization", ownerToken).contentType(MediaType.APPLICATION_JSON)
+                .content(body)).andExpect(status().isConflict());
+
         Review second = new Review(); second.setUser(other); second.setVinyl(vinyl); second.setScore(3); reviews.saveAndFlush(second);
         Review legacy = new Review(); legacy.setUser(admin); legacy.setVinyl(vinyl); reviews.saveAndFlush(legacy);
-        mvc.perform(get("/average-scores/" + vinyl.getId())).andExpect(status().isOk()).andExpect(jsonPath("$.data.averageScore").value(4));
-        mvc.perform(post("/reviews").header("Authorization", ownerToken).contentType(MediaType.APPLICATION_JSON).content(body))
-                .andExpect(status().isConflict());
+        mvc.perform(get("/average-scores/" + vinyl.getId())).andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.averageScore").value(4));
+
+        // Detalle y listado por producto, publicos.
+        mvc.perform(get("/reviews/" + reviewId)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.comment").value("Great"));
+        mvc.perform(get("/reviews/vinyl/" + vinyl.getId())).andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.vinylId").value(vinyl.getId()))
+                .andExpect(jsonPath("$.data.totalReviews").value(3))
+                .andExpect(jsonPath("$.data.averageScore").value(4))
+                .andExpect(jsonPath("$.data.reviews.length()").value(3));
+        mvc.perform(get("/reviews").param("vinylId", String.valueOf(vinyl.getId()))).andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.length()").value(3));
+        mvc.perform(get("/reviews/me").header("Authorization", ownerToken)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.length()").value(1))
+                .andExpect(jsonPath("$.data[0].id").value(reviewId));
+        mvc.perform(get("/reviews/99999")).andExpect(status().isNotFound());
+    }
+
+    @Test
+    void reviewsCanOnlyBeEditedOrDeletedByTheirAuthor() throws Exception {
+        cart(owner, 1);
+        long orderId = orderService.createOrder(owner.getEmail()).getId();
+        orderService.updateStatus(orderId, OrderStatusType.PAGADA, admin.getEmail());
+        long reviewId = dataId(mvc.perform(post("/reviews").header("Authorization", ownerToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"vinylId\":" + vinyl.getId() + ",\"comment\":\"Great\",\"score\":5}"))
+                .andExpect(status().isCreated()).andReturn());
+        String path = "/reviews/" + reviewId;
+
+        mvc.perform(patch(path).contentType(MediaType.APPLICATION_JSON).content("{\"score\":1}"))
+                .andExpect(status().isUnauthorized());
+        mvc.perform(patch(path).header("Authorization", otherToken).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"score\":1}")).andExpect(status().isForbidden());
+        mvc.perform(patch(path).header("Authorization", ownerToken).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"score\":9}")).andExpect(status().isBadRequest());
+        mvc.perform(patch(path).header("Authorization", ownerToken).contentType(MediaType.APPLICATION_JSON)
+                .content("{}")).andExpect(status().isBadRequest());
+
+        mvc.perform(patch(path).header("Authorization", ownerToken).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"comment\":\"Mejor de lo que esperaba\",\"score\":4}")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.comment").value("Mejor de lo que esperaba"))
+                .andExpect(jsonPath("$.data.score").value(4))
+                .andExpect(jsonPath("$.data.edited").value(true));
+        mvc.perform(put(path).header("Authorization", ownerToken).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"comment\":\"Otra vez\",\"score\":3}")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.score").value(3));
+
+        mvc.perform(delete(path).header("Authorization", otherToken)).andExpect(status().isForbidden());
+        mvc.perform(delete(path).header("Authorization", ownerToken)).andExpect(status().isNoContent());
+        assertThat(reviews.findById(reviewId)).isEmpty();
+
+        // Borrada la suya, puede volver a reseñar el mismo producto.
+        mvc.perform(post("/reviews").header("Authorization", ownerToken).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"vinylId\":" + vinyl.getId() + ",\"comment\":\"Segunda\",\"score\":5}"))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    void adminCanModerateButNotWriteReviews() throws Exception {
+        cart(owner, 1);
+        long orderId = orderService.createOrder(owner.getEmail()).getId();
+        orderService.updateStatus(orderId, OrderStatusType.PAGADA, admin.getEmail());
+        long reviewId = dataId(mvc.perform(post("/reviews").header("Authorization", ownerToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"vinylId\":" + vinyl.getId() + ",\"comment\":\"Great\",\"score\":5}"))
+                .andExpect(status().isCreated()).andReturn());
+        mvc.perform(patch("/reviews/" + reviewId).header("Authorization", adminToken)
+                .contentType(MediaType.APPLICATION_JSON).content("{\"score\":1}")).andExpect(status().isForbidden());
+        mvc.perform(delete("/reviews/" + reviewId).header("Authorization", adminToken)).andExpect(status().isNoContent());
     }
 
     @Test
@@ -385,9 +595,30 @@ class MarketplaceSecurityTests {
         mvc.perform(get("/vinyls")).andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[?(@.id == " + vinyl.getId() + ")]").isNotEmpty());
         mvc.perform(get("/vinyls/" + vinyl.getId()).header("Authorization", ownerToken)).andExpect(status().isOk());
-        mvc.perform(post("/carts").header("Authorization", ownerToken).contentType(MediaType.APPLICATION_JSON)
+        mvc.perform(post("/carts/items").header("Authorization", ownerToken).contentType(MediaType.APPLICATION_JSON)
                 .content("{\"vinylId\":" + vinyl.getId() + ",\"quantity\":1}"))
                 .andExpect(status().isConflict());
+    }
+
+    @Test
+    void aSoldVinylCannotBeDeletedButAnUnsoldOneCan() throws Exception {
+        Vinyl spare = new Vinyl();
+        spare.setName("Nunca vendido"); spare.setPrice(50); spare.setStock(5);
+        spare = vinyls.saveAndFlush(spare);
+        // Esta en el carrito de alguien, pero nunca se vendio: se puede borrar.
+        cartService.addItem(owner.getEmail(), spare.getId(), 1);
+        mvc.perform(delete("/admin/vinyls/" + spare.getId()).header("Authorization", adminToken))
+                .andExpect(status().is2xxSuccessful());
+        assertThat(vinyls.findById(spare.getId())).isEmpty();
+        mvc.perform(get("/carts").header("Authorization", ownerToken))
+                .andExpect(jsonPath("$.data.items.length()").value(0));
+
+        // El vinilo comprado conserva el historial: no se borra, se deshabilita.
+        cartService.addItem(owner.getEmail(), vinyl.getId(), 1);
+        orderService.createOrder(owner.getEmail());
+        mvc.perform(delete("/admin/vinyls/" + vinyl.getId()).header("Authorization", adminToken))
+                .andExpect(status().isConflict());
+        assertThat(vinyls.findById(vinyl.getId())).isPresent();
     }
 
     @Test

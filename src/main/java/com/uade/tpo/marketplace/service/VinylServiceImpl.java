@@ -16,11 +16,16 @@ import com.uade.tpo.marketplace.exceptions.badrequest.InvalidFieldException;
 import com.uade.tpo.marketplace.exceptions.badrequest.InvalidPriceRangeException;
 import com.uade.tpo.marketplace.exceptions.badrequest.InvalidRequestException;
 import com.uade.tpo.marketplace.exceptions.conflict.StockUpdateConflictException;
+import com.uade.tpo.marketplace.exceptions.conflict.VinylAlreadyOrderedException;
 import com.uade.tpo.marketplace.exceptions.notfound.ResourceNotFoundException;
 import com.uade.tpo.marketplace.repository.ArtistRepository;
 import com.uade.tpo.marketplace.repository.AudioPreviewRepository;
+import com.uade.tpo.marketplace.repository.CartItemRepository;
 import com.uade.tpo.marketplace.repository.CategoryRepository;
+import com.uade.tpo.marketplace.repository.FavoriteRepository;
 import com.uade.tpo.marketplace.repository.GenreRepository;
+import com.uade.tpo.marketplace.repository.OrderRepository;
+import com.uade.tpo.marketplace.repository.ReviewRepository;
 import com.uade.tpo.marketplace.repository.VinylRepository;
 
 @Service
@@ -31,17 +36,29 @@ public class VinylServiceImpl implements VinylService {
     private final ArtistRepository artistRepository;
     private final GenreRepository genreRepository;
     private final AudioPreviewRepository audioPreviewRepository;
+    private final OrderRepository orderRepository;
+    private final CartItemRepository cartItemRepository;
+    private final FavoriteRepository favoriteRepository;
+    private final ReviewRepository reviewRepository;
 
     public VinylServiceImpl(VinylRepository vinylRepository,
             CategoryRepository categoryRepository,
             ArtistRepository artistRepository,
             GenreRepository genreRepository,
-            AudioPreviewRepository audioPreviewRepository) {
+            AudioPreviewRepository audioPreviewRepository,
+            OrderRepository orderRepository,
+            CartItemRepository cartItemRepository,
+            FavoriteRepository favoriteRepository,
+            ReviewRepository reviewRepository) {
         this.vinylRepository = vinylRepository;
         this.categoryRepository = categoryRepository;
         this.artistRepository = artistRepository;
         this.genreRepository = genreRepository;
         this.audioPreviewRepository = audioPreviewRepository;
+        this.orderRepository = orderRepository;
+        this.cartItemRepository = cartItemRepository;
+        this.favoriteRepository = favoriteRepository;
+        this.reviewRepository = reviewRepository;
     }
 
     @Override
@@ -156,9 +173,21 @@ public class VinylServiceImpl implements VinylService {
         return vinylRepository.save(current);
     }
 
+    /**
+     * Un vinilo que ya fue vendido no se borra: se deshabilita, asi las ordenes
+     * historicas siguen siendo consultables. Si nunca se vendio, se lo saca de
+     * los carritos y favoritos antes de eliminarlo.
+     */
     @Override
+    @org.springframework.transaction.annotation.Transactional
     public void deleteVinyl(int id) {
         Vinyl vinyl = getVinylById(id);
+        if (orderRepository.existsOrderItemForVinyl(vinyl.getId())) {
+            throw new VinylAlreadyOrderedException();
+        }
+        cartItemRepository.deleteByVinylId(vinyl.getId());
+        favoriteRepository.deleteByVinylId(vinyl.getId());
+        reviewRepository.deleteByVinylId(vinyl.getId());
         vinylRepository.delete(vinyl);
     }
 

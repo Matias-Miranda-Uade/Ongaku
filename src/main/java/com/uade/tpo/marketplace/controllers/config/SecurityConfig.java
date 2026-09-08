@@ -30,21 +30,26 @@ public class SecurityConfig {
                 .authorizeHttpRequests(req -> req
                     .dispatcherTypeMatchers(jakarta.servlet.DispatcherType.ERROR).permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/v1/auth/register", "/api/v1/auth/authenticate").permitAll()
+                    // Las reseñas propias necesitan login: va antes que el listado publico.
+                    .requestMatchers(HttpMethod.GET, "/reviews/me").hasAuthority("USER")
                     // Listados, busquedas y filtros publicos. El detalle requiere login.
                     .requestMatchers(HttpMethod.GET, "/vinyls", "/vinyls/search", "/vinyls/search/*",
                             "/vinyls/filter", "/vinyls/artist/*", "/vinyls/genre/*", "/vinyls/category/*",
                             "/vinyls/year/*", "/vinyls/price/*", "/artists", "/genres",
-                            "/reviews", "/reviews/*", "/categories", "/categories/*",
+                            "/reviews", "/reviews/*", "/reviews/vinyl/*", "/categories", "/categories/*",
                             "/audio-previews", "/audio-previews/*", "/average-scores", "/average-scores/*").permitAll()
                     .requestMatchers(HttpMethod.GET, "/vinyls/*", "/artists/*", "/genres/*", "/genres/*/vinyls",
                             "/orders", "/orders/*", "/payments", "/payments/*",
                             "/order-statuses", "/order-statuses/*").hasAnyAuthority("USER", "ADMIN")
                     // Los servicios verifican ademas que los recursos pertenezcan al usuario.
                     .requestMatchers("/carts", "/carts/**", "/favorites", "/favorites/**").hasAuthority("USER")
-                    .requestMatchers(HttpMethod.POST, "/reviews", "/payments", "/orders",
-                            "/orders/cart", "/orders/cart/*", "/orders/from-cart").hasAuthority("USER")
-                    .requestMatchers(HttpMethod.PATCH, "/orders/*/status", "/orders/*/status/*").hasAuthority("ADMIN")
-                    .requestMatchers(HttpMethod.PUT, "/orders/*").hasAuthority("ADMIN")
+                    .requestMatchers(HttpMethod.POST, "/reviews", "/payments", "/orders").hasAuthority("USER")
+                    .requestMatchers(HttpMethod.PATCH, "/reviews/*").hasAuthority("USER")
+                    .requestMatchers(HttpMethod.PUT, "/reviews/*").hasAuthority("USER")
+                    // El autor borra la suya; el admin ademas puede moderar.
+                    .requestMatchers(HttpMethod.DELETE, "/reviews/*").hasAnyAuthority("USER", "ADMIN")
+                    // El servicio decide que transiciones puede hacer cada rol.
+                    .requestMatchers(HttpMethod.PATCH, "/orders/*/status").hasAnyAuthority("USER", "ADMIN")
                     .requestMatchers("/dashboard", "/dashboard/**", "/admin/vinyls", "/admin/vinyls/**").hasAuthority("ADMIN")
                     .requestMatchers(HttpMethod.POST, "/artists", "/genres", "/categories", "/audio-previews").hasAuthority("ADMIN")
                     .requestMatchers(HttpMethod.PUT, "/artists/*").hasAuthority("ADMIN")

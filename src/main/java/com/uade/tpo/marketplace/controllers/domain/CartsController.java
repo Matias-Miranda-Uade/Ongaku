@@ -1,9 +1,7 @@
 package com.uade.tpo.marketplace.controllers.domain;
 
 import java.security.Principal;
-import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,51 +13,74 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.uade.tpo.marketplace.common.ApiResponse;
-import com.uade.tpo.marketplace.entity.dto.CartRequest;
+import com.uade.tpo.marketplace.entity.Cart;
+import com.uade.tpo.marketplace.entity.dto.CartItemRequest;
+import com.uade.tpo.marketplace.entity.dto.CartQuantityRequest;
 import com.uade.tpo.marketplace.entity.dto.CartResponse;
 import com.uade.tpo.marketplace.entity.dto.mapper.CartMapper;
+import com.uade.tpo.marketplace.exceptions.badrequest.InvalidRequestException;
 import com.uade.tpo.marketplace.service.CartService;
 
+import lombok.RequiredArgsConstructor;
+
+/**
+ * Carrito del usuario autenticado. No hace falta pasar el id del carrito: cada
+ * usuario tiene el suyo y solo puede operar sobre ese.
+ */
 @RestController
 @RequestMapping("/carts")
+@RequiredArgsConstructor
 public class CartsController {
-    @Autowired private CartService cartService;
+
+    private final CartService cartService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<CartResponse>>> getCarts(Principal principal) {
-        List<CartResponse> carts = cartService.getCarts(principal.getName()).stream().map(CartMapper::toResponse).toList();
-        return ResponseEntity.ok(ApiResponse.list(carts, "El carrito está vacío"));
+    public ResponseEntity<ApiResponse<CartResponse>> getMyCart(Principal principal) {
+        return ok(cartService.getMyCart(principal.getName()));
     }
 
     @GetMapping("/{cartId}")
-    public ResponseEntity<ApiResponse<CartResponse>> getCartById(@PathVariable int cartId, Principal principal) {
-        return ResponseEntity.ok(ApiResponse.ok(CartMapper.toResponse(cartService.getCartById(cartId, principal.getName()))));
+    public ResponseEntity<ApiResponse<CartResponse>> getCartById(@PathVariable long cartId, Principal principal) {
+        return ok(cartService.getCartById(cartId, principal.getName()));
     }
 
-    @PostMapping
-    public ResponseEntity<ApiResponse<CartResponse>> createCart(@RequestBody(required = false) CartRequest request, Principal principal) {
-        CartResponse response = CartMapper.toResponse(cartService.createCart(request, principal.getName()));
-        return ResponseEntity.status(201).body(ApiResponse.created(response, "Vinilo agregado al carrito"));
-    }
-    @PostMapping("/{cartId}/items")
-    public ResponseEntity<ApiResponse<CartResponse>> addItem(@PathVariable int cartId,
-            @RequestBody CartRequest request, Principal principal) {
-        return ResponseEntity.ok(ApiResponse.ok(CartMapper.toResponse(cartService.addItem(
-                cartId, request.getVinylId(), request.getQuantity(), principal.getName()))));
+    @PostMapping("/items")
+    public ResponseEntity<ApiResponse<CartResponse>> addItem(
+            @RequestBody CartItemRequest request, Principal principal) {
+        if (request == null) {
+            throw new InvalidRequestException("Indica el vinilo y la cantidad a agregar");
+        }
+        Cart cart = cartService.addItem(principal.getName(), request.getVinylId(), request.getQuantity());
+        return ResponseEntity.ok(ApiResponse.ok(CartMapper.toResponse(cart), "Vinilo agregado al carrito"));
     }
 
-    @PatchMapping("/{cartId}/items/{vinylId}")
-    public ResponseEntity<ApiResponse<CartResponse>> updateQuantity(@PathVariable int cartId,
-            @PathVariable int vinylId, @RequestBody com.uade.tpo.marketplace.entity.dto.CartQuantityRequest request,
-            Principal principal) {
-        return ResponseEntity.ok(ApiResponse.ok(CartMapper.toResponse(cartService.updateQuantity(
-                cartId, vinylId, request.quantity(), principal.getName()))));
+    @PatchMapping("/items/{vinylId}")
+    public ResponseEntity<ApiResponse<CartResponse>> updateQuantity(@PathVariable long vinylId,
+            @RequestBody CartQuantityRequest request, Principal principal) {
+        if (request == null) {
+            throw new InvalidRequestException("Indica la nueva cantidad");
+        }
+        Cart cart = cartService.updateQuantity(principal.getName(), vinylId, request.quantity());
+        return ResponseEntity.ok(ApiResponse.ok(CartMapper.toResponse(cart), "Cantidad actualizada"));
     }
 
-    @DeleteMapping("/{cartId}/items/{vinylId}")
-    public ResponseEntity<ApiResponse<CartResponse>> removeItem(@PathVariable int cartId,
-            @PathVariable int vinylId, Principal principal) {
-        return ResponseEntity.ok(ApiResponse.ok(CartMapper.toResponse(cartService.removeItem(
-                cartId, vinylId, principal.getName()))));
+    @DeleteMapping("/items/{vinylId}")
+    public ResponseEntity<ApiResponse<CartResponse>> removeItem(@PathVariable long vinylId, Principal principal) {
+        Cart cart = cartService.removeItem(principal.getName(), vinylId);
+        return ResponseEntity.ok(ApiResponse.ok(CartMapper.toResponse(cart), "Vinilo eliminado del carrito"));
+    }
+
+    @DeleteMapping("/items")
+    public ResponseEntity<ApiResponse<CartResponse>> clear(Principal principal) {
+        Cart cart = cartService.clear(principal.getName());
+        return ResponseEntity.ok(ApiResponse.ok(CartMapper.toResponse(cart), "Carrito vaciado"));
+    }
+
+    private ResponseEntity<ApiResponse<CartResponse>> ok(Cart cart) {
+        CartResponse response = CartMapper.toResponse(cart);
+        String message = response.isEmpty()
+                ? "El carrito está vacío"
+                : "El carrito tiene " + response.getTotalProducts() + " producto(s)";
+        return ResponseEntity.ok(ApiResponse.ok(response, message));
     }
 }

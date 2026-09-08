@@ -1,30 +1,39 @@
 package com.uade.tpo.marketplace.service;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.uade.tpo.marketplace.entity.Cart;
+import com.uade.tpo.marketplace.entity.CartItem;
 import com.uade.tpo.marketplace.entity.Order;
+import com.uade.tpo.marketplace.entity.OrderItem;
 import com.uade.tpo.marketplace.entity.OrderStatus;
+import com.uade.tpo.marketplace.entity.OrderStatusType;
+import com.uade.tpo.marketplace.entity.Role;
+import com.uade.tpo.marketplace.entity.User;
 import com.uade.tpo.marketplace.entity.Vinyl;
-import com.uade.tpo.marketplace.exceptions.badrequest.InvalidFieldException;
 import com.uade.tpo.marketplace.exceptions.conflict.EmptyCartException;
 import com.uade.tpo.marketplace.exceptions.conflict.InsufficientStockException;
 import com.uade.tpo.marketplace.exceptions.conflict.InvalidOrderStatusTransitionException;
 import com.uade.tpo.marketplace.exceptions.conflict.OrderAlreadyCancelledException;
+import com.uade.tpo.marketplace.exceptions.conflict.ProductDisabledException;
+import com.uade.tpo.marketplace.exceptions.forbidden.ForbiddenOperationException;
+import com.uade.tpo.marketplace.exceptions.forbidden.ResourceOwnershipException;
 import com.uade.tpo.marketplace.exceptions.notfound.ResourceNotFoundException;
 import com.uade.tpo.marketplace.repository.CartRepository;
 import com.uade.tpo.marketplace.repository.OrderRepository;
 import com.uade.tpo.marketplace.repository.OrderStatusRepository;
 import com.uade.tpo.marketplace.repository.VinylRepository;
 
-@Service
-public class OrderServiceImpl implements OrderService {
+import lombok.RequiredArgsConstructor;
 
-    private static final long CANCELLED_STATUS_ID = 5L;
+@Service
+@RequiredArgsConstructor
+@Transactional
+public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
     private final OrderStatusRepository orderStatusRepository;
@@ -32,126 +41,128 @@ public class OrderServiceImpl implements OrderService {
     private final VinylRepository vinylRepository;
     private final OwnershipGuard ownershipGuard;
 
-    public OrderServiceImpl(
-            OrderRepository orderRepository,
-            OrderStatusRepository orderStatusRepository,
-            CartRepository cartRepository,
-            VinylRepository vinylRepository,
-            OwnershipGuard ownershipGuard) {
-
-        this.orderRepository = orderRepository;
-        this.orderStatusRepository = orderStatusRepository;
-        this.cartRepository = cartRepository;
-        this.vinylRepository = vinylRepository;
-        this.ownershipGuard = ownershipGuard;
+    @Override
+    @Transactional(readOnly = true)
+    public List<Order> getOrders(String requesterEmail) {
+        User user = ownershipGuard.requireUser(requesterEmail);
+        return user.getRole() == Role.ADMIN
+                ? orderRepository.findAllMostRecentFirst()
+                : orderRepository.findByUserId(user.getId());
     }
 
     @Override
-    public ArrayList<Order> getOrders(String requesterEmail) {
-        var user = ownershipGuard.requireUser(requesterEmail);
-        return new ArrayList<>(user.getRole() == com.uade.tpo.marketplace.entity.Role.ADMIN
-                ? orderRepository.findAll() : orderRepository.findByUserId(Math.toIntExact(user.getId())));
-    }
-
-    @Override
-    public Order getOrderById(int id, String requesterEmail) {
-        Order order = orderRepository.findById((long) id)
-                .orElseThrow(() -> new ResourceNotFoundException("Orden", id));
-
-        Long ownerId = order.getUser() != null ? order.getUser().getId() : null;
-        ownershipGuard.assertSelfOrAdmin(requesterEmail, ownerId);
-
+    @Transactional(readOnly = true)
+    public Order getOrderById(long orderId, String requesterEmail) {
+        Order order = orderRepository.findDetailById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Orden", orderId));
+        ownershipGuard.assertSelfOrAdmin(requesterEmail, order.getUser() == null ? null : order.getUser().getId());
         return order;
     }
 
     @Override
-    @org.springframework.transaction.annotation.Transactional
-    public Order createOrderFromCurrentUserCart(String requesterEmail) {
-        var user = ownershipGuard.requireCustomer(requesterEmail);
-        Cart cart = cartRepository.findFirstByUser_Id(user.getId())
-            .orElseThrow(EmptyCartException::new);
-        return createOrderFromCart(Math.toIntExact(cart.getId()), requesterEmail);
-    }
+    public Order createOrder(String requesterEmail) {
+        User user = ownershipGuard.requireCustomer(requesterEmail);
 
-    @Override
-    @org.springframework.transaction.annotation.Transactional
-    public Order updateOrderStatus(int orderId, int statusId) {
-
-        Order order = orderRepository.findForUpdateById((long) orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Orden", orderId));
-
-        if (statusId < 1 || statusId > 5) {
-            throw new InvalidFieldException("orderStatusId", "debe estar entre 1 y 5");
-        }
-        Long current = order.getOrderStatus() == null ? null : order.getOrderStatus().getId();
-        if (current == null) throw new InvalidOrderStatusTransitionException("La orden no tiene estado inicial");
-        if (current == CANCELLED_STATUS_ID) throw new OrderAlreadyCancelledException();
-        if (current == statusId) return order;
-        boolean allowed = (current == 1 && (statusId == 2 || statusId == 5))
-                || (current == 2 && (statusId == 3 || statusId == 5))
-                || (current == 3 && statusId == 4);
-        if (!allowed) throw new InvalidOrderStatusTransitionException("Transicion de estado no permitida");
-        if (statusId == CANCELLED_STATUS_ID && order.getVinyl() != null) {
-            for (Vinyl vinyl : order.getVinyl()) {
-                vinylRepository.updateStock(vinyl.getId(), order.quantityOf(vinyl.getId()));
-            }
-        }
-
-        OrderStatus newStatus = orderStatusRepository.findById((long) statusId)
-                .orElseThrow(() -> new ResourceNotFoundException("Estado de orden", statusId));
-
-        order.setOrderStatus(newStatus);
-
-        return orderRepository.save(order);
-    }
-
-    @Override
-    @org.springframework.transaction.annotation.Transactional
-    public Order createOrderFromCart(int cartId, String requesterEmail) {
-        Cart cart = cartRepository.findForUpdateById((long) cartId)
-                .orElseThrow(() -> new ResourceNotFoundException("Carrito", cartId));
-
-        Long ownerId = cart.getUser() != null ? cart.getUser().getId() : null;
-        ownershipGuard.assertOwner(requesterEmail, ownerId);
-
-        if (cart.getItems() == null || cart.getItems().isEmpty()) {
+        // Bloquea el carrito para que dos checkouts simultaneos no compren dos veces.
+        Cart cart = cartRepository.findForUpdateByUserId(user.getId()).stream().findFirst()
+                .orElseThrow(EmptyCartException::new);
+        if (cart.isEmpty()) {
             throw new EmptyCartException();
         }
 
-        OrderStatus status = orderStatusRepository.findById(1L)
-                .orElseThrow(() -> new ResourceNotFoundException("Estado de orden", 1));
-
-        List<Vinyl> items = new ArrayList<>(cart.getItems());
-
-        java.util.Map<Long, Integer> quantities = new java.util.HashMap<>();
-        double total = 0;
-        // Stable lock order avoids deadlocks between checkouts sharing products.
-        items.sort(java.util.Comparator.comparing(Vinyl::getId));
-        for (Vinyl vinyl : items) {
-            int quantity = cart.quantityOf(vinyl.getId());
-            if (quantity <= 0) throw new InvalidFieldException("quantity", "debe ser mayor a cero");
-            if (Boolean.FALSE.equals(vinyl.getEnabled())) {
-                throw new com.uade.tpo.marketplace.exceptions.conflict.ProductDisabledException();
-            }
-            if (vinylRepository.reserveStock(vinyl.getId(), quantity) == 0) {
-                throw new InsufficientStockException("El vinilo '" + vinyl.getName() + "' no tiene stock disponible");
-            }
-            quantities.put(vinyl.getId(), quantity);
-            total += (double) vinyl.getPrice() * quantity;
-        }
         Order order = new Order();
-        order.setUser(cart.getUser());
-        order.setOrderStatus(status);
-        order.setOrderDate(LocalDate.now().toString());
+        order.setUser(user);
+        order.setOrderStatus(status(OrderStatusType.PENDIENTE));
+
+        // Orden estable de bloqueo de productos: evita deadlocks entre compras simultaneas.
+        List<CartItem> items = cart.getItems().stream()
+                .sorted(Comparator.comparing(item -> item.getVinyl().getId()))
+                .toList();
+
+        int total = 0;
+        for (CartItem item : items) {
+            Vinyl vinyl = item.getVinyl();
+            if (Boolean.FALSE.equals(vinyl.getEnabled())) {
+                throw new ProductDisabledException();
+            }
+            if (vinylRepository.reserveStock(vinyl.getId(), item.getQuantity()) == 0) {
+                throw new InsufficientStockException("El vinilo '" + vinyl.getName()
+                        + "' no tiene stock disponible para la cantidad pedida");
+            }
+            total += order.addItem(vinyl, item.getQuantity()).getSubtotal();
+        }
         order.setTotal(total);
-        order.setVinyl(items);
-        order.setQuantities(quantities);
 
         Order saved = orderRepository.save(order);
-        cart.getItems().clear();
-        cart.getQuantities().clear();
-        cartRepository.save(cart);
+
+        // El carrito queda vacio, listo para la proxima compra. El carrito ya
+        // esta administrado por la transaccion, asi que no se vuelve a guardar:
+        // un merge romperia el borrado automatico de sus lineas.
+        cart.clear();
+        cartRepository.flush();
         return saved;
     }
 
+    @Override
+    public Order updateStatus(long orderId, OrderStatusType target, String requesterEmail) {
+        User requester = ownershipGuard.requireUser(requesterEmail);
+        Order order = orderRepository.findForUpdateById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Orden", orderId));
+
+        boolean admin = requester.getRole() == Role.ADMIN;
+        Long ownerId = order.getUser() == null ? null : order.getUser().getId();
+        if (!admin && !requester.getId().equals(ownerId)) {
+            throw new ResourceOwnershipException();
+        }
+
+        OrderStatusType current = order.getStatusType();
+        if (current == null) {
+            throw new InvalidOrderStatusTransitionException("La orden no tiene un estado valido");
+        }
+        // Una orden cancelada es un estado final, sin importar quien lo pida.
+        if (current == OrderStatusType.CANCELADA) {
+            throw new OrderAlreadyCancelledException();
+        }
+        // El comprador solo puede arrepentirse mientras la orden siga pendiente.
+        if (!admin && !(current == OrderStatusType.PENDIENTE && target == OrderStatusType.CANCELADA)) {
+            throw new ForbiddenOperationException(
+                    "Solo podes cancelar una orden que siga en estado PENDIENTE");
+        }
+        return applyStatus(order, target);
+    }
+
+    @Override
+    public Order applyStatus(Order order, OrderStatusType target) {
+        OrderStatusType current = order.getStatusType();
+        if (current == OrderStatusType.CANCELADA) {
+            throw new OrderAlreadyCancelledException();
+        }
+        if (current == target) {
+            throw new InvalidOrderStatusTransitionException("La orden ya esta en estado " + target);
+        }
+        if (!current.canTransitionTo(target)) {
+            throw new InvalidOrderStatusTransitionException(
+                    "No se puede pasar de " + current + " a " + target);
+        }
+        if (target == OrderStatusType.CANCELADA) {
+            restoreStock(order);
+        }
+        order.setOrderStatus(status(target));
+        orderRepository.flush();
+        return order;
+    }
+
+    /** Al cancelar, las unidades reservadas vuelven al catalogo. */
+    private void restoreStock(Order order) {
+        for (OrderItem item : order.getItems()) {
+            if (item.getVinyl() != null) {
+                vinylRepository.updateStock(item.getVinyl().getId(), item.getQuantity());
+            }
+        }
+    }
+
+    private OrderStatus status(OrderStatusType type) {
+        return orderStatusRepository.findById(type.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Estado de orden", type.getId()));
+    }
 }

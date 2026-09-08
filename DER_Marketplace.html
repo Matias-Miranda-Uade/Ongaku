@@ -48,13 +48,17 @@ graph TD
     
     VINYL["VINYL<br/>id: Long PK<br/>name: String<br/>description: String<br/>price: int<br/>stock: int<br/>image: String<br/>year: int"]
     
-    CART["CART<br/>id: Long PK<br/>user_id: Long FK"]
-    
-    ORDER["ORDER<br/>id: Long PK<br/>orderDate: String<br/>total: double<br/>user_id: Long FK<br/>order_status_id: Long FK"]
-    
-    ORDER_STATUS["ORDER_STATUS<br/>id: Long PK<br/>name: String<br/>description: String"]
-    
-    REVIEW["REVIEW<br/>id: Long PK<br/>comment: String<br/>vinyl_id: Long FK<br/>user_id: Long FK"]
+    CART["CART<br/>id: Long PK<br/>user_id: Long FK UNIQUE"]
+
+    CART_ITEM["CART_ITEM<br/>id: Long PK<br/>cart_id: Long FK<br/>vinyl_id: Long FK<br/>quantity: int<br/>UNIQUE(cart_id, vinyl_id)"]
+
+    ORDER["ORDER<br/>id: Long PK<br/>created_at: LocalDateTime<br/>total: double<br/>user_id: Long FK<br/>order_status_id: Long FK"]
+
+    ORDER_ITEM["ORDER_ITEM<br/>id: Long PK<br/>order_id: Long FK<br/>vinyl_id: Long FK<br/>vinyl_name: String<br/>artist_name: String<br/>unit_price: int<br/>quantity: int"]
+
+    ORDER_STATUS["ORDER_STATUS<br/>id: Long PK<br/>name: String<br/>description: String<br/>1 PENDIENTE / 2 PAGADA<br/>3 ENVIADA / 4 ENTREGADA<br/>5 CANCELADA"]
+
+    REVIEW["REVIEW<br/>id: Long PK<br/>comment: String<br/>score: Integer<br/>vinyl_id: Long FK<br/>user_id: Long FK<br/>created_at / updated_at<br/>UNIQUE(user_id, vinyl_id)"]
     
     PAYMENT["PAYMENT<br/>id: Long PK<br/>amount: double<br/>method: String<br/>paymentDate: String<br/>status: String<br/>order_id: Long FK"]
     
@@ -67,8 +71,9 @@ graph TD
     USER -->|1..N| FAVORITE
     USER -->|1..1| CART
     
-    CART -->|M..N| VINYL
-    
+    CART -->|1..N| CART_ITEM
+    CART_ITEM -->|M..1| VINYL
+
     VINYL -->|M..1| CATEGORY
     VINYL -->|M..1| ARTIST
     VINYL -->|M..1| GENRE
@@ -80,7 +85,8 @@ graph TD
     ARTIST -->|1..N| VINYL
     CATEGORY -->|1..N| VINYL
     
-    ORDER -->|M..N| VINYL
+    ORDER -->|1..N| ORDER_ITEM
+    ORDER_ITEM -->|M..1| VINYL
     ORDER -->|1..1| ORDER_STATUS
     ORDER -->|1..N| PAYMENT
     
