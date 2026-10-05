@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.uade.tpo.marketplace.common.ApiResponse;
 import com.uade.tpo.marketplace.entity.dto.VinylRequest;
+import com.uade.tpo.marketplace.entity.dto.VinylDiscountRequest;
 import com.uade.tpo.marketplace.entity.dto.AdminVinylResponse;
 import com.uade.tpo.marketplace.entity.dto.mapper.VinylMapper;
 import com.uade.tpo.marketplace.service.VinylService;
@@ -48,6 +49,14 @@ public class AdminVinylController {
     public ResponseEntity<ApiResponse<AdminVinylResponse>> updateVinyl(@PathVariable int vinylId, @RequestBody VinylRequest request) {
         AdminVinylResponse response = VinylMapper.toAdminResponse(vinylService.updateVinyl(vinylId, request));
         return ResponseEntity.ok(ApiResponse.ok(response, "Vinilo actualizado correctamente"));
+    }
+
+    @PatchMapping("/{vinylId}/discount")
+    public ResponseEntity<ApiResponse<AdminVinylResponse>> updateDiscount(
+            @PathVariable int vinylId, @RequestBody VinylDiscountRequest request) {
+        AdminVinylResponse response = VinylMapper.toAdminResponse(
+                vinylService.updateDiscount(vinylId, request == null ? null : request.getDiscountPercentage()));
+        return ResponseEntity.ok(ApiResponse.ok(response, "Descuento actualizado correctamente"));
     }
 
     @PatchMapping("/{vinylId}/enabled")

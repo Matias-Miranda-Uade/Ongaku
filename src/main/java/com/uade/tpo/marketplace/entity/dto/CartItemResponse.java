@@ -10,6 +10,10 @@ public class CartItemResponse {
     private String artistName;
     private String image;
     private int unitPrice;
+    private int originalPrice;
+    private int discountPercentage;
+    private int discountAmount;
+    private int finalPrice;
     private int quantity;
     private int subtotal;
     /** Stock disponible en el catalogo, para avisar antes de intentar comprar. */

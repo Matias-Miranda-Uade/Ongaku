@@ -8,6 +8,10 @@ public class VinylResponse {
     private String name;
     private String description;
     private int price;
+    private int originalPrice;
+    private int discountPercentage;
+    private int discountAmount;
+    private int finalPrice;
     private int stock;
     private String image;
     private Long categoryId;

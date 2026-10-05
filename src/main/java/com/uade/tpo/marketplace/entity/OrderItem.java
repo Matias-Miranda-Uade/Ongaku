@@ -52,6 +52,17 @@ public class OrderItem {
     @Column(name = "unit_price", nullable = false)
     private int unitPrice;
 
+    @Column(name = "original_price")
+    private Integer originalPrice;
+
+    @Column(nullable = false, columnDefinition = "integer default 0")
+    private int discountPercentage = 0;
+
+    /** Las ordenes anteriores conservan el precio que se cobro. */
+    public int getOriginalPrice() {
+        return originalPrice == null ? unitPrice : originalPrice;
+    }
+
     @Column(nullable = false)
     private int quantity;
 
@@ -65,7 +76,9 @@ public class OrderItem {
         this.vinylName = vinyl.getName();
         this.artistName = vinyl.getArtist() != null ? vinyl.getArtist().getName() : null;
         this.image = vinyl.getImage();
-        this.unitPrice = vinyl.getPrice();
+        this.originalPrice = vinyl.getPrice();
+        this.discountPercentage = vinyl.getDiscountPercentage();
+        this.unitPrice = vinyl.getFinalPrice();
     }
 
     public int getSubtotal() {

@@ -11,6 +11,7 @@ public interface VinylService {
     Vinyl getVinylById(int id);
     Vinyl createVinyl(VinylRequest request);
     Vinyl updateVinyl(int id, VinylRequest request);
+    Vinyl updateDiscount(int id, Integer discountPercentage);
     Vinyl setEnabled(int id, boolean enabled);
     void deleteVinyl(int id);
     ArrayList<Vinyl> searchPublicVinyls(String searchTerm);

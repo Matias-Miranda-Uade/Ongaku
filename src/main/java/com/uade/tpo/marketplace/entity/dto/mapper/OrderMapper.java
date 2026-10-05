@@ -35,6 +35,10 @@ public final class OrderMapper {
         response.setArtistName(item.getArtistName());
         response.setImage(item.getImage());
         response.setUnitPrice(item.getUnitPrice());
+        response.setOriginalPrice(item.getOriginalPrice());
+        response.setDiscountPercentage(item.getDiscountPercentage());
+        response.setDiscountAmount(item.getOriginalPrice() - item.getUnitPrice());
+        response.setFinalPrice(item.getUnitPrice());
         response.setQuantity(item.getQuantity());
         response.setSubtotal(item.getSubtotal());
         return response;

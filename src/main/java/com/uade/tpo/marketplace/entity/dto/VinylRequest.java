@@ -7,6 +7,7 @@ public class VinylRequest {
     private String name;
     private String description;
     private int price;
+    private Integer discountPercentage;
     private int stock;
     private String image;
     private Long categoryId;

@@ -35,6 +35,10 @@ public final class VinylMapper {
         response.setName(vinyl.getName());
         response.setDescription(vinyl.getDescription());
         response.setPrice(vinyl.getPrice());
+        response.setOriginalPrice(vinyl.getPrice());
+        response.setDiscountPercentage(vinyl.getDiscountPercentage());
+        response.setDiscountAmount(vinyl.getDiscountAmount());
+        response.setFinalPrice(vinyl.getFinalPrice());
         response.setStock(vinyl.getStock());
         response.setImage(vinyl.getImage());
         response.setYear(vinyl.getYear());
@@ -51,6 +55,10 @@ public final class VinylMapper {
         response.setName(vinyl.getName());
         response.setImage(vinyl.getImage());
         response.setPrice(vinyl.getPrice());
+        response.setOriginalPrice(vinyl.getPrice());
+        response.setDiscountPercentage(vinyl.getDiscountPercentage());
+        response.setDiscountAmount(vinyl.getDiscountAmount());
+        response.setFinalPrice(vinyl.getFinalPrice());
         response.setYear(vinyl.getYear());
         response.setArtistName(vinyl.getArtist() != null ? vinyl.getArtist().getName() : null);
         response.setCategoryDescription(vinyl.getCategory() != null ? vinyl.getCategory().getDescription() : null);
@@ -68,6 +76,7 @@ public final class VinylMapper {
         if (request.getName() != null) vinyl.setName(request.getName());
         if (request.getDescription() != null) vinyl.setDescription(request.getDescription());
         vinyl.setPrice(request.getPrice());
+        if (request.getDiscountPercentage() != null) vinyl.setDiscountPercentage(request.getDiscountPercentage());
         vinyl.setStock(request.getStock());
         if (request.getImage() != null) vinyl.setImage(request.getImage());
         vinyl.setYear(request.getYear());

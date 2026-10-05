@@ -50,7 +50,7 @@ public class CartItem {
 
     /** El precio del carrito siempre se lee del catalogo, nunca del cliente. */
     public int getSubtotal() {
-        return vinyl == null ? 0 : vinyl.getPrice() * quantity;
+        return vinyl == null ? 0 : vinyl.getFinalPrice() * quantity;
     }
 
     /** Falso si el vinilo se deshabilito o si ya no hay stock para la cantidad elegida. */

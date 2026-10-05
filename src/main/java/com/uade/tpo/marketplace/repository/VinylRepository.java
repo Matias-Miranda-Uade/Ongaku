@@ -29,8 +29,8 @@ public interface VinylRepository extends JpaRepository<Vinyl, Long> {
 
         @Query("select v from Vinyl v where (v.enabled is null or v.enabled = true) and " +
             "(?1 is null or v.category.id = ?1) and " +
-            "(?2 is null or v.price >= ?2) and " +
-            "(?3 is null or v.price <= ?3) and (?4 is null or v.artist.id = ?4) and " +
+            "(?2 is null or floor((v.price * 1.0 * (100 - v.discountPercentage) + 50) / 100.0) >= ?2) and " +
+            "(?3 is null or floor((v.price * 1.0 * (100 - v.discountPercentage) + 50) / 100.0) <= ?3) and (?4 is null or v.artist.id = ?4) and " +
             "(?5 is null or v.genre.id = ?5)")
     List<Vinyl> filterPublic(Integer categoryId, Double minPrice, Double maxPrice,
             Integer artistId, Integer genreId);
@@ -78,10 +78,10 @@ public interface VinylRepository extends JpaRepository<Vinyl, Long> {
     @Query("select v from Vinyl v where v.year = ?1")
     List<Vinyl> findByYear(int year);
 
-    @Query("select v from Vinyl v order by v.price asc")
+    @Query("select v from Vinyl v order by floor((v.price * 1.0 * (100 - v.discountPercentage) + 50) / 100.0) asc")
     List<Vinyl> findAllOrderByPriceAsc();
 
-    @Query("select v from Vinyl v order by v.price desc")
+    @Query("select v from Vinyl v order by floor((v.price * 1.0 * (100 - v.discountPercentage) + 50) / 100.0) desc")
     List<Vinyl> findAllOrderByPriceDesc();
 
     @Query("select v from Vinyl v order by v.year asc")
