@@ -31,6 +31,17 @@ public class Vinyl {
     @Column
     private int price;
 
+    @Column(nullable = false, columnDefinition = "integer default 0")
+    private int discountPercentage = 0;
+
+    public int getFinalPrice() {
+        return (int) (((long) price * (100 - discountPercentage) + 50) / 100);
+    }
+
+    public int getDiscountAmount() {
+        return price - getFinalPrice();
+    }
+
     @Column
     private int stock;
 

@@ -107,6 +107,7 @@ public class VinylServiceImpl implements VinylService {
         }
 
         Vinyl vinyl = VinylMapper.toEntity(request);
+        if (request.getDiscountPercentage() != null) validateDiscount(request.getDiscountPercentage());
         vinyl.setEnabled(true);
         applyRelations(vinyl, request);
 
@@ -121,6 +122,7 @@ public class VinylServiceImpl implements VinylService {
             throw new InvalidRequestException("Los datos del vinilo son obligatorios");
         }
 
+        if (request.getDiscountPercentage() != null) validateDiscount(request.getDiscountPercentage());
         if (request.getName() != null && !request.getName().isBlank()) {
             current.setName(request.getName());
         }
@@ -140,6 +142,9 @@ public class VinylServiceImpl implements VinylService {
             current.setYear(request.getYear());
         }
 
+        if (request.getDiscountPercentage() != null) {
+            current.setDiscountPercentage(request.getDiscountPercentage());
+        }
         applyRelations(current, request);
 
         return vinylRepository.save(current);
@@ -164,6 +169,20 @@ public class VinylServiceImpl implements VinylService {
                 : null;
 
         VinylMapper.applyRelations(vinyl, category, artist, genre, audioPreview);
+    }
+
+    private void validateDiscount(Integer percentage) {
+        if (percentage == null || percentage < 0 || percentage > 100) {
+            throw new InvalidFieldException("discountPercentage", "debe ser un entero entre 0 y 100");
+        }
+    }
+
+    @Override
+    public Vinyl updateDiscount(int id, Integer discountPercentage) {
+        validateDiscount(discountPercentage);
+        Vinyl vinyl = getVinylById(id);
+        vinyl.setDiscountPercentage(discountPercentage);
+        return vinylRepository.save(vinyl);
     }
 
     @Override

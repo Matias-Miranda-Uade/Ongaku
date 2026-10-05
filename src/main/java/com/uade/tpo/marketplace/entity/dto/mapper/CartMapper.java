@@ -34,7 +34,11 @@ public final class CartMapper {
         response.setName(vinyl != null ? vinyl.getName() : null);
         response.setArtistName(vinyl != null && vinyl.getArtist() != null ? vinyl.getArtist().getName() : null);
         response.setImage(vinyl != null ? vinyl.getImage() : null);
-        response.setUnitPrice(vinyl != null ? vinyl.getPrice() : 0);
+        response.setUnitPrice(vinyl != null ? vinyl.getFinalPrice() : 0);
+        response.setOriginalPrice(vinyl != null ? vinyl.getPrice() : 0);
+        response.setDiscountPercentage(vinyl != null ? vinyl.getDiscountPercentage() : 0);
+        response.setDiscountAmount(vinyl != null ? vinyl.getDiscountAmount() : 0);
+        response.setFinalPrice(response.getUnitPrice());
         response.setQuantity(item.getQuantity());
         response.setSubtotal(item.getSubtotal());
         response.setStock(vinyl != null ? vinyl.getStock() : 0);
