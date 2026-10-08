@@ -2,10 +2,8 @@ package com.uade.tpo.marketplace.service;
 
 import java.util.List;
 import java.util.Set;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import com.uade.tpo.marketplace.entity.OrderStatusType;
 import com.uade.tpo.marketplace.entity.Review;
 import com.uade.tpo.marketplace.entity.User;
@@ -23,21 +21,14 @@ import com.uade.tpo.marketplace.repository.OrderRepository;
 import com.uade.tpo.marketplace.repository.ReviewRepository;
 import com.uade.tpo.marketplace.repository.VinylRepository;
 
-import lombok.RequiredArgsConstructor;
-
 @Service
-@RequiredArgsConstructor
 @Transactional
 public class ReviewServiceImpl implements ReviewService {
-
     private static final int MAX_COMMENT_LENGTH = 1000;
-
-    /** Una compra cuenta como tal desde que esta pagada. */
-    private static final Set<Long> PURCHASED_STATUS_IDS = Set.of(
-            OrderStatusType.PAGADA.getId(),
-            OrderStatusType.ENVIADA.getId(),
-            OrderStatusType.ENTREGADA.getId());
-
+    /**
+     * Una compra cuenta como tal desde que esta pagada.
+     */
+    private static final Set<Long> PURCHASED_STATUS_IDS = Set.of(OrderStatusType.PAGADA.getId(), OrderStatusType.ENVIADA.getId(), OrderStatusType.ENTREGADA.getId());
     private final ReviewRepository reviewRepository;
     private final VinylRepository vinylRepository;
     private final OrderRepository orderRepository;
@@ -52,8 +43,7 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     @Transactional(readOnly = true)
     public Review getReviewById(long reviewId) {
-        return reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new ResourceNotFoundException("Reseña", reviewId));
+        return reviewRepository.findById(reviewId).orElseThrow(() -> new ResourceNotFoundException("Reseña", reviewId));
     }
 
     @Override
@@ -80,22 +70,18 @@ public class ReviewServiceImpl implements ReviewService {
         }
         String comment = requireComment(request.getComment());
         int score = requireScore(request.getScore());
-
         User user = ownershipGuard.requireCustomer(requesterEmail);
         // El userId del cuerpo es opcional, pero nunca puede apuntar a otra persona.
         if (request.getUserId() != 0) {
             ownershipGuard.assertOwner(requesterEmail, (long) request.getUserId());
         }
-
         Vinyl vinyl = requireVinyl(request.getVinylId());
-
         if (reviewRepository.findByUserIdAndVinylId(user.getId(), vinyl.getId()).isPresent()) {
             throw new DuplicateReviewException();
         }
         if (!orderRepository.hasPurchasedVinyl(user.getId(), vinyl.getId(), PURCHASED_STATUS_IDS)) {
             throw new ReviewNotAllowedException();
         }
-
         Review review = new Review();
         review.setUser(user);
         review.setVinyl(vinyl);
@@ -111,7 +97,6 @@ public class ReviewServiceImpl implements ReviewService {
         }
         Review review = getReviewById(reviewId);
         ownershipGuard.assertOwner(requesterEmail, review.getUser() == null ? null : review.getUser().getId());
-
         if (request.getComment() != null) {
             review.setComment(requireComment(request.getComment()));
         }
@@ -127,14 +112,12 @@ public class ReviewServiceImpl implements ReviewService {
     public void deleteReview(long reviewId, String requesterEmail) {
         Review review = getReviewById(reviewId);
         // El autor puede borrar la suya; el admin ademas puede moderar.
-        ownershipGuard.assertSelfOrAdmin(requesterEmail,
-                review.getUser() == null ? null : review.getUser().getId());
+        ownershipGuard.assertSelfOrAdmin(requesterEmail, review.getUser() == null ? null : review.getUser().getId());
         reviewRepository.delete(review);
     }
 
     private Vinyl requireVinyl(long vinylId) {
-        return vinylRepository.findById(vinylId)
-                .orElseThrow(() -> new ResourceNotFoundException("Vinilo", vinylId));
+        return vinylRepository.findById(vinylId).orElseThrow(() -> new ResourceNotFoundException("Vinilo", vinylId));
     }
 
     private String requireComment(String comment) {
@@ -153,5 +136,12 @@ public class ReviewServiceImpl implements ReviewService {
             throw new InvalidFieldException("score", "debe ser un entero entre 1 y 5");
         }
         return score;
+    }
+
+    public ReviewServiceImpl(ReviewRepository reviewRepository, VinylRepository vinylRepository, OrderRepository orderRepository, OwnershipGuard ownershipGuard) {
+        this.reviewRepository = reviewRepository;
+        this.vinylRepository = vinylRepository;
+        this.orderRepository = orderRepository;
+        this.ownershipGuard = ownershipGuard;
     }
 }

@@ -1,24 +1,18 @@
 package com.uade.tpo.marketplace.service;
 
 import org.springframework.stereotype.Component;
-
 import com.uade.tpo.marketplace.entity.Role;
 import com.uade.tpo.marketplace.entity.User;
 import com.uade.tpo.marketplace.exceptions.forbidden.ResourceOwnershipException;
 import com.uade.tpo.marketplace.exceptions.notfound.ResourceNotFoundException;
 import com.uade.tpo.marketplace.repository.UserRepository;
 
-import lombok.RequiredArgsConstructor;
-
 @Component
-@RequiredArgsConstructor
 public class OwnershipGuard {
-
     private final UserRepository userRepository;
 
     public User requireUser(String email) {
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario", email));
+        return userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("Usuario", email));
     }
 
     public User assertSelfOrAdmin(String requesterEmail, Long targetUserId) {
@@ -38,8 +32,7 @@ public class OwnershipGuard {
     }
 
     public User requireCustomerForUpdate(String email) {
-        User user = userRepository.findForUpdateByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario", email));
+        User user = userRepository.findForUpdateByEmail(email).orElseThrow(() -> new ResourceNotFoundException("Usuario", email));
         if (user.getRole() != Role.USER) throw new ResourceOwnershipException();
         return user;
     }
@@ -50,5 +43,9 @@ public class OwnershipGuard {
             throw new ResourceOwnershipException();
         }
         return user;
+    }
+
+    public OwnershipGuard(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 }
