@@ -2,15 +2,10 @@ package com.uade.tpo.marketplace.common;
 
 import java.time.Instant;
 import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import lombok.Getter;
-
-@Getter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiResponse<T> {
-
     private final boolean success;
     private final int status;
     private final String message;
@@ -63,5 +58,29 @@ public class ApiResponse<T> {
 
     public static ApiResponse<Object> error(int status, String message, List<String> errors) {
         return new ApiResponse<>(false, status, message, null, errors);
+    }
+
+    public boolean isSuccess() {
+        return this.success;
+    }
+
+    public int getStatus() {
+        return this.status;
+    }
+
+    public String getMessage() {
+        return this.message;
+    }
+
+    public T getData() {
+        return this.data;
+    }
+
+    public Instant getTimestamp() {
+        return this.timestamp;
+    }
+
+    public List<String> getErrors() {
+        return this.errors;
     }
 }

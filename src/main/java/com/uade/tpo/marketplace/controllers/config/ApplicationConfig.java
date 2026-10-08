@@ -10,37 +10,35 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
 import com.uade.tpo.marketplace.repository.UserRepository;
 
-import lombok.RequiredArgsConstructor;
-
 @Configuration
-@RequiredArgsConstructor
 public class ApplicationConfig {
     private final UserRepository repository;
 
     @Bean
-    public UserDetailsService userDetailsService(){
-        return username -> repository.findByEmail(username)
-                .orElseThrow(()-> new UsernameNotFoundException("Usuario no encontrado"));
+    public UserDetailsService userDetailsService() {
+        return username -> repository.findByEmail(username).orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
     }
 
     @Bean
-    public AuthenticationProvider authenticationProvider(){
+    public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider(userDetailsService());
         authenticationProvider.setPasswordEncoder(passwordEncoder());
         return authenticationProvider;
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config)throws Exception{
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder(){
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-    
+
+    public ApplicationConfig(UserRepository repository) {
+        this.repository = repository;
+    }
 }

@@ -190,6 +190,39 @@ class MarketplaceSecurityTests {
     }
 
     @Test
+    void authenticationValidatesCredentialsAndLogoutRevokesTheToken() throws Exception {
+        String email = UUID.randomUUID() + "@test.local";
+        mvc.perform(post("/api/v1/auth/register").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"email\":\"" + email + "\",\"password\":\"test-password\","
+                        + "\"firstName\":\"New\",\"lastName\":\"User\"}"))
+                .andExpect(status().isOk());
+
+        mvc.perform(post("/api/v1/auth/authenticate").contentType(MediaType.APPLICATION_JSON)
+                .content("{}")).andExpect(status().isBadRequest());
+        mvc.perform(post("/api/v1/auth/authenticate").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"email\":\"" + email + "\"}"))
+                .andExpect(status().isBadRequest());
+        mvc.perform(post("/api/v1/auth/authenticate").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"email\":\"" + email + "\",\"password\":\"wrong-password\"}"))
+                .andExpect(status().isUnauthorized());
+        mvc.perform(post("/api/v1/auth/authenticate").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"email\":\"missing@test.local\",\"password\":\"test-password\"}"))
+                .andExpect(status().isUnauthorized());
+
+        String response = mvc.perform(post("/api/v1/auth/authenticate").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"email\":\" " + email + " \",\"password\":\"test-password\"}"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        String token = "Bearer " + json.readTree(response).get("access token").asText();
+        mvc.perform(get("/users/me").header("Authorization", token)).andExpect(status().isOk());
+        mvc.perform(post("/api/v1/auth/logout")).andExpect(status().isUnauthorized());
+        mvc.perform(post("/api/v1/auth/logout").header("Authorization", "Bearer "))
+                .andExpect(status().isUnauthorized());
+        mvc.perform(post("/api/v1/auth/logout").header("Authorization", token))
+                .andExpect(status().isNoContent());
+        mvc.perform(get("/users/me").header("Authorization", token)).andExpect(status().isUnauthorized());
+    }
+
+    @Test
     void registrationCreatesAnEmptyCartForARegularUser() throws Exception {
         String email = UUID.randomUUID() + "@test.local";
         String body = "{\"email\":\"" + email + "\",\"password\":\"test-password\",\"firstName\":\"New\","

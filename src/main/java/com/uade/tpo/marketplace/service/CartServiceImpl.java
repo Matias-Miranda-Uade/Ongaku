@@ -2,7 +2,6 @@ package com.uade.tpo.marketplace.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import com.uade.tpo.marketplace.entity.Cart;
 import com.uade.tpo.marketplace.entity.CartItem;
 import com.uade.tpo.marketplace.entity.User;
@@ -14,25 +13,20 @@ import com.uade.tpo.marketplace.exceptions.notfound.ResourceNotFoundException;
 import com.uade.tpo.marketplace.repository.CartRepository;
 import com.uade.tpo.marketplace.repository.VinylRepository;
 
-import lombok.RequiredArgsConstructor;
-
 @Service
-@RequiredArgsConstructor
 @Transactional
 public class CartServiceImpl implements CartService {
-
     private final CartRepository cartRepository;
     private final VinylRepository vinylRepository;
     private final OwnershipGuard ownershipGuard;
 
     @Override
     public Cart createCartFor(User user) {
-        return cartRepository.findFirstByUser_IdOrderByIdAsc(user.getId())
-                .orElseGet(() -> {
-                    Cart cart = new Cart();
-                    cart.setUser(user);
-                    return cartRepository.save(cart);
-                });
+        return cartRepository.findFirstByUser_IdOrderByIdAsc(user.getId()).orElseGet(() -> {
+            Cart cart = new Cart();
+            cart.setUser(user);
+            return cartRepository.save(cart);
+        });
     }
 
     @Override
@@ -44,8 +38,7 @@ public class CartServiceImpl implements CartService {
     @Override
     @Transactional(readOnly = true)
     public Cart getCartById(long cartId, String requesterEmail) {
-        Cart cart = cartRepository.findById(cartId)
-                .orElseThrow(() -> new ResourceNotFoundException("Carrito", cartId));
+        Cart cart = cartRepository.findById(cartId).orElseThrow(() -> new ResourceNotFoundException("Carrito", cartId));
         ownershipGuard.assertOwner(requesterEmail, cart.getUser() == null ? null : cart.getUser().getId());
         return cart;
     }
@@ -55,12 +48,10 @@ public class CartServiceImpl implements CartService {
         Cart cart = myCartForUpdate(requesterEmail);
         if (quantity <= 0) throw new InvalidFieldException("quantity", "debe ser mayor a cero");
         Vinyl vinyl = requireVinyl(vinylId);
-
         CartItem existing = cart.findItem(vinyl.getId()).orElse(null);
         long total = (existing == null ? 0L : existing.getQuantity()) + quantity;
         if (total > Integer.MAX_VALUE) throw new InvalidFieldException("quantity", "es demasiado grande");
         validateQuantity(vinyl, (int) total);
-
         if (existing == null) {
             cart.addItem(vinyl, (int) total);
         } else {
@@ -108,27 +99,29 @@ public class CartServiceImpl implements CartService {
      */
     private Cart myCartForUpdate(String requesterEmail) {
         User user = ownershipGuard.requireCustomer(requesterEmail);
-        return cartRepository.findForUpdateByUserId(user.getId()).stream().findFirst()
-                .orElseGet(() -> createCartFor(user));
+        return cartRepository.findForUpdateByUserId(user.getId()).stream().findFirst().orElseGet(() -> createCartFor(user));
     }
 
     private Vinyl requireVinyl(long vinylId) {
         if (vinylId <= 0) throw new InvalidFieldException("vinylId", "debe ser positivo");
-        return vinylRepository.findById(vinylId)
-                .orElseThrow(() -> new ResourceNotFoundException("Vinilo", vinylId));
+        return vinylRepository.findById(vinylId).orElseThrow(() -> new ResourceNotFoundException("Vinilo", vinylId));
     }
 
     private CartItem requireItem(Cart cart, long vinylId) {
-        return cart.findItem(vinylId)
-                .orElseThrow(() -> new ResourceNotFoundException("Articulo del carrito", vinylId));
+        return cart.findItem(vinylId).orElseThrow(() -> new ResourceNotFoundException("Articulo del carrito", vinylId));
     }
 
     private void validateQuantity(Vinyl vinyl, int quantity) {
         if (quantity <= 0) throw new InvalidFieldException("quantity", "debe ser mayor a cero");
         if (Boolean.FALSE.equals(vinyl.getEnabled())) throw new ProductDisabledException();
         if (quantity > vinyl.getStock()) {
-            throw new InsufficientStockException("Solo quedan " + vinyl.getStock()
-                    + " unidades de '" + vinyl.getName() + "'");
+            throw new InsufficientStockException("Solo quedan " + vinyl.getStock() + " unidades de \'" + vinyl.getName() + "\'");
         }
+    }
+
+    public CartServiceImpl(CartRepository cartRepository, VinylRepository vinylRepository, OwnershipGuard ownershipGuard) {
+        this.cartRepository = cartRepository;
+        this.vinylRepository = vinylRepository;
+        this.ownershipGuard = ownershipGuard;
     }
 }

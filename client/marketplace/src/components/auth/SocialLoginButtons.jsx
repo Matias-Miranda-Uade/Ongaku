@@ -1,7 +1,7 @@
 import Button from '../ui/Button'
 
 const SocialLoginButtons = ({ onLogin }) => (
-  <div>
+  <div className="social-login-buttons">
     <Button onClick={() => onLogin('Google')}>Simular acceso con Google</Button>
     <Button onClick={() => onLogin('Apple')}>Simular acceso con Apple</Button>
   </div>

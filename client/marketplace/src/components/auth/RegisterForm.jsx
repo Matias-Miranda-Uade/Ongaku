@@ -19,6 +19,10 @@ const RegisterForm = ({ onRegister }) => {
       setError('Completá todos los campos.')
       return
     }
+    if (password.length < 8) {
+      setError('La contraseña debe tener al menos 8 caracteres.')
+      return
+    }
     if (password !== confirmation) {
       setError('Las contraseñas no coinciden.')
       return
@@ -28,19 +32,19 @@ const RegisterForm = ({ onRegister }) => {
       return
     }
     setError('')
-    onRegister({ name: name.trim() })
+    onRegister({ name: name.trim(), email: email.trim() })
   }
 
   return (
     <form onSubmit={handleSubmit}>
-      <SectionTitle>Registrarse</SectionTitle>
+      <SectionTitle>Crear tu cuenta</SectionTitle>
       <AuthInput label="Nombre" name="register-name" autoComplete="name" required value={name} onChange={event => setName(event.target.value)} />
       <AuthInput label="Email" name="register-email" type="email" autoComplete="email" required value={email} onChange={event => setEmail(event.target.value)} />
       <PasswordInput label="Contraseña" name="register-password" autoComplete="new-password" required value={password} onChange={event => setPassword(event.target.value)} />
       <PasswordInput label="Confirmar contraseña" name="register-confirmation" autoComplete="new-password" required value={confirmation} onChange={event => setConfirmation(event.target.value)} />
       <Checkbox label="Quiero crear una cuenta de prueba" name="register-accepted" required checked={accepted} onChange={event => setAccepted(event.target.checked)} />
       {error && <p role="alert">{error}</p>}
-      <Button type="submit">Crear cuenta</Button>
+      <Button className="primary-button" type="submit">Crear cuenta</Button>
     </form>
   )
 }

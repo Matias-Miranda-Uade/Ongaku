@@ -1,2 +1,5 @@
-const ArchiveStrip = ({ categoryCount }) => <p>{categoryCount} categorías en el archivo</p>
+const ArchiveStrip = ({ categoryCount }) => (
+  <p className="archive-strip">{String(categoryCount).padStart(2, '0')} CATEGORÍAS EN EL ARCHIVO</p>
+)
+
 export default ArchiveStrip
