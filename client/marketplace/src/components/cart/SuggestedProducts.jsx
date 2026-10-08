@@ -4,10 +4,10 @@ const SuggestedProducts = ({ products, onAdd }) => {
     return (
         <>
         <h2>También te puede interesar</h2>
-        <ul>
+        <ul className="suggested-products-grid">
             {
                 products.map((product) => (
-                    <li key={product.id}>
+                    <li className="suggested-product-card" key={product.id}>
                         <h3>{product.name}</h3>
                         <p>{product.artist}</p>
                         <p>${product.price.toLocaleString('es-AR')}</p>

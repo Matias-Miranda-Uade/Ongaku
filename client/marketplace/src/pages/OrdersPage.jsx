@@ -1,25 +1,30 @@
 import { useState } from "react"
-import { orders as initialOrders } from "../data/mockData"
 import OrderFilters from "../components/order/OrderFilters"
 import OrderCard from "../components/order/OrderCard"
 import OrderDetailPage from "./OrderDetailPage"
 
-const OrdersPage = () => {
+const OrdersPage = ({ orders: accountOrders = [], onNavigate, onOrdersChange }) => {
 
-    const [orders, setOrders] = useState(initialOrders)
+    const [orders, setOrders] = useState(accountOrders)
     const [status, setStatus] = useState('TODAS')
     const [selectedId, setSelectedId] = useState(null)
 
+    const updateOrders = (updater) => {
+        const nextOrders = updater(orders)
+        setOrders(nextOrders)
+        onOrdersChange?.(nextOrders)
+    }
+
     // El cliente solo puede cancelar una orden PENDIENTE
     const cancelOrder = (id) => {
-        setOrders(orders.map((o) =>
+        updateOrders((currentOrders) => currentOrders.map((o) =>
             o.id === id && o.status === 'PENDIENTE' ? { ...o, status: 'CANCELADA' } : o
         ))
     }
 
     // Una reseña por vinilo: se aplica a los ítems con ese vinilo que aún no tengan reseña
     const rateItem = (orderId, vinylId, review) => {
-        setOrders(orders.map((o) => ({
+        updateOrders((currentOrders) => currentOrders.map((o) => ({
             ...o,
             items: o.items.map((item) =>
                 item.vinylId === vinylId && !item.review ? { ...item, review } : item
@@ -44,13 +49,20 @@ const OrdersPage = () => {
 
     return (
         <>
-        <h1>Mis órdenes</h1>
+        <div className="orders-heading">
+            <p className="eyebrow">TU ACTIVIDAD</p>
+            <h1>Mis órdenes</h1>
+        </div>
         <OrderFilters status={status} onChange={setStatus} />
         {filtered.length === 0
-            ? <p>No hay órdenes para mostrar</p>
-            : filtered.map((order) => (
+            ? <div className="empty-state-card">
+                <h2>Todavía no hay órdenes</h2>
+                <p>Cuando hagas una compra, vas a poder seguirla desde acá.</p>
+                <button className="primary-button" onClick={() => onNavigate?.('catalog')}>Explorar catálogo</button>
+              </div>
+            : <div className="orders-list">{filtered.map((order) => (
                 <OrderCard key={order.id} order={order} onSelect={setSelectedId} />
-            ))
+            ))}</div>
         }
         </>
     )

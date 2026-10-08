@@ -2,7 +2,9 @@ import { statusLabels } from "../../data/orderStatuses"
 
 const OrderStatus = ({ status }) => {
     return (
-        <strong>{statusLabels[status]}</strong>
+        <strong className={`order-status order-status-${status?.toLowerCase() || 'unknown'}`}>
+            <span aria-hidden="true">●</span> {statusLabels[status] || status}
+        </strong>
     )
 }
 

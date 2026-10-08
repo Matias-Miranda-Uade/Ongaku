@@ -1,11 +1,4 @@
-// Datos de prueba. Se reemplazan por los del back cuando se conecte.
-
-export const user = {
-    id: 1,
-    firstName: 'Usuario',
-    lastName: 'Demo',
-    email: 'usuario.demo@mail.com',
-}
+// Datos de catálogo de demostración. Se reemplazan por los del back cuando se conecte.
 
 export const products = [
   {
@@ -150,60 +143,3 @@ export const mockAudio = {
   2: { id: 2, url: '', durationSeconds: 28 },
   3: { id: 3, url: '', durationSeconds: 32 }
 }
-
-export const addresses = [
-    { id: 1, street: 'Av. Corrientes 1234', city: 'CABA', province: 'Buenos Aires', zipCode: 'C1043', isDefault: true },
-    { id: 2, street: 'San Martín 567', city: 'Rosario', province: 'Santa Fe', zipCode: 'S2000', isDefault: false },
-]
-
-export const orders = [
-    {
-        id: 101,
-        createdAt: '2026-09-02T14:30:00',
-        status: 'ENTREGADA',
-        items: [
-            { vinylId: 1, name: 'Through the Looking Glass', artistName: 'Midori Ensemble', unitPrice: 42000, quantity: 1, review: null },
-            { vinylId: 2, name: 'Night Architecture', artistName: 'Kuroi', unitPrice: 36500, quantity: 2, review: null },
-        ],
-        total: 115000,
-        shippingAddress: addresses[0],
-        payment: { method: 'TARJETA', amount: 115000, status: 'APROBADO' },
-        trackingCode: 'AR-000101',
-    },
-    {
-        id: 102,
-        createdAt: '2026-09-25T10:15:00',
-        status: 'ENVIADA',
-        items: [
-            { vinylId: 4, name: 'Sakura Sessions', artistName: 'Hana Trio', unitPrice: 39000, quantity: 1, review: null },
-        ],
-        total: 39000,
-        shippingAddress: addresses[1],
-        payment: { method: 'TARJETA', amount: 39000, status: 'APROBADO' },
-        trackingCode: 'AR-000102',
-    },
-    {
-        id: 103,
-        createdAt: '2026-10-02T18:45:00',
-        status: 'PENDIENTE',
-        items: [
-            { vinylId: 5, name: 'Blue Transit', artistName: 'Sora Unit', unitPrice: 44500, quantity: 2, review: null },
-        ],
-        total: 89000,
-        shippingAddress: addresses[0],
-        payment: null,
-        trackingCode: null,
-    },
-    {
-        id: 104,
-        createdAt: '2026-08-14T09:00:00',
-        status: 'CANCELADA',
-        items: [
-            { vinylId: 3, name: 'Quiet Motion', artistName: 'Aoi Fields', unitPrice: 29800, quantity: 1, review: null },
-        ],
-        total: 29800,
-        shippingAddress: addresses[0],
-        payment: null,
-        trackingCode: null,
-    },
-]

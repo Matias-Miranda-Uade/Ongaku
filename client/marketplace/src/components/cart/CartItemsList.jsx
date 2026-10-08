@@ -2,7 +2,7 @@ import CartItem from "./CartItem"
 
 const CartItemsList = ({ items, onQuantityChange, onRemove }) => {
     return (
-        <ul>
+        <ul className="cart-item-list">
             {
                 items.map((item) => (
                     <li key={item.id}>

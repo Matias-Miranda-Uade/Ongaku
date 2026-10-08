@@ -1,7 +1,7 @@
 const guarantees = [
-    'Stock reservado al finalizar la compra',
-    'Cancelación sin cargo mientras la orden esté pendiente',
-    'Seguimiento del estado de tu orden',
+    'Las órdenes de prueba quedan asociadas a tu perfil',
+    'No se procesa ningún pago en esta demostración',
+    'Podés revisar tus órdenes desde tu cuenta',
 ]
 
 const CartGuarantees = () => {

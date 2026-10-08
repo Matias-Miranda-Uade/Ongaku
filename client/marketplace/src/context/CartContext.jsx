@@ -1,15 +1,10 @@
 import { createContext, useState } from 'react'
-import { products } from '../data/mockData'
 
 export const CartContext = createContext(null)
 
 export const CartProvider = ({ children }) => {
 
-    // Datos de prueba: reemplazar por [] cuando se conecte el back
-    const [items, setItems] = useState([
-        { ...products[0], quantity: 1 },
-        { ...products[1], quantity: 2 },
-    ]) //{id, name, artist, price, stock, quantity}
+    const [items, setItems] = useState([]) //{id, name, artist, price, stock, quantity}
 
     const addItem = (product, quantity = 1) => {
         if (product.stock <= 0) return
