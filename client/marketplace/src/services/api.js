@@ -1,12 +1,160 @@
 import { mockAudio, mockReviews, mockVinyls } from '../data/mockData'
 
+const TOKEN_STORAGE_KEY = 'ongaku-access-token'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? ''
+
+export const getAccessToken = () => window.localStorage.getItem(TOKEN_STORAGE_KEY)
+
+export const setAccessToken = (token) => {
+  window.localStorage.setItem(TOKEN_STORAGE_KEY, token)
+}
+
+export const clearAccessToken = () => {
+  window.localStorage.removeItem(TOKEN_STORAGE_KEY)
+}
+
 const readData = (payload) => payload?.data ?? payload
 
-const request = async (url) => {
-  const response = await fetch(url)
-  if (!response.ok) throw new Error(`HTTP ${response.status}`)
-  return readData(await response.json())
+const request = async (url, options = {}) => {
+  const token = getAccessToken()
+  let response
+
+  try {
+    response = await fetch(`${API_BASE_URL}${url}`, {
+      ...options,
+      headers: {
+        ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...options.headers,
+      },
+    })
+  } catch (error) {
+    throw new Error('No se pudo conectar con el servidor. Verificá que el backend esté disponible.')
+  }
+
+  const payload = response.status === 204 ? null : await response.json().catch(() => null)
+  if (!response.ok) {
+    const details = Array.isArray(payload?.errors) ? ` ${payload.errors.join(' ')}` : ''
+    throw new Error(`${payload?.message || `Error HTTP ${response.status}`}${details}`)
+  }
+
+  return readData(payload)
 }
+
+const jsonRequest = (method, body) => ({
+  method,
+  ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+})
+
+const normalizeCartItem = (item) => ({
+  ...item,
+  id: item.vinylId,
+  price: item.finalPrice ?? item.unitPrice,
+  artist: item.artistName,
+})
+
+export const normalizeCart = (cart) => ({
+  ...cart,
+  items: (cart?.items ?? []).map(normalizeCartItem),
+})
+
+export const normalizeOrder = (order) => ({
+  ...order,
+  status: order.orderStatus?.name ?? order.status ?? 'PENDIENTE',
+  items: (order.items ?? []).map((item) => ({
+    ...item,
+    unitPrice: item.finalPrice ?? item.unitPrice,
+    review: item.review ?? null,
+  })),
+})
+
+export const login = async ({ email, password }) => {
+  const response = await request('/api/v1/auth/authenticate', jsonRequest('POST', { email, password }))
+  const token = response?.['access token'] ?? response?.accessToken
+  if (!token) throw new Error('El servidor no devolvió un token de acceso válido.')
+  setAccessToken(token)
+  try {
+    return await getProfile()
+  } catch (error) {
+    clearAccessToken()
+    throw error
+  }
+}
+
+export const register = async ({ firstName, lastName, email, password }) => {
+  const response = await request('/api/v1/auth/register', jsonRequest('POST', {
+    firstName,
+    lastName,
+    email,
+    password,
+  }))
+  const token = response?.['access token'] ?? response?.accessToken
+  if (!token) throw new Error('El servidor no devolvió un token de acceso válido.')
+  setAccessToken(token)
+  try {
+    return await getProfile()
+  } catch (error) {
+    clearAccessToken()
+    throw error
+  }
+}
+
+export const logout = async () => {
+  try {
+    await request('/api/v1/auth/logout', jsonRequest('POST'))
+  } finally {
+    clearAccessToken()
+  }
+}
+
+export const getProfile = async () => request('/users/me')
+
+export const updateProfile = async (profile) => request('/users/me', jsonRequest('PATCH', profile))
+
+export const changePassword = async ({ currentPassword, newPassword }) => (
+  request('/users/me/password', jsonRequest('PATCH', { currentPassword, newPassword }))
+)
+
+export const getCart = async () => normalizeCart(await request('/carts'))
+
+export const addCartItem = async (vinylId, quantity = 1) => normalizeCart(
+  await request('/carts/items', jsonRequest('POST', { vinylId, quantity }))
+)
+
+export const updateCartItem = async (vinylId, quantity) => normalizeCart(
+  await request(`/carts/items/${vinylId}`, jsonRequest('PATCH', { quantity }))
+)
+
+export const removeCartItem = async (vinylId) => normalizeCart(
+  await request(`/carts/items/${vinylId}`, jsonRequest('DELETE'))
+)
+
+export const clearServerCart = async () => normalizeCart(
+  await request('/carts/items', jsonRequest('DELETE'))
+)
+
+export const getOrders = async () => {
+  const orders = await request('/orders')
+  return Array.isArray(orders) ? orders.map(normalizeOrder) : []
+}
+
+export const getOrder = async (orderId) => normalizeOrder(await request(`/orders/${orderId}`))
+
+export const createOrder = async () => normalizeOrder(await request('/orders', jsonRequest('POST')))
+
+export const cancelOrder = async (orderId) => normalizeOrder(
+  await request(`/orders/${orderId}/status`, jsonRequest('PATCH', { status: 'CANCELADA' }))
+)
+
+export const getMyReviews = async () => {
+  const reviews = await request('/reviews/me')
+  return Array.isArray(reviews) ? reviews : []
+}
+
+export const createReview = async ({ vinylId, score, comment }) => request(
+  '/reviews',
+  jsonRequest('POST', { vinylId, score, comment })
+)
 
 export const getVinyls = async () => {
   try {

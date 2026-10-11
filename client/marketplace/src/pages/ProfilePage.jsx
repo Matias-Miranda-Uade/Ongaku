@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import useCart from '../hooks/useCart'
 import useFavorites from '../hooks/useFavorites'
 import ProfileHeader from '../components/profile/ProfileHeader'
 import ProfileStats from '../components/profile/ProfileStats'
 import ProfileTabs from '../components/profile/ProfileTabs'
 import AuthenticationCard from '../components/profile/AuthenticationCard'
+import { updateProfile } from '../services/api'
 
 const tabs = [
   { id: 'account', label: 'Mi cuenta' },
@@ -12,12 +13,44 @@ const tabs = [
   { id: 'authentication', label: 'Seguridad' },
 ]
 
-const ProfilePage = ({ user, onNavigate }) => {
+const ProfilePage = ({ user, onNavigate, onUserChange }) => {
   const { totalProducts } = useCart()
   const { favorites } = useFavorites()
   const [activeTab, setActiveTab] = useState('account')
+  const [isEditing, setIsEditing] = useState(false)
+  const [firstName, setFirstName] = useState(user?.firstName ?? '')
+  const [lastName, setLastName] = useState(user?.lastName ?? '')
+  const [error, setError] = useState('')
+  const [message, setMessage] = useState('')
+  const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    setFirstName(user?.firstName ?? '')
+    setLastName(user?.lastName ?? '')
+  }, [user?.id])
+
   const orders = user?.orders ?? []
   const addresses = user?.addresses ?? []
+
+  const handleProfileSubmit = async (event) => {
+    event.preventDefault()
+    setError('')
+    setMessage('')
+    setSaving(true)
+    try {
+      const updatedUser = await updateProfile({
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+      })
+      onUserChange?.(updatedUser)
+      setIsEditing(false)
+      setMessage('Tus datos se actualizaron correctamente.')
+    } catch (requestError) {
+      setError(requestError.message)
+    } finally {
+      setSaving(false)
+    }
+  }
 
   if (!user) {
     return (
@@ -41,20 +74,37 @@ const ProfilePage = ({ user, onNavigate }) => {
       <ProfileTabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
 
       <div className="profile-panel">
+        {error && <p role="alert">{error}</p>}
+        {message && <p role="status">{message}</p>}
         {activeTab === 'account' && (
           <section className="account-details" aria-labelledby="account-heading">
             <div>
               <p className="eyebrow">DATOS PERSONALES</p>
               <h2 id="account-heading">Tu cuenta</h2>
             </div>
-            <dl>
-              <div><dt>Nombre</dt><dd>{user.name}</dd></div>
-              <div><dt>Correo electrónico</dt><dd>{user.email || 'No asociado a esta cuenta de prueba'}</dd></div>
-              <div>
-                <dt>Miembro desde</dt>
-                <dd>{user.createdAt ? new Date(user.createdAt).toLocaleDateString('es-AR') : 'Hoy'}</dd>
-              </div>
-            </dl>
+            {isEditing ? (
+              <form onSubmit={handleProfileSubmit}>
+                <label htmlFor="profile-first-name">Nombre</label>
+                <input id="profile-first-name" autoComplete="given-name" required value={firstName} onChange={(event) => setFirstName(event.target.value)} />
+                <label htmlFor="profile-last-name">Apellido</label>
+                <input id="profile-last-name" autoComplete="family-name" required value={lastName} onChange={(event) => setLastName(event.target.value)} />
+                <label htmlFor="profile-email">Correo electrónico</label>
+                <input id="profile-email" type="email" value={user.email} readOnly />
+                <p>Para cambiar el correo se necesita renovar la sesión; el backend actual todavía no devuelve un token nuevo.</p>
+                <button className="primary-button" type="submit" disabled={saving}>
+                  {saving ? 'Guardando…' : 'Guardar cambios'}
+                </button>
+                <button className="secondary-button" type="button" onClick={() => setIsEditing(false)}>Cancelar</button>
+              </form>
+            ) : (
+              <>
+                <dl>
+                  <div><dt>Nombre</dt><dd>{user.name}</dd></div>
+                  <div><dt>Correo electrónico</dt><dd>{user.email}</dd></div>
+                </dl>
+                <button className="secondary-button" type="button" onClick={() => setIsEditing(true)}>Editar perfil</button>
+              </>
+            )}
           </section>
         )}
 
@@ -65,7 +115,7 @@ const ProfilePage = ({ user, onNavigate }) => {
             {addresses.length === 0
               ? <div className="profile-tab-empty">
                   <p>Todavía no agregaste una dirección.</p>
-                  <p>El checkout de esta demostración todavía no administra direcciones de envío.</p>
+                <p>La API actual no ofrece operaciones para guardar direcciones.</p>
                 </div>
               : addresses.map((address) => (
                   <article className="shipment-card" key={address.id}>

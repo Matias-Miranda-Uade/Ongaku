@@ -1,15 +1,11 @@
 import AuthLayout from '../components/auth/AuthLayout'
 import LoginForm from '../components/auth/LoginForm'
-import SocialLoginButtons from '../components/auth/SocialLoginButtons'
-import Divider from '../components/ui/Divider'
 
 const LoginPage = ({ onNavigate, onLogin }) => (
   <div className="page auth-page">
     <AuthLayout activeTab="login" onNavigate={onNavigate}>
-      <p className="auth-note">Ingresá para continuar. El acceso es de demostración y no valida credenciales contra un servidor.</p>
+      <p className="auth-note">Ingresá con tu cuenta para ver tus órdenes y guardar tu carrito.</p>
       <LoginForm onLogin={onLogin} />
-      <Divider />
-      <SocialLoginButtons onLogin={provider => onLogin({ name: `Usuario de ${provider}`, email: '' })} />
     </AuthLayout>
   </div>
 )

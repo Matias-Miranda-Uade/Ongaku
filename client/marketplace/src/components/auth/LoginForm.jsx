@@ -8,8 +8,9 @@ const LoginForm = ({ onLogin }) => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault()
     if (!email.trim() || !password.trim()) {
       setError('Completá el email y la contraseña.')
@@ -17,8 +18,14 @@ const LoginForm = ({ onLogin }) => {
     }
     setError('')
     const normalizedEmail = email.trim().toLowerCase()
-    const accountName = normalizedEmail.split('@')[0].replace(/[._-]+/g, ' ')
-    onLogin({ name: accountName, email: normalizedEmail })
+    setSubmitting(true)
+    try {
+      await onLogin({ email: normalizedEmail, password })
+    } catch (loginError) {
+      setError(loginError.message)
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -27,7 +34,9 @@ const LoginForm = ({ onLogin }) => {
       <AuthInput label="Email" name="login-email" type="email" autoComplete="email" required value={email} onChange={event => setEmail(event.target.value)} />
       <PasswordInput label="Contraseña" name="login-password" autoComplete="current-password" required value={password} onChange={event => setPassword(event.target.value)} />
       {error && <p role="alert">{error}</p>}
-      <Button className="primary-button" type="submit">Ingresar</Button>
+      <Button className="primary-button" type="submit" disabled={submitting}>
+        {submitting ? 'Ingresando…' : 'Ingresar'}
+      </Button>
     </form>
   )
 }
