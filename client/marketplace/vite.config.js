@@ -12,6 +12,12 @@ export default defineConfig(({ mode }) => {
     '/carts',
     '/orders',
     '/users',
+    '/admin',
+    '/dashboard',
+    '/artists',
+    '/genres',
+    '/categories',
+    '/order-statuses',
   ]
 
   return {

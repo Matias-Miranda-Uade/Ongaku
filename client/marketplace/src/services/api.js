@@ -15,7 +15,27 @@ export const clearAccessToken = () => {
 
 const readData = (payload) => payload?.data ?? payload
 
-const request = async (url, options = {}) => {
+export class ApiError extends Error {
+  constructor(message, status = 0, errors = []) {
+    super(message)
+    this.status = status
+    this.errors = errors
+    this.fieldErrors = {}
+    const field = /Campo invalido '([^']+)':\s*(.+)/i.exec(message)
+    if (field) this.fieldErrors[field[1]] = field[2]
+    errors.forEach((entry) => {
+      const match = /^([\w.]+):\s*(.+)$/.exec(entry)
+      if (match) this.fieldErrors[match[1]] = match[2]
+    })
+  }
+
+  get isNotFound() { return this.status === 404 }
+  get isConflict() { return this.status === 409 }
+  get isUnauthorized() { return this.status === 401 }
+  get isForbidden() { return this.status === 403 }
+}
+
+export const request = async (url, options = {}) => {
   const token = getAccessToken()
   let response
 
@@ -29,19 +49,20 @@ const request = async (url, options = {}) => {
       },
     })
   } catch (error) {
-    throw new Error('No se pudo conectar con el servidor. Verificá que el backend esté disponible.')
+    throw new ApiError('No se pudo conectar con el servidor. Verificá que el backend esté disponible.')
   }
 
   const payload = response.status === 204 ? null : await response.json().catch(() => null)
   if (!response.ok) {
-    const details = Array.isArray(payload?.errors) ? ` ${payload.errors.join(' ')}` : ''
-    throw new Error(`${payload?.message || `Error HTTP ${response.status}`}${details}`)
+    const errors = Array.isArray(payload?.errors) ? payload.errors : []
+    const details = errors.length ? ` ${errors.join(' ')}` : ''
+    throw new ApiError(`${payload?.message || `Error HTTP ${response.status}`}${details}`, response.status, errors)
   }
 
   return readData(payload)
 }
 
-const jsonRequest = (method, body) => ({
+export const jsonRequest = (method, body) => ({
   method,
   ...(body === undefined ? {} : { body: JSON.stringify(body) }),
 })

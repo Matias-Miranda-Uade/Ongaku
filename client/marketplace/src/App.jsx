@@ -2,19 +2,13 @@ import { useEffect, useState } from 'react'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import './App.css'
 import './persona2.css'
+import './admin.css'
 import { CartProvider } from './context/CartContext'
 import { FavoritesProvider } from './context/FavoritesContext'
 import useCart from './hooks/useCart'
-import {
-  clearAccessToken,
-  createOrder,
-  getAccessToken,
-  getOrders,
-  getProfile,
-  login,
-  logout,
-  register,
-} from './services/api'
+import { useAuth } from './context/AuthContext'
+import { createOrder, getOrders } from './services/api'
+import AppRoutes, { ADMIN_BASE_PATH, isAdminPath } from './routes/AppRoutes'
 import Header from './components/layout/Header'
 import Footer from './components/layout/Footer'
 import PageContainer from './components/layout/PageContainer'
@@ -39,9 +33,12 @@ const pagePaths = {
   orders: '/app/orders',
   catalog: '/app/catalog',
   reviews: '/app/reviews',
+  admin: `${ADMIN_BASE_PATH}/dashboard`,
 }
 
 const resolveRoute = (pathname) => {
+  if (isAdminPath(pathname)) return { page: 'admin', vinylId: null, orderId: null }
+
   const vinylMatch = pathname.match(/^\/app\/catalog\/([^/]+)$/)
   if (vinylMatch) {
     return { page: 'vinyl-detail', vinylId: decodeURIComponent(vinylMatch[1]) }
@@ -60,36 +57,23 @@ const App = () => {
   const location = useLocation()
   const navigate = useNavigate()
   const { page, vinylId: selectedVinylId, orderId: selectedOrderId } = resolveRoute(location.pathname)
-  const [user, setUser] = useState(null)
+  const {
+    user,
+    setUser,
+    isAdmin,
+    isRestoringSession,
+    sessionError,
+    login,
+    register,
+    logout,
+  } = useAuth()
   const [orders, setOrders] = useState([])
   const [storageError, setStorageError] = useState('')
-  const [isRestoringSession, setIsRestoringSession] = useState(() => Boolean(getAccessToken()))
   const [ordersReload, setOrdersReload] = useState(0)
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }, [location.pathname])
-
-  useEffect(() => {
-    if (!getAccessToken()) return
-
-    let active = true
-    getProfile()
-      .then((profile) => {
-        if (active) setUser(profile)
-      })
-      .catch((error) => {
-        clearAccessToken()
-        if (active) setStorageError(`No se pudo recuperar la sesión: ${error.message}`)
-      })
-      .finally(() => {
-        if (active) setIsRestoringSession(false)
-      })
-
-    return () => {
-      active = false
-    }
-  }, [])
 
   useEffect(() => {
     if (!user) {
@@ -123,29 +107,21 @@ const App = () => {
     const profile = await login(credentials)
     setStorageError('')
     setOrders([])
-    setUser(profile)
-    openPage('home')
+    openPage(profile.role === 'ADMIN' ? 'admin' : 'home')
   }
 
   const handleRegister = async (account) => {
-    const profile = await register(account)
+    await register(account)
     setStorageError('')
     setOrders([])
-    setUser(profile)
     openPage('profile')
   }
 
   const handleLogout = async () => {
-    try {
-      await logout()
-      setStorageError('')
-    } catch (error) {
-      setStorageError(`No se pudo invalidar la sesión en el servidor: ${error.message}`)
-    } finally {
-      setUser(null)
-      setOrders([])
-      openPage('home')
-    }
+    await logout()
+    setStorageError('')
+    setOrders([])
+    openPage('home')
   }
 
   const handleOrdersChange = (nextOrders) => {
@@ -159,14 +135,15 @@ const App = () => {
   if (!page) return <Navigate to="/" replace />
 
   return (
-    <CartProvider user={user}>
+    <CartProvider user={isAdmin ? null : user}>
       <FavoritesProvider>
         <AppContent
           page={page}
           user={user}
           onUserChange={setUser}
           orders={orders}
-          storageError={storageError}
+          isAdmin={isAdmin}
+          storageError={sessionError || storageError}
           selectedVinylId={selectedVinylId}
           selectedOrderId={selectedOrderId}
           openPage={openPage}
@@ -185,6 +162,7 @@ const App = () => {
 const AppContent = ({
   page,
   user,
+  isAdmin,
   onUserChange,
   orders,
   storageError,
@@ -221,9 +199,10 @@ const AppContent = ({
 
   return (
     <div className="app-shell">
-      <Header page={page} onNavigate={openPage} user={user} onLogout={handleLogout} />
+      <Header page={page} onNavigate={openPage} user={user} isAdmin={isAdmin} onLogout={handleLogout} />
       {storageError && <p className="storage-notice" role="alert">{storageError}</p>}
       <PageContainer>
+        {page === 'admin' && <AppRoutes />}
         {page === 'home' && <HomePage user={user} onNavigate={openPage} />}
         {page === 'login' && <LoginPage onNavigate={openPage} onLogin={handleLogin} />}
         {page === 'register' && <RegisterPage onNavigate={openPage} onRegister={handleRegister} />}

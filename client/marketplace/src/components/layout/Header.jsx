@@ -36,7 +36,7 @@ const ProfileIcon = () => (
   </svg>
 )
 
-const Header = ({ page, onNavigate, user, onLogout }) => {
+const Header = ({ page, onNavigate, user, isAdmin = false, onLogout }) => {
   const { totalUnits } = useCart()
   const { favorites } = useFavorites()
   const activePage = page === 'vinyl-detail' ? 'catalog' : page
@@ -49,7 +49,7 @@ const Header = ({ page, onNavigate, user, onLogout }) => {
       </Button>
 
       <nav className="main-nav" aria-label="Navegación principal">
-        {navigation.map((item) => (
+        {[...navigation, ...(isAdmin ? [{ id: 'admin', label: 'Admin' }] : [])].map((item) => (
           <Button
             key={item.id}
             onClick={() => onNavigate(item.id)}
