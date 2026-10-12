@@ -8,7 +8,7 @@ const CartSummary = ({ totalProducts, totalUnits, total, onCheckout }) => {
             <div><span>Envío</span><strong>A coordinar</strong></div>
             <div className="cart-summary-total"><span>Total de selección</span><strong>${total.toLocaleString('es-AR')}</strong></div>
             <button className="primary-button" onClick={onCheckout}>Proceder al checkout <span aria-hidden="true">→</span></button>
-            <p className="cart-summary-note">Compra de demostración. No se procesan pagos reales.</p>
+            <p className="cart-summary-note">La orden se registra en tu cuenta. No se procesa el pago desde esta pantalla.</p>
         </section>
     )
 }

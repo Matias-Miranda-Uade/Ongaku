@@ -12,8 +12,9 @@ const RegisterForm = ({ onRegister }) => {
   const [confirmation, setConfirmation] = useState('')
   const [accepted, setAccepted] = useState(false)
   const [error, setError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault()
     if (!name.trim() || !email.trim() || !password.trim()) {
       setError('Completá todos los campos.')
@@ -28,11 +29,24 @@ const RegisterForm = ({ onRegister }) => {
       return
     }
     if (!accepted) {
-      setError('Confirmá que querés crear la cuenta de prueba.')
+      setError('Aceptá las condiciones para crear tu cuenta.')
       return
     }
     setError('')
-    onRegister({ name: name.trim(), email: email.trim() })
+    const [firstName, ...lastNames] = name.trim().split(/\s+/)
+    setSubmitting(true)
+    try {
+      await onRegister({
+        firstName,
+        lastName: lastNames.join(' '),
+        email: email.trim().toLowerCase(),
+        password,
+      })
+    } catch (registerError) {
+      setError(registerError.message)
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -42,9 +56,11 @@ const RegisterForm = ({ onRegister }) => {
       <AuthInput label="Email" name="register-email" type="email" autoComplete="email" required value={email} onChange={event => setEmail(event.target.value)} />
       <PasswordInput label="Contraseña" name="register-password" autoComplete="new-password" required value={password} onChange={event => setPassword(event.target.value)} />
       <PasswordInput label="Confirmar contraseña" name="register-confirmation" autoComplete="new-password" required value={confirmation} onChange={event => setConfirmation(event.target.value)} />
-      <Checkbox label="Quiero crear una cuenta de prueba" name="register-accepted" required checked={accepted} onChange={event => setAccepted(event.target.checked)} />
+      <Checkbox label="Acepto crear mi cuenta en Ongaku" name="register-accepted" required checked={accepted} onChange={event => setAccepted(event.target.checked)} />
       {error && <p role="alert">{error}</p>}
-      <Button className="primary-button" type="submit">Crear cuenta</Button>
+      <Button className="primary-button" type="submit" disabled={submitting}>
+        {submitting ? 'Creando cuenta…' : 'Crear cuenta'}
+      </Button>
     </form>
   )
 }

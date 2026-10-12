@@ -1,61 +1,67 @@
-import { useState } from "react"
+import { useState } from 'react'
 
-const OrderRating = ({ item, onRate }) => {
+const OrderRating = ({ item, onRate, submitting = false }) => {
+  const [score, setScore] = useState(0)
+  const [comment, setComment] = useState('')
+  const [error, setError] = useState('')
 
-    const [score, setScore] = useState(0)
-    const [comment, setComment] = useState('')
-    const [error, setError] = useState('')
-
-    // Un vinilo ya reseñado no se puede volver a reseñar
-    if (item.review) {
-        return (
-            <>
-            <p>Tu reseña: {'★'.repeat(item.review.score)}{'☆'.repeat(5 - item.review.score)}</p>
-            <p>{item.review.comment}</p>
-            </>
-        )
-    }
-
-    const handleSubmit = (e) => {
-        e.preventDefault()
-        if (score < 1) {
-            setError('Elegí un puntaje entre 1 y 5')
-            return
-        }
-        if (comment.trim() === '') {
-            setError('El comentario no puede estar vacío')
-            return
-        }
-        onRate(item.vinylId, { score, comment: comment.trim() })
-    }
-
+  if (item.review) {
     return (
-        <form onSubmit={handleSubmit}>
-            <p>Calificá este vinilo</p>
-            {
-                [1, 2, 3, 4, 5].map((value) => (
-                    <button
-                        type="button"
-                        key={value}
-                        aria-label={`${value} estrella(s)`}
-                        onClick={() => setScore(value)}
-                    >
-                        {value <= score ? '★' : '☆'}
-                    </button>
-                ))
-            }
-            <br />
-            <textarea
-                name="comment"
-                value={comment}
-                maxLength={1000}
-                onChange={(e) => setComment(e.target.value)}
-            />
-            <br />
-            <button type="submit">Enviar reseña</button>
-            {error && <p role="alert">{error}</p>}
-        </form>
+      <section className="order-review-saved">
+        <p className="eyebrow">TU RESEÑA</p>
+        <p className="order-review-stars" aria-label={`${item.review.score} de 5 estrellas`}>
+          {'★'.repeat(item.review.score)}{'☆'.repeat(5 - item.review.score)}
+        </p>
+        <p>{item.review.comment}</p>
+      </section>
     )
+  }
+
+  const handleSubmit = async (event) => {
+    event.preventDefault()
+    if (score < 1) {
+      setError('Elegí un puntaje entre 1 y 5.')
+      return
+    }
+    if (!comment.trim()) {
+      setError('El comentario no puede estar vacío.')
+      return
+    }
+    setError('')
+    await onRate(item.vinylId, { score, comment: comment.trim() })
+  }
+
+  return (
+    <form className="order-review-form" onSubmit={handleSubmit}>
+      <p className="eyebrow">CONTANOS QUÉ TE PARECIÓ</p>
+      <div className="order-rating-stars" role="group" aria-label="Puntaje">
+        {[1, 2, 3, 4, 5].map((value) => (
+          <button
+            className={value <= score ? 'is-selected' : ''}
+            type="button"
+            key={value}
+            aria-label={`${value} estrella${value === 1 ? '' : 's'}`}
+            aria-pressed={score === value}
+            onClick={() => setScore(value)}
+          >
+            {value <= score ? '★' : '☆'}
+          </button>
+        ))}
+      </div>
+      <label className="order-review-label" htmlFor={`review-${item.vinylId}`}>Tu comentario</label>
+      <textarea
+        id={`review-${item.vinylId}`}
+        name="comment"
+        value={comment}
+        maxLength={1000}
+        onChange={(event) => setComment(event.target.value)}
+      />
+      {error && <p className="form-error" role="alert">{error}</p>}
+      <button className="secondary-button" type="submit" disabled={submitting}>
+        {submitting ? 'Guardando…' : 'Publicar reseña'}
+      </button>
+    </form>
+  )
 }
 
 export default OrderRating

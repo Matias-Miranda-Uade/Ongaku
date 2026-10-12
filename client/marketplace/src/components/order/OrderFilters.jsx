@@ -5,8 +5,8 @@ const OrderFilters = ({ status, onChange }) => {
     const handleChange = (e) => { onChange(e.target.value) }
 
     return (
-        <>
-        <label>Filtrar por estado </label>
+        <label className="orders-filter">
+        <span>Filtrar por estado</span>
         <select value={status} onChange={handleChange}>
             <option value="TODAS">Todas</option>
             {
@@ -15,7 +15,7 @@ const OrderFilters = ({ status, onChange }) => {
                 ))
             }
         </select>
-        </>
+        </label>
     )
 }
 

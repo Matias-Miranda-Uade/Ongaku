@@ -1,8 +1,20 @@
 import { useEffect, useState } from 'react'
+import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import './App.css'
 import './persona2.css'
 import { CartProvider } from './context/CartContext'
 import { FavoritesProvider } from './context/FavoritesContext'
+import useCart from './hooks/useCart'
+import {
+  clearAccessToken,
+  createOrder,
+  getAccessToken,
+  getOrders,
+  getProfile,
+  login,
+  logout,
+  register,
+} from './services/api'
 import Header from './components/layout/Header'
 import Footer from './components/layout/Footer'
 import PageContainer from './components/layout/PageContainer'
@@ -17,163 +29,243 @@ import CatalogPage from './pages/CatalogPage'
 import VinylDetailPage from './pages/VinylDetailPage'
 import ReviewsPage from './pages/ReviewsPage'
 
-const USER_STORAGE_KEY = 'ongaku-user-profile'
-
-const readStoredUser = () => {
-  try {
-    const storedUser = window.localStorage.getItem(USER_STORAGE_KEY)
-    if (!storedUser) return { user: null, error: '' }
-
-    const user = JSON.parse(storedUser)
-    if (!user || typeof user.name !== 'string' || typeof user.email !== 'string') {
-      throw new Error('El perfil guardado no tiene un formato válido.')
-    }
-
-    return { user, error: '' }
-  } catch (error) {
-    console.error('No se pudo recuperar el perfil guardado de Ongaku.', error)
-    return {
-      user: null,
-      error: 'No pudimos recuperar tu perfil guardado. Podés volver a registrarte.',
-    }
-  }
+const pagePaths = {
+  home: '/',
+  login: '/app/login',
+  register: '/app/register',
+  profile: '/app/profile',
+  favorites: '/app/favorites',
+  cart: '/app/cart',
+  orders: '/app/orders',
+  catalog: '/app/catalog',
+  reviews: '/app/reviews',
 }
 
-const createUserProfile = ({ name, email }) => {
-  const normalizedName = name.trim()
-  const [firstName = '', ...lastNames] = normalizedName.split(/\s+/)
-
-  return {
-    id: `${Date.now()}`,
-    name: normalizedName,
-    firstName,
-    lastName: lastNames.join(' '),
-    email: email.trim().toLowerCase(),
-    createdAt: new Date().toISOString(),
+const resolveRoute = (pathname) => {
+  const vinylMatch = pathname.match(/^\/app\/catalog\/([^/]+)$/)
+  if (vinylMatch) {
+    return { page: 'vinyl-detail', vinylId: decodeURIComponent(vinylMatch[1]) }
   }
+
+  const orderMatch = pathname.match(/^\/app\/orders\/(\d+)$/)
+  if (orderMatch) {
+    return { page: 'orders', orderId: orderMatch[1] }
+  }
+
+  const page = Object.entries(pagePaths).find(([, path]) => path === pathname)?.[0]
+  return { page: page ?? null, vinylId: null, orderId: null }
 }
 
 const App = () => {
-  const [page, setPage] = useState('home')
-  const [storedSession] = useState(readStoredUser)
-  const [user, setUser] = useState(storedSession.user)
-  const [storageError, setStorageError] = useState(storedSession.error)
-  const [selectedVinylId, setSelectedVinylId] = useState(null)
+  const location = useLocation()
+  const navigate = useNavigate()
+  const { page, vinylId: selectedVinylId, orderId: selectedOrderId } = resolveRoute(location.pathname)
+  const [user, setUser] = useState(null)
+  const [orders, setOrders] = useState([])
+  const [storageError, setStorageError] = useState('')
+  const [isRestoringSession, setIsRestoringSession] = useState(() => Boolean(getAccessToken()))
+  const [ordersReload, setOrdersReload] = useState(0)
 
   useEffect(() => {
-    try {
-      if (user) {
-        window.localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user))
-      } else {
-        window.localStorage.removeItem(USER_STORAGE_KEY)
-      }
-    } catch (error) {
-      console.error('No se pudo guardar el perfil de Ongaku en este navegador.', error)
-      setStorageError('No pudimos guardar tu perfil en este navegador. Seguirá disponible hasta cerrar la página.')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [location.pathname])
+
+  useEffect(() => {
+    if (!getAccessToken()) return
+
+    let active = true
+    getProfile()
+      .then((profile) => {
+        if (active) setUser(profile)
+      })
+      .catch((error) => {
+        clearAccessToken()
+        if (active) setStorageError(`No se pudo recuperar la sesión: ${error.message}`)
+      })
+      .finally(() => {
+        if (active) setIsRestoringSession(false)
+      })
+
+    return () => {
+      active = false
     }
-  }, [user])
+  }, [])
+
+  useEffect(() => {
+    if (!user) {
+      setOrders([])
+      return
+    }
+
+    let active = true
+    getOrders()
+      .then((data) => {
+        if (active) setOrders(data)
+      })
+      .catch((error) => {
+        if (active) setStorageError(`No se pudieron cargar tus órdenes: ${error.message}`)
+      })
+
+    return () => {
+      active = false
+    }
+  }, [user?.id, ordersReload])
 
   const openPage = (nextPage) => {
-    setSelectedVinylId(null)
-    setPage(nextPage)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    navigate(pagePaths[nextPage] ?? '/')
   }
 
   const openVinyl = (vinylId) => {
-    setSelectedVinylId(vinylId)
-    setPage('vinyl-detail')
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    navigate(`/app/catalog/${encodeURIComponent(vinylId)}`)
   }
 
-  const handleLogin = (newUser) => {
+  const handleLogin = async (credentials) => {
+    const profile = await login(credentials)
     setStorageError('')
-    setUser(createUserProfile(newUser))
+    setOrders([])
+    setUser(profile)
     openPage('home')
   }
 
-  const handleRegister = (newUser) => {
+  const handleRegister = async (account) => {
+    const profile = await register(account)
     setStorageError('')
-    setUser(createUserProfile(newUser))
+    setOrders([])
+    setUser(profile)
     openPage('profile')
   }
 
-  const handleLogout = () => {
-    setUser(null)
-    openPage('home')
+  const handleLogout = async () => {
+    try {
+      await logout()
+      setStorageError('')
+    } catch (error) {
+      setStorageError(`No se pudo invalidar la sesión en el servidor: ${error.message}`)
+    } finally {
+      setUser(null)
+      setOrders([])
+      openPage('home')
+    }
   }
 
-  const handleCheckout = ({ items, total }) => {
+  const handleOrdersChange = (nextOrders) => {
+    setOrders(nextOrders)
+  }
+
+  if (isRestoringSession) {
+    return <main className="app-shell"><p role="status">Recuperando tu sesión…</p></main>
+  }
+
+  if (!page) return <Navigate to="/" replace />
+
+  return (
+    <CartProvider user={user}>
+      <FavoritesProvider>
+        <AppContent
+          page={page}
+          user={user}
+          onUserChange={setUser}
+          orders={orders}
+          storageError={storageError}
+          selectedVinylId={selectedVinylId}
+          selectedOrderId={selectedOrderId}
+          openPage={openPage}
+          openVinyl={openVinyl}
+          handleLogin={handleLogin}
+          handleRegister={handleRegister}
+          handleLogout={handleLogout}
+          handleOrdersChange={handleOrdersChange}
+          reloadOrders={() => setOrdersReload((value) => value + 1)}
+        />
+      </FavoritesProvider>
+    </CartProvider>
+  )
+}
+
+const AppContent = ({
+  page,
+  user,
+  onUserChange,
+  orders,
+  storageError,
+  selectedVinylId,
+  selectedOrderId,
+  openPage,
+  openVinyl,
+  handleLogin,
+  handleRegister,
+  handleLogout,
+  handleOrdersChange,
+  reloadOrders,
+}) => {
+  const navigate = useNavigate()
+  const { refreshCart } = useCart()
+
+  const handleCheckout = async () => {
     if (!user) {
       openPage('login')
       return false
     }
 
-    const order = {
-      id: Date.now(),
-      createdAt: new Date().toISOString(),
-      status: 'PENDIENTE',
-      items: items.map((item) => ({
-        vinylId: item.id,
-        name: item.name,
-        artistName: item.artistName || item.artist,
-        unitPrice: item.price,
-        quantity: item.quantity,
-        review: null,
-      })),
-      total,
-      shippingAddress: null,
-      payment: null,
-      trackingCode: null,
+    try {
+      const order = await createOrder()
+      handleOrdersChange([order, ...orders])
+      await refreshCart()
+      reloadOrders()
+      openPage('orders')
+      return true
+    } catch (error) {
+      return { error: error.message }
     }
-
-    setUser((currentUser) => ({
-      ...currentUser,
-      orders: [order, ...(currentUser.orders ?? [])],
-    }))
-    openPage('orders')
-    return true
-  }
-
-  const handleOrdersChange = (orders) => {
-    setUser((currentUser) => currentUser ? { ...currentUser, orders } : currentUser)
   }
 
   return (
-    <CartProvider>
-      <FavoritesProvider>
-        <div className="app-shell">
-          <Header page={page} onNavigate={openPage} user={user} onLogout={handleLogout} />
-          {storageError && <p className="storage-notice" role="status">{storageError}</p>}
-          <PageContainer>
-            {page === 'home' && <HomePage user={user} onNavigate={openPage} />}
-            {page === 'login' && <LoginPage onNavigate={openPage} onLogin={handleLogin} />}
-            {page === 'register' && <RegisterPage onNavigate={openPage} onRegister={handleRegister} />}
-            {page === 'catalog' && <CatalogPage onOpenVinyl={openVinyl} />}
-            {page === 'vinyl-detail' && selectedVinylId && (
-              <VinylDetailPage
-                vinylId={selectedVinylId}
-                onBack={() => openPage('catalog')}
-                onReviews={() => openPage('reviews')}
-              />
-            )}
-            {page === 'reviews' && <ReviewsPage />}
-            {page === 'favorites' && <div className="legacy-page"><FavoritesPage onNavigate={openPage} /></div>}
-            {page === 'cart' && <div className="legacy-page"><CartPage onCheckout={handleCheckout} onNavigate={openPage} /></div>}
-            {page === 'orders' && (
-              <div className="legacy-page">
-                <OrdersPage
-                  orders={user?.orders ?? []}
-                  onNavigate={openPage}
-                  onOrdersChange={handleOrdersChange}
-                />
-              </div>
-            )}
-            {page === 'profile' && <div className="legacy-page"><ProfilePage user={user} onNavigate={openPage} /></div>}
-          </PageContainer>
-          <Footer onNavigate={openPage} />
-        </div>
-      </FavoritesProvider>
-    </CartProvider>
+    <div className="app-shell">
+      <Header page={page} onNavigate={openPage} user={user} onLogout={handleLogout} />
+      {storageError && <p className="storage-notice" role="alert">{storageError}</p>}
+      <PageContainer>
+        {page === 'home' && <HomePage user={user} onNavigate={openPage} />}
+        {page === 'login' && <LoginPage onNavigate={openPage} onLogin={handleLogin} />}
+        {page === 'register' && <RegisterPage onNavigate={openPage} onRegister={handleRegister} />}
+        {page === 'catalog' && <CatalogPage onOpenVinyl={openVinyl} />}
+        {page === 'vinyl-detail' && selectedVinylId && (
+          <VinylDetailPage
+            vinylId={selectedVinylId}
+            onBack={() => openPage('catalog')}
+            onReviews={() => openPage('reviews')}
+          />
+        )}
+        {page === 'reviews' && <ReviewsPage />}
+        {page === 'favorites' && <div className="legacy-page"><FavoritesPage onNavigate={openPage} /></div>}
+        {page === 'cart' && (
+          <div className="legacy-page">
+            <CartPage onCheckout={handleCheckout} onNavigate={openPage} />
+          </div>
+        )}
+        {page === 'orders' && (
+          <div className="legacy-page">
+            <OrdersPage
+              orders={orders}
+              authenticated={Boolean(user)}
+              selectedOrderId={selectedOrderId}
+              onNavigate={openPage}
+              onSelectOrder={(orderId) => navigate(`/app/orders/${orderId}`)}
+              onOrdersChange={handleOrdersChange}
+            />
+          </div>
+        )}
+        {page === 'profile' && (
+          <div className="legacy-page">
+            <ProfilePage
+              user={user ? { ...user, orders } : null}
+              onUserChange={onUserChange}
+              onNavigate={openPage}
+            />
+          </div>
+        )}
+      </PageContainer>
+      <Footer onNavigate={openPage} />
+    </div>
   )
 }
 
