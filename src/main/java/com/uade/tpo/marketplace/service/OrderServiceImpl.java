@@ -52,6 +52,11 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Order createOrder(String requesterEmail) {
+        return createOrder(requesterEmail,null);
+    }
+
+    @Override
+    public Order createOrder(String requesterEmail, com.uade.tpo.marketplace.entity.ShippingAddress address) {
         User user = ownershipGuard.requireCustomer(requesterEmail);
         // Bloquea el carrito para que dos checkouts simultaneos no compren dos veces.
         Cart cart = cartRepository.findForUpdateByUserId(user.getId()).stream().findFirst().orElseThrow(EmptyCartException::new);
@@ -59,6 +64,7 @@ public class OrderServiceImpl implements OrderService {
             throw new EmptyCartException();
         }
         Order order = new Order();
+        order.setShippingAddress(address);
         order.setUser(user);
         order.setOrderStatus(status(OrderStatusType.PENDIENTE));
         // Orden estable de bloqueo de productos: evita deadlocks entre compras simultaneas.

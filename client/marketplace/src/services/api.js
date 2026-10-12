@@ -1,7 +1,5 @@
-import { mockAudio, mockReviews, mockVinyls } from '../data/mockData'
-
 const TOKEN_STORAGE_KEY = 'ongaku-access-token'
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? ''
+const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL ?? ''
 
 export const getAccessToken = () => window.localStorage.getItem(TOKEN_STORAGE_KEY)
 
@@ -13,7 +11,7 @@ export const clearAccessToken = () => {
   window.localStorage.removeItem(TOKEN_STORAGE_KEY)
 }
 
-const readData = (payload) => payload?.data ?? payload
+const readData = (payload) => payload && Object.hasOwn(payload, 'data') ? payload.data : payload
 
 export class ApiError extends Error {
   constructor(message, status = 0, errors = []) {
@@ -56,7 +54,14 @@ export const request = async (url, options = {}) => {
   if (!response.ok) {
     const errors = Array.isArray(payload?.errors) ? payload.errors : []
     const details = errors.length ? ` ${errors.join(' ')}` : ''
-    throw new ApiError(`${payload?.message || `Error HTTP ${response.status}`}${details}`, response.status, errors)
+    const fallback = response.status >= 500
+      ? 'El servidor no pudo procesar la solicitud. Verificá que el backend esté iniciado y volvé a intentar.'
+      : `Error HTTP ${response.status}`
+    throw new ApiError(`${payload?.message || fallback}${details}`, response.status, errors)
+  }
+
+  if (response.status !== 204 && payload === null) {
+    throw new ApiError('El servidor devolvió una respuesta inválida. Verificá la dirección de la API.', 502)
   }
 
   return readData(payload)
@@ -79,9 +84,10 @@ export const normalizeCart = (cart) => ({
   items: (cart?.items ?? []).map(normalizeCartItem),
 })
 
-export const normalizeOrder = (order) => ({
+export const normalizeOrder = (order, payments = []) => ({
   ...order,
   status: order.orderStatus?.name ?? order.status ?? 'PENDIENTE',
+  payment: payments.find((payment) => String(payment.orderId) === String(order.id)) ?? order.payment ?? null,
   items: (order.items ?? []).map((item) => ({
     ...item,
     unitPrice: item.finalPrice ?? item.unitPrice,
@@ -155,13 +161,39 @@ export const clearServerCart = async () => normalizeCart(
 )
 
 export const getOrders = async () => {
-  const orders = await request('/orders')
-  return Array.isArray(orders) ? orders.map(normalizeOrder) : []
+  const [orders, payments] = await Promise.all([request('/orders'), getPayments()])
+  return Array.isArray(orders) ? orders.map((order) => normalizeOrder(order, payments)) : []
 }
 
-export const getOrder = async (orderId) => normalizeOrder(await request(`/orders/${orderId}`))
+export const getOrder = async (orderId) => {
+  const [order, payments] = await Promise.all([request(`/orders/${orderId}`), getPayments()])
+  return normalizeOrder(order, payments)
+}
 
-export const createOrder = async () => normalizeOrder(await request('/orders', jsonRequest('POST')))
+export const getPayments = async () => {
+  const data = await request('/payments')
+  return Array.isArray(data) ? data : []
+}
+
+export const createPayment = ({ orderId, amount, method = 'SIMULADO' }) => request(
+  '/payments', jsonRequest('POST', { orderId, amount, method }),
+)
+
+export const createOrder = async (addressId) => normalizeOrder(await request('/orders', jsonRequest('POST', addressId == null ? undefined : { addressId })))
+
+export const getAddresses = () => request('/users/me/addresses')
+export const saveAddress = (address, id) => request(id == null ? '/users/me/addresses' : `/users/me/addresses/${id}`, jsonRequest(id == null ? 'POST' : 'PATCH', address))
+export const deleteAddress = (id) => request(`/users/me/addresses/${id}`, jsonRequest('DELETE'))
+
+export const getFavorites = async () => {
+  const [favorites, vinyls] = await Promise.all([request('/favorites'), getVinyls()])
+  return favorites.flatMap((favorite) => {
+    const vinyl = vinyls.find((item) => String(item.id) === String(favorite.vinylId))
+    return vinyl ? [{ ...vinyl, favoriteId: favorite.id, artist: vinyl.artistName, price: vinyl.finalPrice ?? vinyl.price }] : []
+  })
+}
+export const createFavorite = (vinylId) => request('/favorites', jsonRequest('POST', { vinylId }))
+export const deleteFavorite = (id) => request(`/favorites/${id}`, jsonRequest('DELETE'))
 
 export const cancelOrder = async (orderId) => normalizeOrder(
   await request(`/orders/${orderId}/status`, jsonRequest('PATCH', { status: 'CANCELADA' }))
@@ -178,53 +210,56 @@ export const createReview = async ({ vinylId, score, comment }) => request(
 )
 
 export const getVinyls = async () => {
-  try {
-    const data = await request('/vinyls')
-    return Array.isArray(data) ? data : []
-  } catch {
-    return mockVinyls
-  }
+  const [data, lookups] = await Promise.all([request('/vinyls'), getVinylLookups()])
+  return (Array.isArray(data) ? data : []).map((vinyl) => normalizeVinyl(vinyl, lookups))
 }
 
 export const getVinylById = async (id) => {
-  try {
-    return await request(`/vinyls/${id}`)
-  } catch {
-    return mockVinyls.find((vinyl) => String(vinyl.id) === String(id)) ?? mockVinyls[0]
-  }
+  const [vinyl, lookups] = await Promise.all([request(`/vinyls/${encodeURIComponent(id)}`), getVinylLookups()])
+  return normalizeVinyl(vinyl, lookups)
 }
 
-export const getReviews = async () => {
-  try {
-    const data = await request('/reviews')
-    return Array.isArray(data) ? data : []
-  } catch {
-    return mockReviews
-  }
+const getVinylLookups = async () => {
+  const [artists, genres, categories] = await Promise.all([
+    request('/artists'), request('/genres'), request('/categories'),
+  ])
+  const index = (items) => Object.fromEntries((Array.isArray(items) ? items : []).map((item) => [item.id, item]))
+  return { artists: index(artists), genres: index(genres), categories: index(categories) }
+}
+
+const normalizeVinyl = (vinyl, lookups) => ({
+  ...vinyl,
+  artistName: lookups.artists[vinyl.artistId]?.name ?? vinyl.artistName,
+  genreName: lookups.genres[vinyl.genreId]?.name ?? vinyl.genreName,
+  categoryDescription: lookups.categories[vinyl.categoryId]?.description ?? vinyl.categoryDescription,
+})
+
+export const getReviews = async (vinylId) => {
+  const query = vinylId == null ? '' : `?vinylId=${encodeURIComponent(vinylId)}`
+  const data = await request(`/reviews${query}`)
+  return Array.isArray(data) ? data : []
 }
 
 export const getReviewsByVinyl = async (vinylId) => {
-  try {
-    const data = await request(`/reviews/vinyl/${vinylId}`)
-    return {
-      reviews: data?.reviews ?? [],
-      averageScore: data?.averageScore ?? 0,
-      totalReviews: data?.totalReviews ?? 0
-    }
-  } catch {
-    const reviews = mockReviews.filter((review) => String(review.vinylId) === String(vinylId))
-    const averageScore = reviews.length
-      ? reviews.reduce((sum, review) => sum + review.score, 0) / reviews.length
-      : 0
-    return { reviews, averageScore, totalReviews: reviews.length }
+  const data = await request(`/reviews/vinyl/${encodeURIComponent(vinylId)}`)
+  return {
+    reviews: data?.reviews ?? [],
+    averageScore: data?.averageScore ?? 0,
+    totalReviews: data?.totalReviews ?? 0,
   }
 }
 
+export const updateReview = (reviewId, { score, comment }) => request(
+  `/reviews/${encodeURIComponent(reviewId)}`, jsonRequest('PATCH', { score, comment }),
+)
+
+export const getReviewEligibility = (vinylId) => request(`/reviews/vinyl/${encodeURIComponent(vinylId)}/eligibility`)
+
+export const deleteReview = (reviewId) => request(
+  `/reviews/${encodeURIComponent(reviewId)}`, jsonRequest('DELETE'),
+)
+
 export const getAudioPreview = async (audioPreviewId) => {
   if (!audioPreviewId) return null
-  try {
-    return await request(`/audio-previews/${audioPreviewId}`)
-  } catch {
-    return mockAudio[audioPreviewId] ?? null
-  }
+  return request(`/audio-previews/${encodeURIComponent(audioPreviewId)}`)
 }

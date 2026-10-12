@@ -1,12 +1,22 @@
 import { useEffect, useState } from 'react'
-import { getAudioPreview } from '../../services/api'
+import { getAudioPreview } from '../../services/vinylService'
 import AudioPlayer from './AudioPlayer'
 
 const AudioPreview = ({ audioPreviewId }) => {
   const [preview, setPreview] = useState(null)
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    getAudioPreview(audioPreviewId).then(setPreview)
+    let active = true
+    setPreview(null)
+    setError('')
+    setLoading(true)
+    getAudioPreview(audioPreviewId)
+      .then((data) => { if (active) setPreview(data) })
+      .catch((requestError) => { if (active) setError(requestError.message) })
+      .finally(() => { if (active) setLoading(false) })
+    return () => { active = false }
   }, [audioPreviewId])
 
   if (!audioPreviewId) return null
@@ -16,7 +26,9 @@ const AudioPreview = ({ audioPreviewId }) => {
         <p className="eyebrow">PREVIEW</p>
         <h2>Escuchá un fragmento</h2>
       </div>
-      <AudioPlayer preview={preview} />
+      {loading ? <p role="status">Cargando audio…</p>
+        : error ? <p role="alert">{error}</p>
+          : preview?.url ? <AudioPlayer preview={preview} /> : <p>No hay audio disponible.</p>}
     </section>
   )
 }

@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.uade.tpo.marketplace.entity.Review;
 import com.uade.tpo.marketplace.entity.dto.ReviewRequest;
+import com.uade.tpo.marketplace.entity.dto.ReviewEligibilityResponse;
 import com.uade.tpo.marketplace.entity.dto.ReviewUpdateRequest;
 import com.uade.tpo.marketplace.entity.dto.VinylReviewsResponse;
 
@@ -17,6 +18,8 @@ public interface ReviewService {
     VinylReviewsResponse getVinylReviews(long vinylId);
 
     List<Review> getMyReviews(String requesterEmail);
+
+    ReviewEligibilityResponse getEligibility(long vinylId, String requesterEmail);
 
     Review createReview(ReviewRequest request, String requesterEmail);
 

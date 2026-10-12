@@ -7,7 +7,7 @@ import PaymentInfo from '../components/order/PaymentInfo'
 import OrderTotals from '../components/order/OrderTotals'
 import TrackingButton from '../components/order/TrackingButton'
 
-const OrderDetailPage = ({ order, onBack, onCancel, onRate, cancelling = false, submittingReview = false }) => (
+const OrderDetailPage = ({ order, onBack, onCancel, onRate, onPay, paying = false, cancelling = false, submittingReview = false }) => (
   <article className="order-detail">
     <button className="back-link-button" type="button" onClick={onBack}>← Volver a mis órdenes</button>
     <header className="order-detail-heading">
@@ -28,10 +28,10 @@ const OrderDetailPage = ({ order, onBack, onCancel, onRate, cancelling = false, 
           <p className="eyebrow">LA SELECCIÓN</p>
           <h2>Ediciones de tu orden</h2>
         </div>
-        {order.items.map((item) => (
-          <article className="order-detail-item" key={item.vinylId}>
+        {order.items.map((item, index) => (
+          <article className="order-detail-item" key={item.vinylId ?? `historical-${index}`}>
             <OrderItem item={item} />
-            {order.status === 'ENTREGADA' && (
+            {item.vinylId != null && ['PAGADA', 'ENVIADA', 'ENTREGADA'].includes(order.status) && (
               <OrderRating item={item} onRate={onRate} submitting={submittingReview} />
             )}
           </article>
@@ -48,6 +48,14 @@ const OrderDetailPage = ({ order, onBack, onCancel, onRate, cancelling = false, 
         </section>
         <section className="order-info-card">
           <PaymentInfo payment={order.payment} />
+          {order.status === 'PENDIENTE' && (
+            <div className="order-payment-actions">
+              <p>Pago de prueba: no se realizan cargos reales ni se solicitan datos de tarjeta.</p>
+              <button className="primary-button" type="button" disabled={paying || cancelling || order.total <= 0} onClick={() => onPay(order)}>
+                {paying ? 'Registrando pago…' : 'Pagar orden de prueba'}
+              </button>
+            </div>
+          )}
         </section>
         {order.status === 'ENVIADA' && order.trackingCode && (
           <section className="order-info-card">
@@ -59,7 +67,7 @@ const OrderDetailPage = ({ order, onBack, onCancel, onRate, cancelling = false, 
           <button
             className="order-cancel-button"
             type="button"
-            disabled={cancelling}
+            disabled={cancelling || paying}
             onClick={() => onCancel(order.id)}
           >
             {cancelling ? 'Cancelando…' : 'Cancelar orden'}

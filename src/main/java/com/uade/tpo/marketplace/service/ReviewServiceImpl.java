@@ -9,6 +9,7 @@ import com.uade.tpo.marketplace.entity.Review;
 import com.uade.tpo.marketplace.entity.User;
 import com.uade.tpo.marketplace.entity.Vinyl;
 import com.uade.tpo.marketplace.entity.dto.ReviewRequest;
+import com.uade.tpo.marketplace.entity.dto.ReviewEligibilityResponse;
 import com.uade.tpo.marketplace.entity.dto.ReviewUpdateRequest;
 import com.uade.tpo.marketplace.entity.dto.VinylReviewsResponse;
 import com.uade.tpo.marketplace.entity.dto.mapper.ReviewMapper;
@@ -88,6 +89,16 @@ public class ReviewServiceImpl implements ReviewService {
         review.setComment(comment);
         review.setScore(score);
         return reviewRepository.save(review);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ReviewEligibilityResponse getEligibility(long vinylId, String requesterEmail) {
+        User user = ownershipGuard.requireCustomer(requesterEmail);
+        Vinyl vinyl = requireVinyl(vinylId);
+        Review existing = reviewRepository.findByUserIdAndVinylId(user.getId(), vinyl.getId()).orElse(null);
+        boolean purchased = orderRepository.hasPurchasedVinyl(user.getId(), vinyl.getId(), PURCHASED_STATUS_IDS);
+        return new ReviewEligibilityResponse(purchased, purchased && existing == null, ReviewMapper.toResponse(existing));
     }
 
     @Override

@@ -5,6 +5,7 @@ import ProfileHeader from '../components/profile/ProfileHeader'
 import ProfileStats from '../components/profile/ProfileStats'
 import ProfileTabs from '../components/profile/ProfileTabs'
 import AuthenticationCard from '../components/profile/AuthenticationCard'
+import AddressBook from '../components/profile/AddressBook'
 import { updateProfile } from '../services/api'
 
 const tabs = [
@@ -30,7 +31,6 @@ const ProfilePage = ({ user, onNavigate, onUserChange }) => {
   }, [user?.id])
 
   const orders = user?.orders ?? []
-  const addresses = user?.addresses ?? []
 
   const handleProfileSubmit = async (event) => {
     event.preventDefault()
@@ -112,19 +112,7 @@ const ProfilePage = ({ user, onNavigate, onUserChange }) => {
           <section aria-labelledby="addresses-heading">
             <p className="eyebrow">ENTREGAS</p>
             <h2 id="addresses-heading">Direcciones de envío</h2>
-            {addresses.length === 0
-              ? <div className="profile-tab-empty">
-                  <p>Todavía no agregaste una dirección.</p>
-                <p>La API actual no ofrece operaciones para guardar direcciones.</p>
-                </div>
-              : addresses.map((address) => (
-                  <article className="shipment-card" key={address.id}>
-                    <h3>{address.street}</h3>
-                    <p>{address.city}, {address.province} ({address.zipCode})</p>
-                    {address.isDefault && <span className="badge">Predeterminada</span>}
-                  </article>
-                ))
-            }
+            <AddressBook key={user.id} />
           </section>
         )}
 

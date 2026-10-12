@@ -59,14 +59,18 @@ export const CartProvider = ({ children, user }) => {
         }
     }
 
-    const addItem = (product, quantity = 1) => {
-        if (product.stock <= 0) return
+    const addItem = async (product, quantity = 1) => {
+        if (product.stock <= 0) return false
         setError('')
         if (user) {
-            addCartItem(product.id, quantity)
-                .then((cart) => setItems(cart.items))
-                .catch(showError)
-            return
+            try {
+                const cart = await addCartItem(product.id, quantity)
+                setItems(cart.items)
+                return true
+            } catch (requestError) {
+                showError(requestError)
+                return false
+            }
         }
         setItems((current) => {
             const existing = current.find((item) => item.id === product.id)
@@ -79,6 +83,7 @@ export const CartProvider = ({ children, user }) => {
             }
             return [...current, { ...product, quantity: Math.min(quantity, product.stock) }]
         })
+        return true
     }
 
     // La cantidad siempre queda entre 1 y el stock del vinilo

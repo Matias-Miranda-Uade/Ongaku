@@ -1,21 +1,31 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import ReviewCard from '../components/review/ReviewCard'
 import ReviewFilters from '../components/review/ReviewFilters'
 import ReviewMetrics from '../components/review/ReviewMetrics'
 import ReviewSummary from '../components/review/ReviewSummary'
-import { getReviews } from '../services/api'
+import { getReviews } from '../services/reviewService'
 
 const ReviewsPage = () => {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const vinylId = searchParams.get('vinylId')
   const [reviews, setReviews] = useState([])
   const [score, setScore] = useState('all')
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [reload, setReload] = useState(0)
 
   useEffect(() => {
-    getReviews().then((data) => {
-      setReviews(data)
-      setLoading(false)
-    })
-  }, [])
+    let active = true
+    setLoading(true)
+    setError('')
+    setReviews([])
+    getReviews(vinylId)
+      .then((data) => { if (active) setReviews(data) })
+      .catch((requestError) => { if (active) setError(requestError.message) })
+      .finally(() => { if (active) setLoading(false) })
+    return () => { active = false }
+  }, [vinylId, reload])
 
   const filtered = useMemo(
     () => score === 'all' ? reviews : reviews.filter((review) => String(Math.round(review.score)) === score),
@@ -36,12 +46,15 @@ const ReviewsPage = () => {
       </div>
 
       <ReviewFilters score={score} onChange={setScore} />
+      {vinylId && <button type="button" className="text-link link-button" onClick={() => setSearchParams({})}>Ver reseñas de todos los vinilos</button>}
+      {error && <div role="alert"><p>{error}</p><button type="button" onClick={() => setReload((value) => value + 1)}>Reintentar</button></div>}
 
       {loading ? (
         <p className="empty-state">Cargando reseñas…</p>
-      ) : (
+      ) : !error && (
         <div className="review-list">
-          {filtered.map((review) => <ReviewCard key={review.id} review={review} />)}
+          {filtered.map((review) => <ReviewCard key={review.id} review={review} onChanged={() => setReload((value) => value + 1)} />)}
+          {!filtered.length && <p className="empty-state">No hay reseñas con estos filtros.</p>}
         </div>
       )}
     </div>

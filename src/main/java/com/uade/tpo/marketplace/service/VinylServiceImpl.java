@@ -96,13 +96,13 @@ public class VinylServiceImpl implements VinylService {
         if (request.getName() == null || request.getName().isBlank()) {
             throw new InvalidFieldException("name", "no puede estar vacio");
         }
-        if (request.getPrice() < 0) {
+        if (request.getPrice() == null || request.getPrice() < 0) {
             throw new InvalidFieldException("price", "no puede ser negativo");
         }
-        if (request.getStock() < 0) {
+        if (request.getStock() == null || request.getStock() < 0) {
             throw new InvalidFieldException("stock", "no puede ser negativo");
         }
-        if (request.getYear() < 1900) {
+        if (request.getYear() == null || request.getYear() < 1900) {
             throw new InvalidFieldException("year", "debe ser mayor o igual a 1900");
         }
 
@@ -123,22 +123,26 @@ public class VinylServiceImpl implements VinylService {
         }
 
         if (request.getDiscountPercentage() != null) validateDiscount(request.getDiscountPercentage());
-        if (request.getName() != null && !request.getName().isBlank()) {
+        if (request.getName() != null) {
+            if (request.getName().isBlank()) throw new InvalidFieldException("name", "no puede estar vacio");
             current.setName(request.getName());
         }
         if (request.getDescription() != null) {
             current.setDescription(request.getDescription());
         }
-        if (request.getPrice() >= 0) {
+        if (request.getPrice() != null) {
+            if (request.getPrice() < 0) throw new InvalidFieldException("price", "no puede ser negativo");
             current.setPrice(request.getPrice());
         }
-        if (request.getStock() >= 0) {
+        if (request.getStock() != null) {
+            if (request.getStock() < 0) throw new InvalidFieldException("stock", "no puede ser negativo");
             current.setStock(request.getStock());
         }
         if (request.getImage() != null) {
             current.setImage(request.getImage());
         }
-        if (request.getYear() >= 1900) {
+        if (request.getYear() != null) {
+            if (request.getYear() < 1900) throw new InvalidFieldException("year", "debe ser mayor o igual a 1900");
             current.setYear(request.getYear());
         }
 

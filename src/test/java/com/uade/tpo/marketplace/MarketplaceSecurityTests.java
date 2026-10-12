@@ -418,6 +418,12 @@ class MarketplaceSecurityTests {
         long paymentId = dataId(mvc.perform(post("/payments").header("Authorization", ownerToken)
                 .contentType(MediaType.APPLICATION_JSON).content(payment)).andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.status").value("APROBADO")).andReturn());
+        mvc.perform(get("/orders/" + orderId).header("Authorization", ownerToken)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.orderStatus.name").value("PAGADA"));
+        mvc.perform(get("/reviews/vinyl/" + vinyl.getId() + "/eligibility").header("Authorization", ownerToken))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.canReview").value(true));
+        mvc.perform(post("/payments").header("Authorization", ownerToken)
+                .contentType(MediaType.APPLICATION_JSON).content(payment)).andExpect(status().isConflict());
         mvc.perform(get("/payments/" + paymentId).header("Authorization", otherToken)).andExpect(status().isForbidden());
         mvc.perform(get("/payments/" + paymentId).header("Authorization", adminToken)).andExpect(status().isOk());
         mvc.perform(get("/payments").header("Authorization", otherToken)).andExpect(jsonPath("$.data.length()").value(0));
@@ -539,6 +545,89 @@ class MarketplaceSecurityTests {
                 .andExpect(jsonPath("$.data.length()").value(1))
                 .andExpect(jsonPath("$.data[0].id").value(reviewId));
         mvc.perform(get("/reviews/99999")).andExpect(status().isNotFound());
+    }
+
+    @Test
+    void reviewEligibilityMatchesPaidPurchaseAndPreventsDuplicates() throws Exception {
+        String path = "/reviews/vinyl/" + vinyl.getId() + "/eligibility";
+        mvc.perform(get(path)).andExpect(status().isUnauthorized());
+        mvc.perform(get(path).header("Authorization", adminToken)).andExpect(status().isForbidden());
+        mvc.perform(get(path).header("Authorization", ownerToken)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.purchased").value(false))
+                .andExpect(jsonPath("$.data.canReview").value(false));
+        cart(owner, 1);
+        long orderId = orderService.createOrder(owner.getEmail()).getId();
+        mvc.perform(get(path).header("Authorization", ownerToken)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.canReview").value(false));
+        orderService.updateStatus(orderId, OrderStatusType.PAGADA, admin.getEmail());
+        mvc.perform(get(path).header("Authorization", ownerToken)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.purchased").value(true))
+                .andExpect(jsonPath("$.data.canReview").value(true));
+        mvc.perform(get(path).header("Authorization", otherToken)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.canReview").value(false));
+        long reviewId = dataId(mvc.perform(post("/reviews").header("Authorization", ownerToken)
+                .contentType(MediaType.APPLICATION_JSON).content("{\"vinylId\":" + vinyl.getId() + ",\"score\":5,\"comment\":\"Excelente\"}"))
+                .andExpect(status().isCreated()).andReturn());
+        mvc.perform(get(path).header("Authorization", ownerToken)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.canReview").value(false))
+                .andExpect(jsonPath("$.data.review.id").value(reviewId));
+        mvc.perform(delete("/reviews/" + reviewId).header("Authorization", ownerToken)).andExpect(status().isNoContent());
+        mvc.perform(get(path).header("Authorization", ownerToken)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.canReview").value(true));
+        orderService.updateStatus(orderId, OrderStatusType.CANCELADA, admin.getEmail());
+        mvc.perform(get(path).header("Authorization", ownerToken)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.canReview").value(false));
+    }
+
+    @Test
+    void partialVinylUpdatesPreserveUnspecifiedStockAndPrice() throws Exception {
+        String path = "/admin/vinyls/" + vinyl.getId();
+        mvc.perform(patch(path).header("Authorization", adminToken).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"description\":\"Actualizada\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.price").value(100))
+                .andExpect(jsonPath("$.data.stock").value(10))
+                .andExpect(jsonPath("$.data.year").value(2020));
+        for (String body : new String[]{"{\"stock\":-1}", "{\"price\":-1}", "{\"year\":1800}", "{\"name\":\" \"}"}) {
+            mvc.perform(patch(path).header("Authorization", adminToken).contentType(MediaType.APPLICATION_JSON)
+                    .content(body)).andExpect(status().isBadRequest());
+        }
+        mvc.perform(patch(path).header("Authorization", adminToken).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"stock\":0,\"price\":0}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.stock").value(0))
+                .andExpect(jsonPath("$.data.finalPrice").value(0));
+    }
+
+    @Test
+    void addressesArePrivateAndOrdersKeepTheirShippingSnapshot() throws Exception {
+        String endpoint = "/users/me/addresses";
+        String body = "{\"recipient\":\"Test User\",\"street\":\"Calle 123\",\"city\":\"Buenos Aires\",\"province\":\"CABA\",\"zipCode\":\"1000\",\"country\":\"Argentina\",\"phone\":\"1112345678\",\"instructions\":\"Piso 2\"}";
+        mvc.perform(get(endpoint)).andExpect(status().isUnauthorized());
+        mvc.perform(post(endpoint).header("Authorization", ownerToken).contentType(MediaType.APPLICATION_JSON)
+                .content("{}")).andExpect(status().isBadRequest());
+        long id = dataId(mvc.perform(post(endpoint).header("Authorization", ownerToken)
+                .contentType(MediaType.APPLICATION_JSON).content(body)).andExpect(status().isCreated()).andReturn());
+        mvc.perform(get(endpoint).header("Authorization", ownerToken)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].details.street").value("Calle 123"));
+        mvc.perform(get(endpoint).header("Authorization", otherToken)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.length()").value(0));
+        mvc.perform(patch(endpoint + "/" + id).header("Authorization", otherToken)
+                .contentType(MediaType.APPLICATION_JSON).content(body)).andExpect(status().isForbidden());
+        cart(other, 1);
+        mvc.perform(post("/orders").header("Authorization", otherToken).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"addressId\":" + id + "}")).andExpect(status().isForbidden());
+        cart(owner, 1);
+        long orderId = dataId(mvc.perform(post("/orders").header("Authorization", ownerToken)
+                .contentType(MediaType.APPLICATION_JSON).content("{\"addressId\":" + id + "}"))
+                .andExpect(status().isCreated()).andExpect(jsonPath("$.data.shippingAddress.street").value("Calle 123")).andReturn());
+        mvc.perform(patch(endpoint + "/" + id).header("Authorization", ownerToken)
+                .contentType(MediaType.APPLICATION_JSON).content(body.replace("Calle 123", "Calle 456"))).andExpect(status().isOk());
+        mvc.perform(delete(endpoint + "/" + id).header("Authorization", otherToken)).andExpect(status().isForbidden());
+        mvc.perform(delete(endpoint + "/" + id).header("Authorization", ownerToken)).andExpect(status().isNoContent());
+        em.flush(); em.clear();
+        mvc.perform(get("/orders/" + orderId).header("Authorization", ownerToken)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.shippingAddress.street").value("Calle 123"));
     }
 
     @Test

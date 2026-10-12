@@ -20,6 +20,10 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "orders")
 public class Order {
+    @jakarta.persistence.Embedded
+    private ShippingAddress shippingAddress;
+    public ShippingAddress getShippingAddress() { return shippingAddress; }
+    public void setShippingAddress(ShippingAddress shippingAddress) { this.shippingAddress=shippingAddress; }
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

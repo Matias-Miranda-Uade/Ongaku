@@ -1,20 +1,53 @@
 import { useEffect, useState } from 'react'
 import AudioPreview from '../components/audio/AudioPreview'
 import ReviewCard from '../components/review/ReviewCard'
+import ReviewComposer from '../components/review/ReviewComposer'
 import RatingStars from '../components/ui/RatingStars'
 import VinylDetailInfo from '../components/vinyl-detail/VinylDetailInfo'
 import VinylGallery from '../components/vinyl-detail/VinylGallery'
-import { getReviewsByVinyl, getVinylById } from '../services/api'
+import { getVinylById } from '../services/vinylService'
+import { getReviewsByVinyl } from '../services/reviewService'
 
-const VinylDetailPage = ({ vinylId, onBack, onReviews }) => {
+const VinylDetailPage = ({ vinylId, onBack, onReviews, onLogin }) => {
   const [vinyl, setVinyl] = useState(null)
   const [reviewData, setReviewData] = useState({ reviews: [], averageScore: 0, totalReviews: 0 })
+  const [error, setError] = useState(null)
+  const [reviewError, setReviewError] = useState('')
+  const [reviewsLoading, setReviewsLoading] = useState(true)
+  const [reload, setReload] = useState(0)
+  const [reviewReload, setReviewReload] = useState(0)
 
   useEffect(() => {
     setVinyl(null)
-    getVinylById(vinylId).then(setVinyl)
-    getReviewsByVinyl(vinylId).then(setReviewData)
-  }, [vinylId])
+    setError(null)
+    let active = true
+    getVinylById(vinylId)
+      .then((data) => { if (active) setVinyl(data) })
+      .catch((requestError) => { if (active) setError(requestError) })
+    return () => { active = false }
+  }, [vinylId, reload])
+
+  useEffect(() => {
+    let active = true
+    setReviewsLoading(true)
+    setReviewError('')
+    setReviewData({ reviews: [], averageScore: 0, totalReviews: 0 })
+    getReviewsByVinyl(vinylId)
+      .then((data) => { if (active) setReviewData(data) })
+      .catch((requestError) => { if (active) setReviewError(requestError.message) })
+      .finally(() => { if (active) setReviewsLoading(false) })
+    return () => { active = false }
+  }, [vinylId, reload, reviewReload])
+
+  if (error) return (
+    <div className="page detail-page">
+      <button className="back-link link-button" type="button" onClick={onBack}>Volver al catálogo</button>
+      <p role="alert">{error.isUnauthorized ? 'Iniciá sesión para ver el detalle de este vinilo.' : error.message}</p>
+      {error.isUnauthorized
+        ? <button type="button" onClick={onLogin}>Iniciar sesión</button>
+        : <button type="button" onClick={() => setReload((value) => value + 1)}>Reintentar</button>}
+    </div>
+  )
 
   if (!vinyl) return <div className="page loading-page">Cargando vinilo…</div>
 
@@ -40,10 +73,15 @@ const VinylDetailPage = ({ vinylId, onBack, onReviews }) => {
           </div>
         </div>
         <div className="review-list compact-list">
-          {reviewData.reviews.slice(0, 2).map((review) => <ReviewCard key={review.id} review={review} />)}
-          {!reviewData.reviews.length && <p className="empty-state">Todavía no hay reseñas para este vinilo.</p>}
+          {reviewsLoading && <p role="status">Cargando reseñas…</p>}
+          {reviewError && <div role="alert"><p>{reviewError}</p><button type="button" onClick={() => setReviewReload((value) => value + 1)}>Reintentar</button></div>}
+          {!reviewsLoading && !reviewError && reviewData.reviews.slice(0, 2).map((review) => (
+            <ReviewCard key={review.id} review={review} onChanged={() => setReviewReload((value) => value + 1)} />
+          ))}
+          {!reviewsLoading && !reviewError && !reviewData.reviews.length && <p className="empty-state">Todavía no hay reseñas para este vinilo.</p>}
         </div>
         <button className="text-link link-button" type="button" onClick={onReviews}>VER TODAS LAS RESEÑAS →</button>
+        <ReviewComposer key={vinylId} vinylId={vinylId} revision={reviewReload} onChanged={() => setReviewReload((value) => value + 1)} onLogin={onLogin} />
       </section>
     </div>
   )

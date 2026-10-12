@@ -4,6 +4,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public class OrderResponse {
+    private com.uade.tpo.marketplace.entity.ShippingAddress shippingAddress;
+    public com.uade.tpo.marketplace.entity.ShippingAddress getShippingAddress() { return shippingAddress; }
+    public void setShippingAddress(com.uade.tpo.marketplace.entity.ShippingAddress shippingAddress) { this.shippingAddress=shippingAddress; }
     private Long id;
     private LocalDateTime createdAt;
     private Long userId;

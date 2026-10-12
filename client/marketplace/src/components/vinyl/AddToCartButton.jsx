@@ -1,12 +1,17 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import useCart from '../../hooks/useCart'
 
 const AddToCartButton = ({ vinyl, compact = false }) => {
   const { addItem } = useCart()
   const [added, setAdded] = useState(false)
-  const disabled = !vinyl || vinyl.stock <= 0
+  const [pending, setPending] = useState(false)
+  const timer = useRef(null)
+  const outOfStock = !vinyl || vinyl.stock <= 0
+  const disabled = outOfStock || pending
 
-  const handleClick = (event) => {
+  useEffect(() => () => window.clearTimeout(timer.current), [])
+
+  const handleClick = async (event) => {
     event.preventDefault()
     event.stopPropagation()
     if (disabled) return
@@ -14,12 +19,19 @@ const AddToCartButton = ({ vinyl, compact = false }) => {
     const product = {
       ...vinyl,
       artist: vinyl.artist || vinyl.artistName || `Artista #${vinyl.artistId ?? '—'}`,
-      price: vinyl.finalPrice || vinyl.price,
+      price: vinyl.finalPrice ?? vinyl.price,
     }
 
-    addItem(product)
-    setAdded(true)
-    window.setTimeout(() => setAdded(false), 1200)
+    setPending(true)
+    try {
+      if (await addItem(product)) {
+        setAdded(true)
+        window.clearTimeout(timer.current)
+        timer.current = window.setTimeout(() => setAdded(false), 1200)
+      }
+    } finally {
+      setPending(false)
+    }
   }
 
   return (
@@ -29,7 +41,7 @@ const AddToCartButton = ({ vinyl, compact = false }) => {
       disabled={disabled}
       onClick={handleClick}
     >
-      {disabled ? 'SIN STOCK' : added ? 'AGREGADO ✓' : 'AGREGAR AL CARRITO'}
+      {outOfStock ? 'SIN STOCK' : pending ? 'AGREGANDO…' : added ? 'AGREGADO ✓' : 'AGREGAR AL CARRITO'}
     </button>
   )
 }

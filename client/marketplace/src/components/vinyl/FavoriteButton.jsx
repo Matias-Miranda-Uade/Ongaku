@@ -15,7 +15,7 @@ const FavoriteButton = ({ vinyl }) => {
         toggleFavorite({
           ...vinyl,
           artist: vinyl.artist || vinyl.artistName || `Artista #${vinyl.artistId ?? '—'}`,
-          price: vinyl.finalPrice || vinyl.price,
+          price: vinyl.finalPrice ?? vinyl.price,
         })
       }}
       aria-label={favorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.uade.tpo.marketplace.common.ApiResponse;
 import com.uade.tpo.marketplace.entity.dto.ReviewRequest;
+import com.uade.tpo.marketplace.entity.dto.ReviewEligibilityResponse;
 import com.uade.tpo.marketplace.entity.dto.ReviewResponse;
 import com.uade.tpo.marketplace.entity.dto.ReviewUpdateRequest;
 import com.uade.tpo.marketplace.entity.dto.VinylReviewsResponse;
@@ -52,6 +53,11 @@ public class ReviewsController {
     public ResponseEntity<ApiResponse<List<ReviewResponse>>> getMyReviews(Principal principal) {
         List<ReviewResponse> reviews = reviewService.getMyReviews(principal.getName()).stream().map(ReviewMapper::toResponse).toList();
         return ResponseEntity.ok(ApiResponse.list(reviews, "Todavia no escribiste reseñas"));
+    }
+
+    @GetMapping("/vinyl/{vinylId}/eligibility")
+    public ResponseEntity<ApiResponse<ReviewEligibilityResponse>> getEligibility(@PathVariable long vinylId, Principal principal) {
+        return ResponseEntity.ok(ApiResponse.ok(reviewService.getEligibility(vinylId, principal.getName())));
     }
 
     @GetMapping("/{reviewId}")

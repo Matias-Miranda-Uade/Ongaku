@@ -5,6 +5,7 @@ import OrderDetailPage from './OrderDetailPage'
 import {
   cancelOrder as cancelOrderRequest,
   createReview,
+  createPayment,
   getMyReviews,
   getOrder,
 } from '../services/api'
@@ -23,6 +24,8 @@ const OrdersPage = ({
   const [detailOrder, setDetailOrder] = useState(null)
   const [loadingDetail, setLoadingDetail] = useState(false)
   const [cancelling, setCancelling] = useState(false)
+  const [paying, setPaying] = useState(false)
+  const [notice, setNotice] = useState('')
   const [submittingReview, setSubmittingReview] = useState(false)
 
   useEffect(() => {
@@ -86,6 +89,7 @@ const OrdersPage = ({
   }, [selectedOrderId, authenticated, orders])
 
   const cancelOrder = async (id) => {
+    if (paying || cancelling) return
     setError('')
     setCancelling(true)
     try {
@@ -97,6 +101,27 @@ const OrdersPage = ({
     } finally {
       setCancelling(false)
     }
+  }
+
+  const payOrder = async (order) => {
+    if (paying || cancelling || order.status !== 'PENDIENTE') return
+    setError('')
+    setNotice('')
+    setPaying(true)
+    try {
+      const payment = await createPayment({ orderId: order.id, amount: order.total })
+      const updatedOrder = {
+        ...order,
+        payment,
+        status: 'PAGADA',
+        orderStatus: { ...order.orderStatus, name: 'PAGADA' },
+      }
+      onOrdersChange?.(accountOrders.map((item) => item.id === order.id ? updatedOrder : item))
+      setDetailOrder(updatedOrder)
+      setNotice('Pago de prueba registrado. Tu orden está pagada y ya podés reseñar sus vinilos.')
+    } catch (requestError) {
+      setError(`No se pudo pagar la orden: ${requestError.message}`)
+    } finally { setPaying(false) }
   }
 
   const rateItem = async (vinylId, review) => {
@@ -137,6 +162,7 @@ const OrdersPage = ({
     return (
       <section className="orders-page">
         {error && <p className="form-error" role="alert">{error}</p>}
+        {notice && <p className="storage-notice" role="status">{notice}</p>}
         {loadingDetail && !selectedOrder
           ? <p className="orders-loading" role="status">Cargando orden…</p>
           : selectedOrder
@@ -145,6 +171,8 @@ const OrdersPage = ({
                 onBack={() => onNavigate?.('orders')}
                 onCancel={cancelOrder}
                 onRate={rateItem}
+                onPay={payOrder}
+                paying={paying}
                 cancelling={cancelling}
                 submittingReview={submittingReview}
               />

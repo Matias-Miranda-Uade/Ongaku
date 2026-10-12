@@ -10,7 +10,9 @@ export default defineConfig(({ mode }) => {
     '/audio-previews',
     '/average-scores',
     '/carts',
+    '/favorites',
     '/orders',
+    '/payments',
     '/users',
     '/admin',
     '/dashboard',
@@ -25,7 +27,21 @@ export default defineConfig(({ mode }) => {
     server: {
       proxy: Object.fromEntries(backendRoutes.map((route) => [
         route,
-        { target: backendUrl, changeOrigin: true },
+        {
+          target: backendUrl,
+          changeOrigin: true,
+          configure: (proxy) => {
+            proxy.on('error', (_error, _request, response) => {
+              if (!response || !('writeHead' in response) || response.headersSent || response.writableEnded) return
+              response.writeHead(503, { 'Content-Type': 'application/json; charset=utf-8' })
+              response.end(JSON.stringify({
+                success: false,
+                message: 'No se pudo conectar con el backend. Iniciá el servidor y volvé a intentar.',
+                errors: [],
+              }))
+            })
+          },
+        },
       ])),
     },
   }

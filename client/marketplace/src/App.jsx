@@ -3,6 +3,7 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import './App.css'
 import './persona2.css'
 import './admin.css'
+import './controls.css'
 import { CartProvider } from './context/CartContext'
 import { FavoritesProvider } from './context/FavoritesContext'
 import useCart from './hooks/useCart'
@@ -179,14 +180,15 @@ const AppContent = ({
   const navigate = useNavigate()
   const { refreshCart } = useCart()
 
-  const handleCheckout = async () => {
+  const handleCheckout = async ({ addressId } = {}) => {
     if (!user) {
       openPage('login')
       return false
     }
 
     try {
-      const order = await createOrder()
+      if (!addressId) return { error: 'Elegí una dirección de envío antes de crear la orden.' }
+      const order = await createOrder(addressId)
       handleOrdersChange([order, ...orders])
       await refreshCart()
       reloadOrders()
@@ -211,7 +213,8 @@ const AppContent = ({
           <VinylDetailPage
             vinylId={selectedVinylId}
             onBack={() => openPage('catalog')}
-            onReviews={() => openPage('reviews')}
+            onReviews={() => navigate(`/app/reviews?vinylId=${encodeURIComponent(selectedVinylId)}`)}
+            onLogin={() => openPage('login')}
           />
         )}
         {page === 'reviews' && <ReviewsPage />}

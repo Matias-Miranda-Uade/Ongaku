@@ -60,7 +60,15 @@ h1, h2, h3, blockquote { font-family: 'Playfair Display', Georgia, serif; }
 .vinyl-card-media { position: relative; background: var(--surface); }
 .vinyl-image-wrap { aspect-ratio: 1 / 1; overflow: hidden; }
 .vinyl-image { width: 100%; height: 100%; object-fit: cover; display: block; filter: saturate(.85); transition: transform .5s ease; }
-.vinyl-card:hover .vinyl-image { transform: scale(1.025); }
+.vinyl-card:hover .vinyl-image { transform: none; }
+.cover-disc { transform-box: view-box; transform-origin: 50% 45.833333%; animation: cover-disc-turn 12s linear infinite; }
+.vinyl-card:focus-within .cover-disc { animation-play-state: running; }
+@media (hover: hover) {
+  .vinyl-card:hover .cover-disc, .detail-gallery:hover .cover-disc { animation-play-state: running; }
+}
+@keyframes cover-disc-turn { to { transform: rotate(360deg); } }
+.disc-animation-paused .cover-disc { animation-play-state: paused !important; }
+@media (prefers-reduced-motion: reduce) { .cover-disc { animation: none; } }
 .icon-action { width: 44px; height: 44px; border: 1px solid var(--ink); background: var(--paper); display: grid; place-items: center; cursor: pointer; font-size: 20px; }
 .vinyl-card-media .icon-action { position: absolute; top: 14px; right: 14px; }
 .icon-action.is-active { background: var(--ink); color: var(--paper); }
@@ -82,6 +90,7 @@ h1, h2, h3, blockquote { font-family: 'Playfair Display', Georgia, serif; }
 .detail-layout { display: grid; grid-template-columns: 1.05fr .95fr; min-height: 690px; border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); }
 .detail-gallery { position: relative; padding: 54px; border-right: 1px solid var(--ink); display: grid; place-items: center; overflow: hidden; }
 .detail-gallery img { width: min(520px, 85%); aspect-ratio: 1; object-fit: cover; box-shadow: 28px 28px 0 rgba(0,0,0,.055); position: relative; z-index: 2; }
+.detail-gallery .detail-cover { width: min(520px, 85%); aspect-ratio: 1; box-shadow: 28px 28px 0 rgba(0,0,0,.055); position: relative; z-index: 2; }
 .gallery-number { position: absolute; top: 22px; left: 25px; font-size: clamp(90px, 13vw, 190px); line-height: 1; letter-spacing: -.08em; color: rgba(23,23,19,.08); }
 .detail-gallery p { position: absolute; left: 28px; bottom: 20px; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .13em; }
 .detail-info { padding: 72px 7vw 60px 6vw; display: flex; flex-direction: column; justify-content: center; }
@@ -124,6 +133,12 @@ h1, h2, h3, blockquote { font-family: 'Playfair Display', Georgia, serif; }
 .review-comment { margin: 32px 0; font-size: 19px; line-height: 1.6; letter-spacing: -.015em; }
 .review-meta { margin-top: auto; display: flex; justify-content: space-between; align-items: center; font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); }
 .review-actions { display: flex; align-items: center; gap: 14px; }
+.review-management { margin-top: 18px; }
+.review-composer { margin-top: 30px; padding: 25px 0; border-top: 1px solid var(--line); }
+.vinyl-info .stock-row { margin: 14px 0 0; flex-wrap: wrap; gap: 8px; }
+.review-edit-form { display: grid; gap: 10px; }
+.review-edit-form select, .review-edit-form textarea { padding: 10px; border: 1px solid var(--line); background: transparent; color: var(--ink); font: inherit; }
+.review-edit-form textarea { min-height: 100px; resize: vertical; }
 .review-actions button { border: 0; border-bottom: 1px solid var(--ink); background: transparent; font-family: 'DM Mono', monospace; font-size: 9px; padding: 0 0 2px; cursor: pointer; }
 
 .reviews-dashboard { display: grid; grid-template-columns: .8fr 1.2fr; border-bottom: 1px solid var(--ink); }

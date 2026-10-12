@@ -1,4 +1,4 @@
-const CartSummary = ({ totalProducts, totalUnits, total, onCheckout }) => {
+const CartSummary = ({ totalProducts, totalUnits, total, onCheckout, disabled = false, pending = false }) => {
     return (
         <section className="cart-summary">
             <p className="eyebrow">ORDEN DE ARCHIVO</p>
@@ -7,7 +7,7 @@ const CartSummary = ({ totalProducts, totalUnits, total, onCheckout }) => {
             <div><span>Tratamiento de embalaje</span><strong>Incluido</strong></div>
             <div><span>Envío</span><strong>A coordinar</strong></div>
             <div className="cart-summary-total"><span>Total de selección</span><strong>${total.toLocaleString('es-AR')}</strong></div>
-            <button className="primary-button" onClick={onCheckout}>Proceder al checkout <span aria-hidden="true">→</span></button>
+            <button className="primary-button" disabled={disabled} onClick={onCheckout}>{pending ? 'Creando orden…' : 'Proceder al checkout'} <span aria-hidden="true">→</span></button>
             <p className="cart-summary-note">La orden se registra en tu cuenta. No se procesa el pago desde esta pantalla.</p>
         </section>
     )

@@ -3,15 +3,15 @@ package com.uade.tpo.marketplace.entity.dto;
 public class VinylRequest {
     private String name;
     private String description;
-    private int price;
+    private Integer price;
     private Integer discountPercentage;
-    private int stock;
+    private Integer stock;
     private String image;
     private Long categoryId;
     private Long artistId;
     private Long genreId;
     private Long audioPreviewId;
-    private int year;
+    private Integer year;
 
     public VinylRequest() {
     }
@@ -24,7 +24,7 @@ public class VinylRequest {
         return this.description;
     }
 
-    public int getPrice() {
+    public Integer getPrice() {
         return this.price;
     }
 
@@ -32,7 +32,7 @@ public class VinylRequest {
         return this.discountPercentage;
     }
 
-    public int getStock() {
+    public Integer getStock() {
         return this.stock;
     }
 
@@ -56,7 +56,7 @@ public class VinylRequest {
         return this.audioPreviewId;
     }
 
-    public int getYear() {
+    public Integer getYear() {
         return this.year;
     }
 
@@ -68,7 +68,7 @@ public class VinylRequest {
         this.description = description;
     }
 
-    public void setPrice(int price) {
+    public void setPrice(Integer price) {
         this.price = price;
     }
 
@@ -76,7 +76,7 @@ public class VinylRequest {
         this.discountPercentage = discountPercentage;
     }
 
-    public void setStock(int stock) {
+    public void setStock(Integer stock) {
         this.stock = stock;
     }
 
@@ -100,7 +100,7 @@ public class VinylRequest {
         this.audioPreviewId = audioPreviewId;
     }
 
-    public void setYear(int year) {
+    public void setYear(Integer year) {
         this.year = year;
     }
 
@@ -110,9 +110,9 @@ public class VinylRequest {
         if (!(o instanceof VinylRequest)) return false;
         VinylRequest other = (VinylRequest) o;
         if (!other.canEqual((Object) this)) return false;
-        if (this.getPrice() != other.getPrice()) return false;
-        if (this.getStock() != other.getStock()) return false;
-        if (this.getYear() != other.getYear()) return false;
+        if (!java.util.Objects.equals(this.getPrice(), other.getPrice())) return false;
+        if (!java.util.Objects.equals(this.getStock(), other.getStock())) return false;
+        if (!java.util.Objects.equals(this.getYear(), other.getYear())) return false;
         Object this$discountPercentage = this.getDiscountPercentage();
         Object other$discountPercentage = other.getDiscountPercentage();
         if (this$discountPercentage == null ? other$discountPercentage != null : !this$discountPercentage.equals(other$discountPercentage)) return false;
@@ -148,9 +148,9 @@ public class VinylRequest {
     public int hashCode() {
         int PRIME = 59;
         int result = 1;
-        result = result * PRIME + this.getPrice();
-        result = result * PRIME + this.getStock();
-        result = result * PRIME + this.getYear();
+        result = result * PRIME + (this.getPrice() == null ? 43 : this.getPrice().hashCode());
+        result = result * PRIME + (this.getStock() == null ? 43 : this.getStock().hashCode());
+        result = result * PRIME + (this.getYear() == null ? 43 : this.getYear().hashCode());
         Object $discountPercentage = this.getDiscountPercentage();
         result = result * PRIME + ($discountPercentage == null ? 43 : $discountPercentage.hashCode());
         Object $categoryId = this.getCategoryId();
