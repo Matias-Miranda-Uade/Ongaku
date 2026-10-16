@@ -46,7 +46,7 @@ import com.uade.tpo.marketplace.service.OrderService;
 
 import jakarta.persistence.EntityManager;
 
-@SpringBootTest
+@SpringBootTest(properties = "app.covers.directory=target/test-covers")
 @Transactional
 class MarketplaceSecurityTests {
     @Autowired WebApplicationContext context;
@@ -160,6 +160,86 @@ class MarketplaceSecurityTests {
         }
         mvc.perform(get("/vinyls/" + vinyl.getId()).header("Authorization", ownerToken)).andExpect(status().isOk());
         mvc.perform(get("/vinyls/" + vinyl.getId()).header("Authorization", adminToken)).andExpect(status().isOk());
+    }
+
+    @Test
+    void albumLinkSurvivesPersistenceAndIsIncludedInCatalogAndDetail() throws Exception {
+        String albumUrl = "https://music.apple.com/us/album/animals/1065974284";
+        vinyl.setAlbumUrl(albumUrl);
+        vinyls.saveAndFlush(vinyl);
+        em.clear();
+        assertThat(vinyls.findById(vinyl.getId()).orElseThrow().getAlbumUrl()).isEqualTo(albumUrl);
+        mvc.perform(get("/vinyls"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[?(@.id == " + vinyl.getId() + ")].albumUrl").value(org.hamcrest.Matchers.hasItem(albumUrl)));
+        mvc.perform(get("/vinyls/" + vinyl.getId()).header("Authorization", ownerToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.albumUrl").value(albumUrl));
+    }
+
+    @Test
+    void administratorsCanCreateArtistsAndSelectThemWhenCreatingVinyls() throws Exception {
+        String artistName = "Nuevo artista " + UUID.randomUUID();
+        String body = json.writeValueAsString(java.util.Map.of("name", "  " + artistName + "  "));
+        mvc.perform(post("/artists").contentType("application/json").content(body)).andExpect(status().isUnauthorized());
+        mvc.perform(post("/artists").header("Authorization", ownerToken).contentType("application/json").content(body)).andExpect(status().isForbidden());
+        var created = mvc.perform(post("/artists").header("Authorization", adminToken).contentType("application/json").content(body))
+                .andExpect(status().isCreated()).andExpect(jsonPath("$.data.name").value(artistName)).andReturn();
+        long artistId = dataId(created);
+        mvc.perform(post("/artists").header("Authorization", adminToken).contentType("application/json").content(body)).andExpect(status().isConflict());
+        mvc.perform(post("/admin/vinyls").header("Authorization", adminToken).contentType("application/json")
+                .content(json.writeValueAsString(java.util.Map.of("name", "Disco nuevo", "year", 2020, "price", 100, "stock", 2, "artistId", artistId))))
+                .andExpect(status().isCreated()).andExpect(jsonPath("$.data.artistId").value(artistId));
+    }
+
+    @Test
+    void onlyAdministratorsUploadCoversButEveryoneCanViewThem() throws Exception {
+        var bytes = new java.io.ByteArrayOutputStream();
+        javax.imageio.ImageIO.write(new java.awt.image.BufferedImage(10, 10, java.awt.image.BufferedImage.TYPE_INT_RGB), "png", bytes);
+        var file = new org.springframework.mock.web.MockMultipartFile("file", "portada.png", "image/png", bytes.toByteArray());
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart("/admin/vinyls/covers").file(file))
+                .andExpect(status().isUnauthorized());
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart("/admin/vinyls/covers").file(file).header("Authorization", ownerToken))
+                .andExpect(status().isForbidden());
+        var result = mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart("/admin/vinyls/covers").file(file).header("Authorization", adminToken))
+                .andExpect(status().isCreated()).andReturn();
+        String url = json.readTree(result.getResponse().getContentAsString()).path("data").path("url").asText();
+        try {
+            mvc.perform(get(url)).andExpect(status().isOk()).andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content().contentType("image/png"));
+            mvc.perform(post("/admin/vinyls").header("Authorization", adminToken).contentType("application/json")
+                    .content(json.writeValueAsString(java.util.Map.of("name", "Disco con portada", "price", 100, "stock", 1, "year", 2020, "image", url))))
+                    .andExpect(status().isCreated()).andExpect(jsonPath("$.data.image").value(url));
+        } finally { java.nio.file.Files.deleteIfExists(java.nio.file.Path.of("target/test-covers", url.substring(url.lastIndexOf('/') + 1))); }
+    }
+
+    @Test
+    void adminCanCreateChangePreserveAndClearAlbumLinks() throws Exception {
+        String apple = "https://music.apple.com/us/album/animals/1065974284";
+        String spotify = "https://open.spotify.com/album/0123456789ABCDEFGHIJKL";
+        var result = mvc.perform(post("/admin/vinyls").header("Authorization", adminToken).contentType("application/json")
+                .content(json.writeValueAsString(java.util.Map.of("name", "Álbum con enlace", "price", 100, "stock", 2, "year", 2020, "albumUrl", " " + apple + " "))))
+                .andExpect(status().isCreated()).andExpect(jsonPath("$.data.albumUrl").value(apple)).andReturn();
+        long id = dataId(result);
+        String path = "/admin/vinyls/" + id;
+        mvc.perform(patch(path).header("Authorization", adminToken).contentType("application/json")
+                .content(json.writeValueAsString(java.util.Map.of("albumUrl", spotify))))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.albumUrl").value(spotify));
+        mvc.perform(patch(path).header("Authorization", adminToken).contentType("application/json").content("{\"stock\":3}"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.albumUrl").value(spotify));
+        em.flush(); em.clear();
+        assertThat(vinyls.findById(id).orElseThrow().getAlbumUrl()).isEqualTo(spotify);
+        mvc.perform(get("/vinyls/" + id).header("Authorization", ownerToken))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.albumUrl").value(spotify));
+        for (String invalid : new String[]{"javascript:alert(1)", "https://music.apple.com.evil.com/us/album/a/1", "https://open.spotify.com/track/0123456789ABCDEFGHIJKL", "https://user@music.apple.com/us/album/a/1", "a".repeat(2049)}) {
+            mvc.perform(patch(path).header("Authorization", adminToken).contentType("application/json")
+                    .content(json.writeValueAsString(java.util.Map.of("albumUrl", invalid))))
+                    .andExpect(status().isBadRequest());
+            mvc.perform(post("/admin/vinyls").header("Authorization", adminToken).contentType("application/json")
+                    .content(json.writeValueAsString(java.util.Map.of("name", "Inválido", "price", 100, "stock", 1, "year", 2020, "albumUrl", invalid))))
+                    .andExpect(status().isBadRequest());
+        }
+        mvc.perform(patch(path).header("Authorization", adminToken).contentType("application/json").content("{\"albumUrl\":\"\"}"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.albumUrl").value(""));
     }
 
     @Test

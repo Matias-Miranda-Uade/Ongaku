@@ -48,3 +48,11 @@ El detalle permite publicar una reseña cuando `/reviews/vinyl/:id/eligibility` 
 Las tarjetas del catálogo y el detalle muestran las unidades disponibles y el estado sin stock. Los discos agotados permanecen visibles y no pueden agregarse al carrito.
 
 `npm test` verifica las llamadas HTTP, el envío del token y el manejo de errores con respuestas simuladas de la API. No modifica la base de datos.
+
+En administración, el formulario de vinilos permite crear un artista con «+ Nuevo artista» y selecciona el registro devuelto por `POST /artists`. Los nombres repetidos se seleccionan desde la lista existente.
+
+«Subir imagen» envía un JPG o PNG de hasta 5 MB y 4096 × 4096 píxeles a `POST /admin/vinyls/covers`. El servidor verifica y vuelve a codificar la imagen; guarda el archivo en `uploads/covers` y el vinilo conserva una URL pública `/media/covers/:archivo`. La ruta de almacenamiento puede configurarse con `app.covers.directory`. Los archivos persisten al reiniciar y deben conservarse junto con la base de datos. Vite redirige `/media` al backend.
+
+También se admiten enlaces directos a imágenes. El formulario informa si no cargan y espera a que termine la subida antes de guardar. Los archivos que antes se elegían como «Probar archivo local» no se habían enviado al servidor: para esos productos hay que editar el vinilo y volver a subir la portada.
+
+El campo opcional «Link del álbum» permite guardar y editar enlaces HTTPS a álbumes de Apple Music o Spotify. Se persiste como `albumUrl` al crear o actualizar un vinilo y aparece en el detalle del cliente con el nombre de la plataforma. Dejarlo vacío elimina el enlace; una actualización parcial que omite el campo lo conserva. El formulario permite abrirlo para comprobar que corresponda al disco elegido.

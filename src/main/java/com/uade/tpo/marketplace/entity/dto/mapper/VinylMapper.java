@@ -41,6 +41,7 @@ public final class VinylMapper {
         response.setFinalPrice(vinyl.getFinalPrice());
         response.setStock(vinyl.getStock());
         response.setImage(vinyl.getImage());
+        response.setAlbumUrl(vinyl.getAlbumUrl());
         response.setYear(vinyl.getYear());
         response.setCategoryId(vinyl.getCategory() != null ? vinyl.getCategory().getId() : null);
         response.setArtistId(vinyl.getArtist() != null ? vinyl.getArtist().getId() : null);
@@ -79,6 +80,7 @@ public final class VinylMapper {
         if (request.getDiscountPercentage() != null) vinyl.setDiscountPercentage(request.getDiscountPercentage());
         vinyl.setStock(request.getStock());
         if (request.getImage() != null) vinyl.setImage(request.getImage());
+        if (request.getAlbumUrl() != null) vinyl.setAlbumUrl(request.getAlbumUrl());
         vinyl.setYear(request.getYear());
     }
 

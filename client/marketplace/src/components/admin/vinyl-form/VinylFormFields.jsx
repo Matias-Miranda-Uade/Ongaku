@@ -1,4 +1,5 @@
 import { MIN_YEAR, maxYear } from './vinylFormModel'
+import ArtistCreator from './ArtistCreator'
 
 export const FieldError = ({ id, message }) =>
   message ? <p className="field-error" id={id} role="alert">{message}</p> : null
@@ -10,7 +11,7 @@ export const fieldA11y = (name, error, hintId) => ({
   'aria-describedby': [error ? `vf-${name}-error` : null, hintId].filter(Boolean).join(' ') || undefined,
 })
 
-const VinylFormFields = ({ values, errors, onChange, onBlur, artists = [], categories = [], lockedRelations = {} }) => (
+const VinylFormFields = ({ values, errors, onChange, onBlur, onArtistCreated, artists = [], categories = [], lockedRelations = {} }) => (
   <fieldset className="vf-section">
     <legend><span className="vf-step">01</span> Datos del disco</legend>
 
@@ -43,6 +44,7 @@ const VinylFormFields = ({ values, errors, onChange, onBlur, artists = [], categ
       </select>
       {artists.length === 0 && <p className="vf-hint">No hay artistas cargados en el catálogo.</p>}
       <FieldError id="vf-artistId-error" message={errors.artistId} />
+      <ArtistCreator artists={artists} onCreated={onArtistCreated} onSelect={(id) => onChange('artistId', id)} />
     </div>
 
     <div className="vf-field">

@@ -1,45 +1,61 @@
 import { useEffect, useRef, useState } from 'react'
+import { uploadCover } from '../../../services/adminService'
 import { FieldError, fieldA11y } from './VinylFormFields'
 
 const MAX_FILE_MB = 5
 
-const CoverUploader = ({ value, onChange, onBlur, error }) => {
+const CoverUploader = ({ value, onChange, onBlur, error, onStatusChange }) => {
   const [dragging, setDragging] = useState(false)
   const [previewState, setPreviewState] = useState(value ? 'loading' : 'empty')
-  const [localFile, setLocalFile] = useState(null)
+  const [uploading, setUploading] = useState(false)
+  const uploadVersion = useRef(0)
   const [fileError, setFileError] = useState('')
   const fileInput = useRef(null)
 
-  const previewUrl = localFile?.url || value.trim()
+  const previewUrl = value.trim()
+  const status = uploading ? 'uploading' : fileError ? 'error' : previewState
+  useEffect(() => { onStatusChange?.(status) }, [status, onStatusChange])
+  useEffect(() => () => { uploadVersion.current += 1 }, [])
 
   useEffect(() => {
     setPreviewState(previewUrl ? 'loading' : 'empty')
   }, [previewUrl])
 
-  useEffect(() => () => { if (localFile?.url) URL.revokeObjectURL(localFile.url) }, [localFile])
 
   const setUrl = (url) => {
-    setLocalFile(null)
     setFileError('')
     onChange('image', url)
   }
 
-  const handleFile = (file) => {
+  const handleFile = async (file) => {
+    if (uploading) return
     setFileError('')
     if (!file) return
-    if (!file.type.startsWith('image/')) {
-      setFileError('El archivo tiene que ser una imagen (JPG, PNG o WebP).')
+    if (!['image/jpeg', 'image/png'].includes(file.type)) {
+      setFileError('El archivo tiene que ser una imagen (JPG o PNG).')
       return
     }
     if (file.size > MAX_FILE_MB * 1024 * 1024) {
       setFileError(`La imagen supera los ${MAX_FILE_MB} MB.`)
       return
     }
-    setLocalFile({ name: file.name, url: URL.createObjectURL(file) })
+    const version = ++uploadVersion.current
+    setUploading(true)
+    try {
+      const result = await uploadCover(file)
+      if (version !== uploadVersion.current) return
+      setPreviewState('loading')
+      onChange('image', result.url)
+    } catch (failure) {
+      if (version === uploadVersion.current) setFileError(failure.message || 'No se pudo subir la portada.')
+    } finally {
+      if (version === uploadVersion.current) setUploading(false)
+    }
   }
 
   const handleDrop = (event) => {
     event.preventDefault()
+    if (uploading) return
     setDragging(false)
     const file = event.dataTransfer.files?.[0]
     if (file) {
@@ -80,6 +96,7 @@ const CoverUploader = ({ value, onChange, onBlur, error }) => {
           <label htmlFor="vf-image">URL de la imagen</label>
           <input
             {...fieldA11y('image', error, 'vf-image-hint')}
+            disabled={uploading}
             type="url"
             inputMode="url"
             value={value}
@@ -88,29 +105,26 @@ const CoverUploader = ({ value, onChange, onBlur, error }) => {
             onChange={(event) => setUrl(event.target.value)}
             onBlur={() => onBlur('image')}
           />
-          <p className="vf-hint" id="vf-image-hint">Cuadrada, idealmente de 1000 × 1000 px. Máximo 255 caracteres.</p>
+          <p className="vf-hint" id="vf-image-hint">Pegá el enlace directo a una imagen, no el de una página web. También podés subir un JPG o PNG de hasta 5 MB y 4096 × 4096 píxeles.</p>
           <FieldError id="vf-image-error" message={error} />
 
           <div className="cover-buttons">
-            <button type="button" className="secondary-button small" onClick={() => fileInput.current?.click()}>
-              Probar archivo local
+            <button type="button" className="secondary-button small" disabled={uploading} onClick={() => fileInput.current?.click()}>
+              {uploading ? 'Subiendo portada…' : 'Subir imagen'}
             </button>
-            {(value || localFile) && (
-              <button type="button" className="link-button" onClick={() => setUrl('')}>Quitar portada</button>
+            {(value || fileError) && (
+              <button type="button" className="link-button" disabled={uploading} onClick={() => setUrl('')}>Quitar portada</button>
             )}
           </div>
           <input
             ref={fileInput}
             type="file"
-            accept="image/*"
+            accept="image/jpeg,image/png"
+            disabled={uploading}
             hidden
             onChange={(event) => { handleFile(event.target.files?.[0]); event.target.value = '' }}
           />
-          {localFile && (
-            <p className="vf-hint vf-warning" role="status">
-              Estás viendo <strong>{localFile.name}</strong> sólo como vista previa. Subila a tu hosting de imágenes y pegá la URL para guardarla.
-            </p>
-          )}
+          {uploading && <p className="vf-hint" role="status">Guardando la imagen en el servidor…</p>}
           <FieldError id="vf-image-file-error" message={fileError} />
         </div>
       </div>

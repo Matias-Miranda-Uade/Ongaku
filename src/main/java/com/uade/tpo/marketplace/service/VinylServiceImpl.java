@@ -106,6 +106,7 @@ public class VinylServiceImpl implements VinylService {
             throw new InvalidFieldException("year", "debe ser mayor o igual a 1900");
         }
 
+        request.setAlbumUrl(com.uade.tpo.marketplace.common.AlbumUrl.normalize(request.getAlbumUrl()));
         Vinyl vinyl = VinylMapper.toEntity(request);
         if (request.getDiscountPercentage() != null) validateDiscount(request.getDiscountPercentage());
         vinyl.setEnabled(true);
@@ -140,6 +141,9 @@ public class VinylServiceImpl implements VinylService {
         }
         if (request.getImage() != null) {
             current.setImage(request.getImage());
+        }
+        if (request.getAlbumUrl() != null) {
+            current.setAlbumUrl(com.uade.tpo.marketplace.common.AlbumUrl.normalize(request.getAlbumUrl()));
         }
         if (request.getYear() != null) {
             if (request.getYear() < 1900) throw new InvalidFieldException("year", "debe ser mayor o igual a 1900");

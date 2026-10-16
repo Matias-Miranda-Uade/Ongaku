@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { after, beforeEach, test } from 'node:test'
+import { createArtist, uploadCover } from '../src/services/adminService.js'
 import {
   ApiError, createFavorite, createOrder, createPayment, createReview, deleteAddress, deleteCard, deleteFavorite, deleteReview, getAddresses, getAudioPreview, getFavorites, getOrder, getOrders, getSavedCards, saveAddress, saveCard,
   getReviewEligibility, getReviews, getReviewsByVinyl, getVinylById, getVinyls, request, updateReview,
@@ -34,6 +35,24 @@ after(() => {
   else globalThis.window = originalWindow
 })
 
+test('crear artistas envía el nombre al backend y devuelve su identificador', async () => {
+  routes['/artists'] = { id: 80, name: 'Lana Del Rey' }
+  assert.equal((await createArtist('Lana Del Rey')).id, 80)
+  assert.equal(calls[0].method, 'POST')
+  assert.deepEqual(JSON.parse(calls[0].body), { name: 'Lana Del Rey' })
+})
+
+test('subir una portada envía el archivo multipart con autenticación y sin forzar JSON', async () => {
+  routes['/admin/vinyls/covers'] = { url: '/media/covers/cover.png' }
+  const result = await uploadCover(new Blob(['image'], { type: 'image/png' }))
+  assert.equal(result.url, '/media/covers/cover.png')
+  assert.equal(calls[0].method, 'POST')
+  assert.ok(calls[0].body instanceof FormData)
+  assert.ok(calls[0].body.get('file') instanceof Blob)
+  assert.equal(calls[0].headers['Content-Type'], undefined)
+  assert.equal(calls[0].headers.Authorization, 'Bearer session-token')
+})
+
 test('el catálogo resuelve nombres y conserva precio final cero y stock agotado', async () => {
   routes['/vinyls'] = [{ id: 1, artistId: 2, genreId: 3, categoryId: 4, finalPrice: 0, price: 100, stock: 0 }]
   const [vinyl] = await getVinyls()
@@ -61,9 +80,10 @@ test('el detalle conserva el error de autenticación del backend', async () => {
 })
 
 test('el detalle carga el vinilo solicitado con sus relaciones', async () => {
-  routes['/vinyls/7'] = { id: 7, artistId: 2, genreId: 3, categoryId: 4 }
+  routes['/vinyls/7'] = { id: 7, artistId: 2, genreId: 3, categoryId: 4, albumUrl: 'https://music.apple.com/us/album/animals/1065974284' }
   const vinyl = await getVinylById(7)
   assert.equal(vinyl.id, 7)
+  assert.equal(vinyl.albumUrl, routes['/vinyls/7'].albumUrl)
   assert.equal(vinyl.artistName, 'Artista real')
 })
 

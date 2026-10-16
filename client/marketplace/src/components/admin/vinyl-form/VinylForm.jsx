@@ -10,6 +10,7 @@ import PublicationToggle from './PublicationToggle'
 import VinylFormActions from './VinylFormActions'
 import {
   FIELD_ORDER,
+  MAX_ALBUM_URL_LENGTH,
   mapServerFieldErrors,
   toFormValues,
   toVinylPayload,
@@ -24,6 +25,7 @@ import {
   setVinylEnabled,
   updateVinyl,
 } from '../../../services/adminService'
+import { getAlbumUrl } from '../../vinyl-detail/albumUrl'
 
 const FOCUS_TARGETS = {
   genreId: '#vf-genre-label + .genre-chips button',
@@ -52,6 +54,7 @@ const VinylForm = ({ mode = 'create', initialData = null, onSuccess, onCancel })
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [serverError, setServerError] = useState('')
+  const [coverStatus, setCoverStatus] = useState('idle')
   const [previews, setPreviews] = useState([])
   const [usedPreviewIds, setUsedPreviewIds] = useState(() => new Set())
   const createdAudio = useRef(null)
@@ -131,6 +134,11 @@ const VinylForm = ({ mode = 'create', initialData = null, onSuccess, onCancel })
     event.preventDefault()
     setSubmitted(true)
     setServerError('')
+
+    if (coverStatus === 'loading' || coverStatus === 'uploading' || coverStatus === 'error') {
+      setServerError(coverStatus === 'error' ? 'Revisá la portada: la imagen no se pudo cargar. Subí un archivo JPG o PNG o pegá un enlace directo a una imagen.' : 'Esperá a que termine de cargar la portada.')
+      return
+    }
 
     if (Object.keys(clientErrors).length > 0) {
       focusFirstError(clientErrors)
@@ -216,6 +224,7 @@ const VinylForm = ({ mode = 'create', initialData = null, onSuccess, onCancel })
             onChange={handleChange}
             onBlur={handleBlur}
             artists={artists}
+            onArtistCreated={(artist) => setLookups((current) => ({ ...current, artists: [...current.artists, artist] }))}
             categories={categories}
             lockedRelations={lockedRelations}
           />
@@ -267,12 +276,25 @@ const VinylForm = ({ mode = 'create', initialData = null, onSuccess, onCancel })
             currentPreviewId={initialData?.audioPreviewId ?? ''}
             locked={lockedRelations.audio}
           />
+          <fieldset className="vf-section">
+            <legend>Enlace para escuchar el álbum</legend>
+            <div className="vf-field vf-span-2">
+              <label htmlFor="vf-albumUrl">Link del álbum (opcional)</label>
+              <input id="vf-albumUrl" type="url" inputMode="url" value={values.albumUrl}
+                maxLength={MAX_ALBUM_URL_LENGTH} placeholder="https://music.apple.com/… o https://open.spotify.com/album/…"
+                onChange={(event) => handleChange('albumUrl', event.target.value)} onBlur={() => handleBlur('albumUrl')}
+                aria-invalid={Boolean(visibleErrors.albumUrl)} aria-describedby={`vf-albumUrl-hint${visibleErrors.albumUrl ? ' vf-albumUrl-error' : ''}`} />
+              <p className="vf-hint" id="vf-albumUrl-hint">Pegá el enlace del álbum de Apple Music o Spotify. El cliente podrá abrirlo desde el detalle del vinilo. Dejalo vacío para quitarlo.</p>
+              {visibleErrors.albumUrl && <p className="field-error" id="vf-albumUrl-error" role="alert">{visibleErrors.albumUrl}</p>}
+              {getAlbumUrl(values.albumUrl) && <a className="link-button" href={getAlbumUrl(values.albumUrl)} target="_blank" rel="noopener noreferrer">Abrir enlace para comprobarlo ↗</a>}
+            </div>
+          </fieldset>
         </div>
 
         <aside className="vinyl-form-side">
           <fieldset className="vf-section">
             <legend><span className="vf-step">04</span> Portada</legend>
-            <CoverUploader value={values.image} onChange={handleChange} onBlur={handleBlur} error={visibleErrors.image} />
+            <CoverUploader value={values.image} onChange={handleChange} onBlur={handleBlur} error={visibleErrors.image} onStatusChange={setCoverStatus} />
           </fieldset>
           <fieldset className="vf-section">
             <legend><span className="vf-step">06</span> Publicación</legend>
