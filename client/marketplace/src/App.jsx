@@ -1,13 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import './App.css'
 import './persona2.css'
 import './admin.css'
 import './controls.css'
-import { CartProvider } from './context/CartContext'
+import { CartContext, CartProvider } from './context/CartContext'
 import { FavoritesProvider } from './context/FavoritesContext'
-import useCart from './hooks/useCart'
-import { useAuth } from './context/AuthContext'
+import { AuthContext } from './context/AuthContext'
 import { createOrder, getOrders } from './services/api'
 import AppRoutes, { ADMIN_BASE_PATH, isAdminPath } from './routes/AppRoutes'
 import Header from './components/layout/Header'
@@ -67,7 +66,7 @@ const App = () => {
     login,
     register,
     logout,
-  } = useAuth()
+  } = useContext(AuthContext)
   const [orders, setOrders] = useState([])
   const [storageError, setStorageError] = useState('')
   const [ordersReload, setOrdersReload] = useState(0)
@@ -178,9 +177,9 @@ const AppContent = ({
   reloadOrders,
 }) => {
   const navigate = useNavigate()
-  const { refreshCart } = useCart()
+  const { refreshCart } = useContext(CartContext)
 
-  const handleCheckout = async ({ addressId } = {}) => {
+  const handleCheckout = async ({ addressId, savedCardId } = {}) => {
     if (isAdmin) return { error: 'Las cuentas de administración no pueden crear compras.' }
     if (!user) {
       openPage('login')
@@ -189,7 +188,7 @@ const AppContent = ({
 
     try {
       if (!addressId) return { error: 'Elegí una dirección de envío antes de crear la orden.' }
-      const order = await createOrder(addressId)
+      const order = await createOrder(addressId, savedCardId)
       handleOrdersChange([order, ...orders])
       await refreshCart()
       reloadOrders()

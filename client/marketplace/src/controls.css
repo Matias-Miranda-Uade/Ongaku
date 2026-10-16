@@ -123,6 +123,12 @@
 .disc-motion-control { margin-bottom: 20px; color: var(--ink); background: var(--surface-low); }
 .gallery-motion-control { position: absolute; top: 20px; right: 20px; z-index: 3; }
 .address-book { margin-bottom: 24px; }
+.card-book { margin-bottom: 24px; }
+.card-book > p { font-size: 15px; line-height: 1.6; color: var(--muted); }
+.saved-card { margin: 16px 0; }
+.saved-card-choice { display: flex; gap: 8px; align-items: center; font-size: 15px; }
+.saved-card-choice input { accent-color: var(--peach); }
+.app-shell .address-form select { font: inherit; font-size: 16px; min-height: 48px; padding: 10px; border: 1px solid #86868a; }
 .address-form { display: grid; gap: 14px; padding: 18px 0; }
 .app-shell .address-form label { display: grid; gap: 8px; font-family: Inter, Arial, sans-serif; font-size: 16px; line-height: 1.5; letter-spacing: normal; text-transform: none; color: var(--ink); }
 .app-shell .address-form input { font-family: Inter, Arial, sans-serif; font-size: 16px; line-height: 1.5; min-height: 48px; }

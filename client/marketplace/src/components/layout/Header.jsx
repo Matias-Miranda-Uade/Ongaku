@@ -1,6 +1,7 @@
+import { useContext } from 'react'
 import Button from '../ui/Button'
-import useCart from '../../hooks/useCart'
-import useFavorites from '../../hooks/useFavorites'
+import { CartContext } from '../../context/CartContext'
+import { FavoritesContext } from '../../context/FavoritesContext'
 
 const navigation = [
   { id: 'catalog', label: 'Catálogo' },
@@ -37,8 +38,8 @@ const ProfileIcon = () => (
 )
 
 const Header = ({ page, onNavigate, onSearch, user, isAdmin = false, onLogout }) => {
-  const { totalUnits } = useCart()
-  const { favorites } = useFavorites()
+  const { totalUnits } = useContext(CartContext)
+  const { favorites } = useContext(FavoritesContext)
   const activePage = page === 'vinyl-detail' ? 'catalog' : page
 
   return (

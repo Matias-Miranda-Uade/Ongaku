@@ -1,9 +1,10 @@
+import { useContext } from 'react'
 import { Link, Outlet } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
+import { AuthContext } from '../context/AuthContext'
 import ProtectedRoute from './ProtectedRoute'
 
 const AdminRoute = ({ children }) => {
-  const { isAdmin } = useAuth()
+  const { isAdmin } = useContext(AuthContext)
 
   return (
     <ProtectedRoute>

@@ -1,11 +1,11 @@
-import { createContext, useEffect, useRef, useState } from 'react'
-import { useAuth } from './AuthContext'
+import { useContext, createContext, useEffect, useRef, useState } from 'react'
+import { AuthContext } from './AuthContext'
 import { createFavorite, deleteFavorite, getFavorites } from '../services/api'
 
 export const FavoritesContext = createContext(null)
 
 export const FavoritesProvider = ({ children }) => {
-    const { user, isAdmin } = useAuth()
+    const { user, isAdmin } = useContext(AuthContext)
     const [error, setError] = useState('')
     const busy = useRef(new Set())
     const currentUserId = useRef(user?.id)

@@ -1,0 +1,860 @@
+[
+  {
+    "slug": "ram",
+    "name": "Random Access Memories",
+    "artist": "Daft Punk",
+    "genre": "Electrónica",
+    "year": 2013,
+    "price": 32000,
+    "discountPercentage": 20,
+    "stock": 8,
+    "description": "Funk, disco y electrónica. Incluye Get Lucky, Instant Crush y Giorgio by Moroder.",
+    "image": "/covers/real/ram.jpg",
+    "source": "https://music.apple.com/us/album/random-access-memories/617154241?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/e8/43/5f/e8435ffa-b6b9-b171-40ab-4ff3959ab661/886443919266.jpg/600x600bb.jpg",
+    "referenceEdition": "Random Access Memories",
+    "tracks": [
+      {
+        "number": 1,
+        "name": "Give Life Back to Music",
+        "durationMs": 274403
+      },
+      {
+        "number": 2,
+        "name": "The Game of Love",
+        "durationMs": 322149
+      },
+      {
+        "number": 3,
+        "name": "Giorgio by Moroder",
+        "durationMs": 544629
+      },
+      {
+        "number": 4,
+        "name": "Within",
+        "durationMs": 228509
+      },
+      {
+        "number": 5,
+        "name": "Instant Crush",
+        "durationMs": 337562
+      },
+      {
+        "number": 6,
+        "name": "Lose Yourself to Dance",
+        "durationMs": 353896
+      },
+      {
+        "number": 7,
+        "name": "Touch",
+        "durationMs": 498962
+      },
+      {
+        "number": 8,
+        "name": "Get Lucky",
+        "durationMs": 369629
+      },
+      {
+        "number": 9,
+        "name": "Beyond",
+        "durationMs": 290242
+      },
+      {
+        "number": 10,
+        "name": "Motherboard",
+        "durationMs": 341656
+      },
+      {
+        "number": 11,
+        "name": "Fragments of Time",
+        "durationMs": 279776
+      },
+      {
+        "number": 12,
+        "name": "Doin' it Right",
+        "durationMs": 251302
+      },
+      {
+        "number": 13,
+        "name": "Contact",
+        "durationMs": 381351
+      }
+    ]
+  },
+  {
+    "slug": "dark-side",
+    "name": "The Dark Side of the Moon",
+    "artist": "Pink Floyd",
+    "genre": "Rock",
+    "year": 1973,
+    "price": 29000,
+    "discountPercentage": 0,
+    "stock": 4,
+    "description": "Rock progresivo con una secuencia de canciones conectadas. Incluye Money, Time y Us and Them.",
+    "image": "/covers/real/dark-side.jpg",
+    "source": "https://music.apple.com/us/album/the-dark-side-of-the-moon/1065973699?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/3e/76/b0/3e76b0e3-762b-2286-a019-8afb19cee541/886445635829.jpg/600x600bb.jpg",
+    "referenceEdition": "The Dark Side of the Moon",
+    "tracks": [
+      {
+        "number": 1,
+        "name": "Speak to Me",
+        "durationMs": 64333
+      },
+      {
+        "number": 2,
+        "name": "Breathe (In the Air)",
+        "durationMs": 169560
+      },
+      {
+        "number": 3,
+        "name": "On the Run",
+        "durationMs": 216107
+      },
+      {
+        "number": 4,
+        "name": "Time",
+        "durationMs": 422853
+      },
+      {
+        "number": 5,
+        "name": "The Great Gig In the Sky",
+        "durationMs": 284413
+      },
+      {
+        "number": 6,
+        "name": "Money",
+        "durationMs": 380080
+      },
+      {
+        "number": 7,
+        "name": "Us and Them",
+        "durationMs": 472627
+      },
+      {
+        "number": 8,
+        "name": "Any Colour You Like",
+        "durationMs": 205773
+      },
+      {
+        "number": 9,
+        "name": "Brain Damage",
+        "durationMs": 230493
+      },
+      {
+        "number": 10,
+        "name": "Eclipse",
+        "durationMs": 126720
+      }
+    ]
+  },
+  {
+    "slug": "kind-of-blue",
+    "name": "Kind of Blue",
+    "artist": "Miles Davis",
+    "genre": "Jazz",
+    "year": 1959,
+    "price": 26000,
+    "discountPercentage": 15,
+    "stock": 3,
+    "description": "Una referencia del jazz modal. Incluye So What, Freddie Freeloader y Blue in Green.",
+    "image": "/covers/real/kind-of-blue.jpg",
+    "source": "https://music.apple.com/us/album/kind-of-blue/268443092?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music/7f/9f/d6/mzi.vtnaewef.jpg/600x600bb.jpg",
+    "referenceEdition": "Kind of Blue",
+    "tracks": [
+      {
+        "number": 1,
+        "name": "So What",
+        "durationMs": 547983
+      },
+      {
+        "number": 2,
+        "name": "Freddie Freeloader",
+        "durationMs": 588411
+      },
+      {
+        "number": 3,
+        "name": "Blue In Green",
+        "durationMs": 335939
+      },
+      {
+        "number": 4,
+        "name": "All Blues",
+        "durationMs": 692897
+      },
+      {
+        "number": 5,
+        "name": "Flamenco Sketches",
+        "durationMs": 561105
+      }
+    ]
+  },
+  {
+    "slug": "abbey-road",
+    "name": "Abbey Road",
+    "artist": "The Beatles",
+    "genre": "Rock",
+    "year": 1969,
+    "price": 28000,
+    "discountPercentage": 0,
+    "stock": 0,
+    "description": "Incluye Come Together, Something, Here Comes the Sun y el célebre medley de su segunda cara.",
+    "image": "/covers/real/abbey-road.jpg",
+    "source": "https://music.apple.com/us/album/abbey-road-remastered/1441164426?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/df/db/61/dfdb615d-47f8-06e9-9533-b96daccc029f/18UMGIM31076.rgb.jpg/600x600bb.jpg",
+    "referenceEdition": "Abbey Road (Remastered)",
+    "tracks": [
+      {
+        "number": 1,
+        "name": "Come Together",
+        "durationMs": 258947
+      },
+      {
+        "number": 2,
+        "name": "Something",
+        "durationMs": 182293
+      },
+      {
+        "number": 3,
+        "name": "Maxwell's Silver Hammer",
+        "durationMs": 207920
+      },
+      {
+        "number": 4,
+        "name": "Oh! Darling",
+        "durationMs": 207240
+      },
+      {
+        "number": 5,
+        "name": "Octopus's Garden",
+        "durationMs": 170720
+      },
+      {
+        "number": 6,
+        "name": "I Want You (She's So Heavy)",
+        "durationMs": 467320
+      },
+      {
+        "number": 7,
+        "name": "Here Comes the Sun",
+        "durationMs": 185733
+      },
+      {
+        "number": 8,
+        "name": "Because",
+        "durationMs": 165667
+      },
+      {
+        "number": 9,
+        "name": "You Never Give Me Your Money",
+        "durationMs": 242973
+      },
+      {
+        "number": 10,
+        "name": "Sun King",
+        "durationMs": 146267
+      },
+      {
+        "number": 11,
+        "name": "Mean Mr. Mustard",
+        "durationMs": 66533
+      },
+      {
+        "number": 12,
+        "name": "Polythene Pam",
+        "durationMs": 72640
+      },
+      {
+        "number": 13,
+        "name": "She Came In Through the Bathroom Window",
+        "durationMs": 118627
+      },
+      {
+        "number": 14,
+        "name": "Golden Slumbers",
+        "durationMs": 91760
+      },
+      {
+        "number": 15,
+        "name": "Carry That Weight",
+        "durationMs": 96467
+      },
+      {
+        "number": 16,
+        "name": "The End",
+        "durationMs": 141613
+      },
+      {
+        "number": 17,
+        "name": "Her Majesty",
+        "durationMs": 23982
+      }
+    ]
+  },
+  {
+    "slug": "cancion-animal",
+    "name": "Canción Animal",
+    "artist": "Soda Stereo",
+    "genre": "Rock nacional",
+    "year": 1990,
+    "price": 24000,
+    "discountPercentage": 10,
+    "stock": 7,
+    "description": "Guitarras al frente en un clásico del trío argentino. Incluye De música ligera, Té para tres y Un millón de años luz.",
+    "image": "/covers/real/cancion-animal.jpg",
+    "source": "https://music.apple.com/us/album/canci%C3%B3n-animal/321882757?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/60/18/68/601868f7-68ba-9416-af42-b26b2f68035f/mzi.qyqtvoxs.jpg/600x600bb.jpg",
+    "referenceEdition": "Canción Animal",
+    "tracks": [
+      {
+        "number": 1,
+        "name": "(En) el Séptimo Día",
+        "durationMs": 263246
+      },
+      {
+        "number": 2,
+        "name": "Un Millón de Años Luz",
+        "durationMs": 304018
+      },
+      {
+        "number": 3,
+        "name": "Canción Animal",
+        "durationMs": 247382
+      },
+      {
+        "number": 4,
+        "name": "1990 (Mil Nueve Noventa)",
+        "durationMs": 218668
+      },
+      {
+        "number": 5,
+        "name": "Sueles Dejarme Solo",
+        "durationMs": 226842
+      },
+      {
+        "number": 6,
+        "name": "De Música Ligera",
+        "durationMs": 212747
+      },
+      {
+        "number": 7,
+        "name": "Hombre al Agua",
+        "durationMs": 355054
+      },
+      {
+        "number": 8,
+        "name": "Entre Caníbales",
+        "durationMs": 246605
+      },
+      {
+        "number": 9,
+        "name": "Té para Tres",
+        "durationMs": 145444
+      },
+      {
+        "number": 10,
+        "name": "Cae el Sol",
+        "durationMs": 262736
+      }
+    ]
+  },
+  {
+    "slug": "clics-modernos",
+    "name": "Clics Modernos",
+    "artist": "Charly García",
+    "genre": "Rock nacional",
+    "year": 1983,
+    "price": 22000,
+    "discountPercentage": 0,
+    "stock": 1,
+    "description": "Sintetizadores, new wave y rock argentino. Incluye Nos siguen pegando abajo, Los dinosaurios y No me dejan salir.",
+    "image": "/covers/real/clics-modernos.jpg",
+    "source": "https://music.apple.com/us/album/clics-modernos/1443921010?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/08/20/1e/08201e46-ec97-0f6a-1682-11d71a87bfab/00602498002155.rgb.jpg/600x600bb.jpg",
+    "referenceEdition": "Clics Modernos",
+    "tracks": []
+  },
+  {
+    "slug": "nevermind",
+    "name": "Nevermind",
+    "artist": "Nirvana",
+    "genre": "Grunge",
+    "year": 1991,
+    "price": 25000,
+    "discountPercentage": 25,
+    "stock": 5,
+    "description": "El grunge de Seattle alcanzó una audiencia mundial con Smells Like Teen Spirit, Come as You Are y Lithium.",
+    "image": "/covers/real/nevermind.jpg",
+    "source": "https://music.apple.com/us/album/nevermind/1440783617?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/95/fd/b9/95fdb9b2-6d2b-92a6-97f2-51c1a6d77f1a/00602527874609.rgb.jpg/600x600bb.jpg",
+    "referenceEdition": "Nevermind",
+    "tracks": [
+      {
+        "number": 1,
+        "name": "Smells Like Teen Spirit",
+        "durationMs": 301096
+      },
+      {
+        "number": 2,
+        "name": "In Bloom",
+        "durationMs": 255029
+      },
+      {
+        "number": 3,
+        "name": "Come As You Are",
+        "durationMs": 218971
+      },
+      {
+        "number": 4,
+        "name": "Breed",
+        "durationMs": 184040
+      },
+      {
+        "number": 5,
+        "name": "Lithium",
+        "durationMs": 257048
+      },
+      {
+        "number": 6,
+        "name": "Polly",
+        "durationMs": 177059
+      },
+      {
+        "number": 7,
+        "name": "Territorial Pissings",
+        "durationMs": 142938
+      },
+      {
+        "number": 8,
+        "name": "Drain You",
+        "durationMs": 223854
+      },
+      {
+        "number": 9,
+        "name": "Lounge Act",
+        "durationMs": 156928
+      },
+      {
+        "number": 10,
+        "name": "Stay Away",
+        "durationMs": 212480
+      },
+      {
+        "number": 11,
+        "name": "On A Plain",
+        "durationMs": 196413
+      },
+      {
+        "number": 12,
+        "name": "Something In The Way",
+        "durationMs": 232183
+      },
+      {
+        "number": 13,
+        "name": "Endless, Nameless",
+        "durationMs": 402894
+      }
+    ]
+  },
+  {
+    "slug": "ok-computer",
+    "name": "OK Computer",
+    "artist": "Radiohead",
+    "genre": "Rock alternativo",
+    "year": 1997,
+    "price": 27000,
+    "discountPercentage": 0,
+    "stock": 0,
+    "description": "Rock alternativo y experimentación sonora. Incluye Paranoid Android, Karma Police y No Surprises.",
+    "image": "/covers/real/ok-computer.jpg",
+    "source": "https://music.apple.com/us/album/ok-computer/1097861387?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/07/60/ba/0760ba0f-148c-b18f-d0ff-169ee96f3af5/634904078164.png/600x600bb.jpg",
+    "referenceEdition": "OK Computer",
+    "tracks": [
+      {
+        "number": 1,
+        "name": "Airbag",
+        "durationMs": 287880
+      },
+      {
+        "number": 2,
+        "name": "Paranoid Android",
+        "durationMs": 387213
+      },
+      {
+        "number": 3,
+        "name": "Subterranean Homesick Alien",
+        "durationMs": 267693
+      },
+      {
+        "number": 4,
+        "name": "Exit Music (For a Film)",
+        "durationMs": 267187
+      },
+      {
+        "number": 5,
+        "name": "Let Down",
+        "durationMs": 299560
+      },
+      {
+        "number": 6,
+        "name": "Karma Police",
+        "durationMs": 264067
+      },
+      {
+        "number": 7,
+        "name": "Fitter Happier",
+        "durationMs": 117333
+      },
+      {
+        "number": 8,
+        "name": "Electioneering",
+        "durationMs": 230627
+      },
+      {
+        "number": 9,
+        "name": "Climbing Up the Walls",
+        "durationMs": 285200
+      },
+      {
+        "number": 10,
+        "name": "No Surprises",
+        "durationMs": 229120
+      },
+      {
+        "number": 11,
+        "name": "Lucky",
+        "durationMs": 258813
+      },
+      {
+        "number": 12,
+        "name": "The Tourist",
+        "durationMs": 326533
+      }
+    ]
+  },
+  {
+    "slug": "discovery",
+    "name": "Discovery",
+    "artist": "Daft Punk",
+    "genre": "Electrónica",
+    "year": 2001,
+    "price": 34000,
+    "discountPercentage": 15,
+    "stock": 6,
+    "description": "House, disco y pop electrónico. Incluye One More Time, Digital Love y Harder, Better, Faster, Stronger.",
+    "image": "/covers/real/discovery.jpg",
+    "source": "https://music.apple.com/us/album/discovery/697194953?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/fd/4a/77/fd4a77db-0ebc-d043-41a2-f32fa1bb0fb4/dj.qrikkdwj.jpg/600x600bb.jpg",
+    "referenceEdition": "Discovery",
+    "tracks": [
+      {
+        "number": 1,
+        "name": "One More Time",
+        "durationMs": 320357
+      },
+      {
+        "number": 2,
+        "name": "Aerodynamic",
+        "durationMs": 212547
+      },
+      {
+        "number": 3,
+        "name": "Digital Love",
+        "durationMs": 301373
+      },
+      {
+        "number": 4,
+        "name": "Harder Better Faster Stronger",
+        "durationMs": 224693
+      },
+      {
+        "number": 5,
+        "name": "Crescendolls",
+        "durationMs": 211640
+      },
+      {
+        "number": 6,
+        "name": "Nightvision",
+        "durationMs": 104467
+      },
+      {
+        "number": 7,
+        "name": "Superheroes",
+        "durationMs": 237800
+      },
+      {
+        "number": 8,
+        "name": "High Life",
+        "durationMs": 201800
+      },
+      {
+        "number": 9,
+        "name": "Something About Us",
+        "durationMs": 232667
+      },
+      {
+        "number": 10,
+        "name": "Voyager",
+        "durationMs": 227867
+      },
+      {
+        "number": 11,
+        "name": "Veridis Quo",
+        "durationMs": 345187
+      },
+      {
+        "number": 12,
+        "name": "Short Circuit",
+        "durationMs": 206867
+      },
+      {
+        "number": 13,
+        "name": "Face to Face",
+        "durationMs": 240173
+      },
+      {
+        "number": 14,
+        "name": "Too Long",
+        "durationMs": 600293
+      }
+    ]
+  },
+  {
+    "slug": "bocanada",
+    "name": "Bocanada",
+    "artist": "Gustavo Cerati",
+    "genre": "Rock nacional",
+    "year": 1999,
+    "price": 31000,
+    "discountPercentage": 0,
+    "stock": 5,
+    "description": "Canciones, samples y texturas electrónicas. Incluye Puente, Bocanada y Raíz.",
+    "image": "/covers/real/bocanada.jpg",
+    "source": "https://music.apple.com/us/album/bocanada/304792998?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/23/e8/92/23e892a3-6194-2a6a-93aa-fa9010566824/mzi.aqelopve.jpg/600x600bb.jpg",
+    "referenceEdition": "Bocanada",
+    "tracks": [
+      {
+        "number": 1,
+        "name": "Tabú",
+        "durationMs": 288984
+      },
+      {
+        "number": 2,
+        "name": "Engaña",
+        "durationMs": 251358
+      },
+      {
+        "number": 3,
+        "name": "Bocanada",
+        "durationMs": 249171
+      },
+      {
+        "number": 4,
+        "name": "Puente",
+        "durationMs": 274444
+      },
+      {
+        "number": 5,
+        "name": "Río Babel",
+        "durationMs": 298851
+      },
+      {
+        "number": 6,
+        "name": "Beautiful",
+        "durationMs": 446539
+      },
+      {
+        "number": 7,
+        "name": "Perdonar Es Divíno",
+        "durationMs": 318912
+      },
+      {
+        "number": 8,
+        "name": "Verbo Carne",
+        "durationMs": 281730
+      },
+      {
+        "number": 9,
+        "name": "Raíz",
+        "durationMs": 244017
+      },
+      {
+        "number": 10,
+        "name": "Y Si el Humo Está en Foco...",
+        "durationMs": 295847
+      },
+      {
+        "number": 11,
+        "name": "Paseo Inmoral",
+        "durationMs": 331000
+      },
+      {
+        "number": 12,
+        "name": "Aquí & Ahora (Los Primeros 3 Minutos)",
+        "durationMs": 233555
+      },
+      {
+        "number": 13,
+        "name": "Aquí & Ahora (y Después)",
+        "durationMs": 141785
+      },
+      {
+        "number": 14,
+        "name": "Alma",
+        "durationMs": 277222
+      },
+      {
+        "number": 15,
+        "name": "Balsa",
+        "durationMs": 312816
+      }
+    ]
+  },
+  {
+    "slug": "rumours",
+    "name": "Rumours",
+    "artist": "Fleetwood Mac",
+    "genre": "Rock",
+    "year": 1977,
+    "price": 30000,
+    "discountPercentage": 10,
+    "stock": 4,
+    "description": "Rock y pop de armonías vocales inconfundibles. Incluye Dreams, Go Your Own Way y The Chain.",
+    "image": "/covers/real/rumours.jpg",
+    "source": "https://music.apple.com/us/album/rumours/594061854?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/4d/13/ba/4d13bac3-d3d5-7581-2c74-034219eadf2b/081227970949.jpg/600x600bb.jpg",
+    "referenceEdition": "Rumours",
+    "tracks": [
+      {
+        "number": 1,
+        "name": "Second Hand News",
+        "durationMs": 176307
+      },
+      {
+        "number": 2,
+        "name": "Dreams",
+        "durationMs": 257800
+      },
+      {
+        "number": 3,
+        "name": "Never Going Back Again",
+        "durationMs": 134400
+      },
+      {
+        "number": 4,
+        "name": "Don't Stop",
+        "durationMs": 193347
+      },
+      {
+        "number": 5,
+        "name": "Go Your Own Way",
+        "durationMs": 223613
+      },
+      {
+        "number": 6,
+        "name": "Songbird",
+        "durationMs": 200813
+      },
+      {
+        "number": 7,
+        "name": "The Chain",
+        "durationMs": 268200
+      },
+      {
+        "number": 8,
+        "name": "You Make Loving Fun",
+        "durationMs": 213693
+      },
+      {
+        "number": 9,
+        "name": "I Don't Want to Know",
+        "durationMs": 196853
+      },
+      {
+        "number": 10,
+        "name": "Oh Daddy",
+        "durationMs": 236240
+      },
+      {
+        "number": 11,
+        "name": "Gold Dust Woman",
+        "durationMs": 295627
+      }
+    ]
+  },
+  {
+    "slug": "back-to-black",
+    "name": "Back to Black",
+    "artist": "Amy Winehouse",
+    "genre": "Soul",
+    "year": 2006,
+    "price": 28500,
+    "discountPercentage": 0,
+    "stock": 7,
+    "description": "Soul con influencias de jazz y rhythm and blues. Incluye Rehab, You Know I’m No Good y Back to Black.",
+    "image": "/covers/real/back-to-black.jpg",
+    "source": "https://music.apple.com/us/album/back-to-black/1440856219?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/cf/3f/09/cf3f0994-980d-d8ed-088d-ae89af256b73/15UMGIM24224.rgb.jpg/600x600bb.jpg",
+    "referenceEdition": "Back to Black",
+    "tracks": [
+      {
+        "number": 1,
+        "name": "Rehab",
+        "durationMs": 214747
+      },
+      {
+        "number": 2,
+        "name": "You Know I'm No Good",
+        "durationMs": 257187
+      },
+      {
+        "number": 3,
+        "name": "Me & Mr. Jones",
+        "durationMs": 153173
+      },
+      {
+        "number": 4,
+        "name": "Just Friends",
+        "durationMs": 193307
+      },
+      {
+        "number": 5,
+        "name": "Back to Black",
+        "durationMs": 241293
+      },
+      {
+        "number": 6,
+        "name": "Love Is a Losing Game",
+        "durationMs": 155413
+      },
+      {
+        "number": 7,
+        "name": "Tears Dry On Their Own",
+        "durationMs": 186440
+      },
+      {
+        "number": 8,
+        "name": "Wake Up Alone",
+        "durationMs": 222000
+      },
+      {
+        "number": 9,
+        "name": "Some Unholy War",
+        "durationMs": 142693
+      },
+      {
+        "number": 10,
+        "name": "He Can Only Hold Her",
+        "durationMs": 166973
+      },
+      {
+        "number": 11,
+        "name": "Addicted",
+        "durationMs": 165240
+      }
+    ]
+  }
+]

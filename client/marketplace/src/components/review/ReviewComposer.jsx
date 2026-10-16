@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react'
-import { useAuth } from '../../context/AuthContext'
+import { useContext, useEffect, useState } from 'react'
+import { AuthContext } from '../../context/AuthContext'
 import { createReview, getReviewEligibility } from '../../services/reviewService'
 import ReviewCard from './ReviewCard'
 
 const ReviewComposer = ({ vinylId, revision, onChanged, onLogin }) => {
-  const { user, isAdmin } = useAuth()
+  const { user, isAdmin } = useContext(AuthContext)
   const [eligibility, setEligibility] = useState(null)
   const [loading, setLoading] = useState(true)
   const [score, setScore] = useState(5)

@@ -1,6 +1,12 @@
 package com.uade.tpo.marketplace.entity.dto;
 
 public class PaymentResponse {
+    private String cardBrand;
+    private String cardLastFour;
+    public String getCardBrand() { return cardBrand; }
+    public void setCardBrand(String value) { cardBrand=value; }
+    public String getCardLastFour() { return cardLastFour; }
+    public void setCardLastFour(String value) { cardLastFour=value; }
     private Long id;
     private Long orderId;
     private double amount;

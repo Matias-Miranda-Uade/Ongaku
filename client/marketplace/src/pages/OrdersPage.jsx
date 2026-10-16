@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useContext, useEffect, useMemo, useState } from 'react'
 import OrderFilters from '../components/order/OrderFilters'
 import OrderCard from '../components/order/OrderCard'
 import OrderDetailPage from './OrderDetailPage'
-import { useAuth } from '../context/AuthContext'
+import { AuthContext } from '../context/AuthContext'
 import {
   cancelOrder as cancelOrderRequest,
   createReview,
@@ -19,7 +19,7 @@ const OrdersPage = ({
   onSelectOrder,
   onOrdersChange,
 }) => {
-  const { isAdmin } = useAuth()
+  const { isAdmin } = useContext(AuthContext)
   const [status, setStatus] = useState('TODAS')
   const [error, setError] = useState('')
   const [myReviews, setMyReviews] = useState([])
@@ -105,13 +105,13 @@ const OrdersPage = ({
     }
   }
 
-  const payOrder = async (order) => {
+  const payOrder = async (order, { savedCardId } = {}) => {
     if (isAdmin || paying || cancelling || order.status !== 'PENDIENTE') return
     setError('')
     setNotice('')
     setPaying(true)
     try {
-      const payment = await createPayment({ orderId: order.id, amount: order.total })
+      const payment = await createPayment({ orderId: order.id, amount: order.total, savedCardId })
       const updatedOrder = {
         ...order,
         payment,

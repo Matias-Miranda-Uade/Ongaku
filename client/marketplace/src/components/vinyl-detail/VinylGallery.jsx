@@ -7,9 +7,9 @@ const VinylGallery = ({ vinyl }) => {
   <section className={`detail-gallery ${motionPaused ? 'disc-animation-paused' : ''}`}>
     <div className="gallery-number">0{String(vinyl.id).slice(-1)}</div>
     <VinylCover className="detail-cover" src={vinyl.image} alt={vinyl.name} />
-    <button className="clear-button gallery-motion-control disc-motion-control" type="button" aria-pressed={motionPaused} onClick={() => setMotionPaused((value) => !value)}>
+    {vinyl.image?.startsWith('/covers/') && vinyl.image.endsWith('.svg') && <button className="clear-button gallery-motion-control disc-motion-control" type="button" aria-pressed={motionPaused} onClick={() => setMotionPaused((value) => !value)}>
       {motionPaused ? 'Reanudar giro' : 'Pausar giro'}
-    </button>
+    </button>}
     <p>EDICIÓN ANALÓGICA · {vinyl.year}</p>
   </section>
   )

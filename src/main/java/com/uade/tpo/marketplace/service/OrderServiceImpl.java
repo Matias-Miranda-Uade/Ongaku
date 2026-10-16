@@ -34,6 +34,7 @@ public class OrderServiceImpl implements OrderService {
     private final CartRepository cartRepository;
     private final VinylRepository vinylRepository;
     private final OwnershipGuard ownershipGuard;
+    private final SavedCardService savedCardService;
 
     @Override
     @Transactional(readOnly = true)
@@ -57,6 +58,12 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Order createOrder(String requesterEmail, com.uade.tpo.marketplace.entity.ShippingAddress address) {
+        return createOrder(requesterEmail,address,null);
+    }
+
+    @Override
+    public Order createOrder(String requesterEmail, com.uade.tpo.marketplace.entity.ShippingAddress address, Long savedCardId) {
+        if (savedCardId!=null) savedCardService.usable(savedCardId,requesterEmail);
         User user = ownershipGuard.requireCustomer(requesterEmail);
         // Bloquea el carrito para que dos checkouts simultaneos no compren dos veces.
         Cart cart = cartRepository.findForUpdateByUserId(user.getId()).stream().findFirst().orElseThrow(EmptyCartException::new);
@@ -64,6 +71,7 @@ public class OrderServiceImpl implements OrderService {
             throw new EmptyCartException();
         }
         Order order = new Order();
+        order.setSavedCardId(savedCardId);
         order.setShippingAddress(address);
         order.setUser(user);
         order.setOrderStatus(status(OrderStatusType.PENDIENTE));
@@ -149,11 +157,12 @@ public class OrderServiceImpl implements OrderService {
         return orderStatusRepository.findById(type.getId()).orElseThrow(() -> new ResourceNotFoundException("Estado de orden", type.getId()));
     }
 
-    public OrderServiceImpl(OrderRepository orderRepository, OrderStatusRepository orderStatusRepository, CartRepository cartRepository, VinylRepository vinylRepository, OwnershipGuard ownershipGuard) {
+    public OrderServiceImpl(OrderRepository orderRepository, OrderStatusRepository orderStatusRepository, CartRepository cartRepository, VinylRepository vinylRepository, OwnershipGuard ownershipGuard, SavedCardService savedCardService) {
         this.orderRepository = orderRepository;
         this.orderStatusRepository = orderStatusRepository;
         this.cartRepository = cartRepository;
         this.vinylRepository = vinylRepository;
         this.ownershipGuard = ownershipGuard;
+        this.savedCardService = savedCardService;
     }
 }

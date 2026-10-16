@@ -1,22 +1,24 @@
-import { useEffect, useState } from 'react'
-import useCart from '../hooks/useCart'
-import useFavorites from '../hooks/useFavorites'
+import { useContext, useEffect, useState } from 'react'
+import { CartContext } from '../context/CartContext'
+import { FavoritesContext } from '../context/FavoritesContext'
 import ProfileHeader from '../components/profile/ProfileHeader'
 import ProfileStats from '../components/profile/ProfileStats'
 import ProfileTabs from '../components/profile/ProfileTabs'
 import AuthenticationCard from '../components/profile/AuthenticationCard'
 import AddressBook from '../components/profile/AddressBook'
+import CardBook from '../components/profile/CardBook'
 import { updateProfile } from '../services/api'
 
 const tabs = [
   { id: 'account', label: 'Mi cuenta' },
   { id: 'shipments', label: 'Direcciones' },
+  { id: 'cards', label: 'Tarjetas' },
   { id: 'authentication', label: 'Seguridad' },
 ]
 
 const ProfilePage = ({ user, onNavigate, onUserChange }) => {
-  const { totalProducts } = useCart()
-  const { favorites } = useFavorites()
+  const { totalProducts } = useContext(CartContext)
+  const { favorites } = useContext(FavoritesContext)
   const [activeTab, setActiveTab] = useState('account')
   const [isEditing, setIsEditing] = useState(false)
   const [firstName, setFirstName] = useState(user?.firstName ?? '')
@@ -116,6 +118,7 @@ const ProfilePage = ({ user, onNavigate, onUserChange }) => {
           </section>
         )}
 
+        {activeTab === 'cards' && <CardBook key={user.id} />}
         {activeTab === 'authentication' && <AuthenticationCard email={user.email} />}
       </div>
     </section>

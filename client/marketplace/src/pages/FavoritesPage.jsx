@@ -1,13 +1,13 @@
-import { useState } from "react"
-import useFavorites from "../hooks/useFavorites"
-import useCart from "../hooks/useCart"
-import { useAuth } from "../context/AuthContext"
+import { useContext, useState } from 'react'
+import { FavoritesContext } from '../context/FavoritesContext'
+import { CartContext } from '../context/CartContext'
+import { AuthContext } from '../context/AuthContext'
 
 const FavoritesPage = ({ onNavigate }) => {
 
-    const { favorites, removeFavorite } = useFavorites()
-    const { items, addItem } = useCart()
-    const { isAdmin } = useAuth()
+    const { favorites, removeFavorite } = useContext(FavoritesContext)
+    const { items, addItem } = useContext(CartContext)
+    const { isAdmin } = useContext(AuthContext)
     const [message, setMessage] = useState('')
 
     if (isAdmin) {

@@ -16,6 +16,7 @@ public final class OrderMapper {
         if (order == null) return null;
         OrderResponse response = new OrderResponse();
         response.setId(order.getId());
+        response.setSavedCardId(order.getSavedCardId());
         response.setShippingAddress(order.getShippingAddress());
         response.setCreatedAt(order.getCreatedAt());
         response.setUserId(order.getUser() != null ? order.getUser().getId() : null);

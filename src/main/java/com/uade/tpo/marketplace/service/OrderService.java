@@ -15,6 +15,7 @@ public interface OrderService {
     /** Crea la orden en estado PENDIENTE a partir del carrito del usuario. */
     Order createOrder(String requesterEmail);
     Order createOrder(String requesterEmail, com.uade.tpo.marketplace.entity.ShippingAddress address);
+    Order createOrder(String requesterEmail, com.uade.tpo.marketplace.entity.ShippingAddress address, Long savedCardId);
 
     Order updateStatus(long orderId, OrderStatusType target, String requesterEmail);
 

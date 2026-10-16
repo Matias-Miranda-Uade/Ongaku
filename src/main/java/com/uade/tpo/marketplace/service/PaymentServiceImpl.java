@@ -25,6 +25,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final OrderRepository orderRepository;
     private final OrderService orderService;
     private final OwnershipGuard ownershipGuard;
+    private final SavedCardService savedCardService;
 
     @Override
     @Transactional(readOnly = true)
@@ -77,6 +78,10 @@ public class PaymentServiceImpl implements PaymentService {
             throw new InvalidPaymentAmountException("El importe (" + request.getAmount() + ") no coincide con el total de la orden (" + order.getTotal() + ")");
         }
         Payment payment = new Payment();
+        if (request.getSavedCardId()!=null) {
+            var card=savedCardService.usable(request.getSavedCardId(),requesterEmail);
+            payment.setCardBrand(card.brand); payment.setCardLastFour(card.lastFour);
+        }
         payment.setOrder(order);
         payment.setAmount(request.getAmount());
         payment.setMethod(request.getMethod().trim().toUpperCase());
@@ -88,10 +93,11 @@ public class PaymentServiceImpl implements PaymentService {
         return saved;
     }
 
-    public PaymentServiceImpl(PaymentRepository paymentRepository, OrderRepository orderRepository, OrderService orderService, OwnershipGuard ownershipGuard) {
+    public PaymentServiceImpl(PaymentRepository paymentRepository, OrderRepository orderRepository, OrderService orderService, OwnershipGuard ownershipGuard, SavedCardService savedCardService) {
         this.paymentRepository = paymentRepository;
         this.orderRepository = orderRepository;
         this.orderService = orderService;
         this.ownershipGuard = ownershipGuard;
+        this.savedCardService = savedCardService;
     }
 }

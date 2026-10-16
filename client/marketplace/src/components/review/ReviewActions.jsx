@@ -1,9 +1,9 @@
-import { useState } from 'react'
-import { useAuth } from '../../context/AuthContext'
+import { useContext, useState } from 'react'
+import { AuthContext } from '../../context/AuthContext'
 import { deleteReview, updateReview } from '../../services/reviewService'
 
 const ReviewActions = ({ review, onChanged }) => {
-  const { user, isAdmin } = useAuth()
+  const { user, isAdmin } = useContext(AuthContext)
   const [editing, setEditing] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [score, setScore] = useState(review.score ?? 5)
