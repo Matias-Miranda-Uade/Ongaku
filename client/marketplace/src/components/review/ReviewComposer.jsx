@@ -53,7 +53,7 @@ const ReviewComposer = ({ vinylId, revision, onChanged, onLogin }) => {
       {!eligibility && <button type="button" onClick={() => setReload((value) => value + 1)}>Reintentar</button>}
       {eligibility?.review && <ReviewCard review={eligibility.review} onChanged={onChanged} />}
       {eligibility && !eligibility.purchased && !eligibility.review && (
-        <p>Podés reseñar este vinilo cuando una orden tuya que lo incluya esté pagada. Crear una orden pendiente todavía no habilita la reseña.</p>
+        <p>Podés reseñar este vinilo cuando una orden tuya que lo incluya figure como entregada.</p>
       )}
       {eligibility?.canReview && (
         <form className="review-edit-form" onSubmit={submit}>

@@ -39,13 +39,29 @@ const VinylDetailPage = ({ vinylId, onBack, onReviews, onLogin }) => {
     return () => { active = false }
   }, [vinylId, reload, reviewReload])
 
+  if (error?.isUnauthorized) return (
+    <div className="page detail-page">
+      <button className="back-link link-button" type="button" onClick={onBack}>← VOLVER AL CATÁLOGO</button>
+      <section className="login-gate" aria-labelledby="login-gate-title">
+        <div className="login-gate-art" aria-hidden="true">
+          <span className="login-gate-record"><span /></span>
+          <span className="login-gate-orbit login-gate-orbit-one" />
+          <span className="login-gate-orbit login-gate-orbit-two" />
+        </div>
+        <div className="login-gate-copy">
+          <p className="eyebrow">ONGAKU / ARCHIVO ANALÓGICO</p>
+          <h1 id="login-gate-title">Este vinilo te está esperando.</h1>
+          <p>Iniciá sesión para descubrir todos los detalles, escuchar su adelanto y leer las reseñas de la comunidad.</p>
+          <button className="primary-button" type="button" onClick={onLogin}>Iniciar sesión</button>
+        </div>
+      </section>
+    </div>
+  )
+
   if (error) return (
     <div className="page detail-page">
-      <button className="back-link link-button" type="button" onClick={onBack}>Volver al catálogo</button>
-      <p role="alert">{error.isUnauthorized ? 'Iniciá sesión para ver el detalle de este vinilo.' : error.message}</p>
-      {error.isUnauthorized
-        ? <button type="button" onClick={onLogin}>Iniciar sesión</button>
-        : <button type="button" onClick={() => setReload((value) => value + 1)}>Reintentar</button>}
+      <button className="back-link link-button" type="button" onClick={onBack}>← VOLVER AL CATÁLOGO</button>
+      <div role="alert"><p>{error.message}</p><button type="button" onClick={() => setReload((value) => value + 1)}>Reintentar</button></div>
     </div>
   )
 

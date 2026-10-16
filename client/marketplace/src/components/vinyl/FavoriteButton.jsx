@@ -1,8 +1,12 @@
 import useFavorites from '../../hooks/useFavorites'
+import { useAuth } from '../../context/AuthContext'
 
 const FavoriteButton = ({ vinyl }) => {
   const { isFavorite, toggleFavorite } = useFavorites()
+  const { isAdmin } = useAuth()
   const favorite = vinyl ? isFavorite(vinyl.id) : false
+
+  if (isAdmin) return null
 
   return (
     <button

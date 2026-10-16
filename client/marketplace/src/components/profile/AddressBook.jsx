@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { deleteAddress, getAddresses, saveAddress } from '../../services/api'
+import { normalizeAddress, validateAddress } from './addressValidation'
 
 const empty = { recipient: '', street: '', city: '', province: '', zipCode: '', country: 'Argentina', phone: '', instructions: '' }
 const fields = [
@@ -9,20 +10,24 @@ const fields = [
   ['phone', 'Teléfono de contacto', 'tel', 40], ['instructions', 'Indicaciones adicionales (opcional)', 'off', 500],
 ]
 
-const AddressBook = ({ selectable = false, selectedId, onSelect }) => {
+const AddressBook = ({ selectable = false, selectedId, onSelect, showHeading = true }) => {
   const [addresses, setAddresses] = useState([])
   const [form, setForm] = useState(null)
   const [editingId, setEditingId] = useState(null)
   const [loading, setLoading] = useState(true)
   const [pending, setPending] = useState(false)
   const [error, setError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState({})
+  const beginForm = (details, id = null) => {
+    setEditingId(id); setForm({ ...details }); setError(''); setFieldErrors({})
+  }
 
   const refresh = async () => {
     setLoading(true)
     try {
       const data = await getAddresses()
       setAddresses(data)
-      if (selectable && !data.some((address) => address.id === selectedId)) onSelect(data[0]?.id ?? null)
+      if (selectable && !data.some((address) => String(address.id) === String(selectedId))) onSelect(data[0]?.id ?? null)
     } catch (requestError) { setError(requestError.message) }
     finally { setLoading(false) }
   }
@@ -31,14 +36,36 @@ const AddressBook = ({ selectable = false, selectedId, onSelect }) => {
   const submit = async (event) => {
     event.preventDefault()
     if (pending) return
+    const validation = validateAddress(form)
+    setFieldErrors(validation)
+    if (Object.keys(validation).length) { setError('Revisá los campos marcados antes de guardar.'); return }
+    const normalized = normalizeAddress(form)
+    const recipient = normalized.recipient.replace(/\s+/g, ' ').toLowerCase()
+    const phone = normalized.phone.replace(/\D/g, '')
+    const duplicate = addresses.some(({ id, details }) => (
+      String(id) !== String(editingId)
+      && details.recipient.trim().replace(/\s+/g, ' ').toLowerCase() === recipient
+      && details.phone.replace(/\D/g, '') === phone
+    ))
+    if (duplicate) {
+      setFieldErrors({
+        recipient: 'Ya existe una dirección con este nombre y teléfono.',
+        phone: 'Ya existe una dirección con este nombre y teléfono.',
+      })
+      setError('No se pueden guardar direcciones repetidas para la misma persona y teléfono.')
+      return
+    }
     setPending(true); setError('')
     try {
-      const saved = await saveAddress(form, editingId)
+      const saved = await saveAddress(normalized, editingId)
       setForm(null)
       if (selectable) onSelect(saved.id)
       const data = await getAddresses()
       setAddresses(data)
-    } catch (requestError) { setError(requestError.message) }
+    } catch (requestError) {
+      setError(requestError.message)
+      setFieldErrors(Object.fromEntries(Object.entries(requestError.fieldErrors ?? {}).map(([field, message]) => [field === 'zipCodeValid' ? 'zipCode' : field === 'phoneValid' ? 'phone' : field, message])))
+    }
     finally { setPending(false) }
   }
   const remove = async (id) => {
@@ -55,24 +82,29 @@ const AddressBook = ({ selectable = false, selectedId, onSelect }) => {
 
   return (
     <section className="address-book">
-      <h2>{selectable ? '¿Dónde querés recibir tu compra?' : 'Direcciones de envío'}</h2>
+      {showHeading && <h2>{selectable ? '¿Dónde querés recibir tu compra?' : 'Direcciones de envío'}</h2>}
       {error && <div role="alert"><p>{error}</p><button type="button" onClick={refresh} disabled={pending}>Reintentar</button></div>}
       {loading && <p role="status">Cargando direcciones…</p>}
       {!loading && !addresses.length && <p>Agregá una dirección para recibir tus vinilos.</p>}
       {addresses.map(({ id, details }) => (
-        <article className="shipment-card" key={id}>
-          {selectable && <label><input type="radio" name="shipping-address" checked={selectedId === id} disabled={pending || loading} onChange={() => onSelect(id)} /> Enviar a esta dirección</label>}
+        <article className={`shipment-card${selectable && String(selectedId) === String(id) ? ' is-selected' : ''}`} key={id}>
+          {selectable && <label className="shipment-select">
+            <input type="radio" name="shipping-address" checked={String(selectedId) === String(id)} disabled={pending || loading} onChange={() => onSelect(id)} />
+            <span>{String(selectedId) === String(id) ? 'Dirección seleccionada para el envío' : 'Enviar a esta dirección'}</span>
+          </label>}
           <h3>{details.recipient}</h3><p>{details.street}</p>
           <p>{details.city}, {details.province}, {details.zipCode}, {details.country}</p>
           <p>{details.phone}</p>{details.instructions && <p>{details.instructions}</p>}
-          <button className="secondary-button" type="button" disabled={pending} onClick={() => { setEditingId(id); setForm({ ...details }); setError('') }}>Editar</button>
+          <button className="secondary-button" type="button" disabled={pending} onClick={() => beginForm(details, id)}>Editar</button>
           <button className="secondary-button" type="button" disabled={pending} onClick={() => remove(id)}>Eliminar</button>
         </article>
       ))}
-      {!form && <button className="secondary-button" type="button" disabled={pending || loading} onClick={() => { setEditingId(null); setForm({ ...empty }); setError('') }}>Agregar dirección</button>}
-      {form && <form className="address-form" onSubmit={submit}>
+      {!form && <button className="secondary-button" type="button" disabled={pending || loading} onClick={() => beginForm(empty)}>Agregar dirección</button>}
+      {form && <form className="address-form" onSubmit={submit} noValidate>
         {fields.map(([name, label, autocomplete, maxLength]) => <label key={name} htmlFor={`address-${name}`}>
-          {label}<input id={`address-${name}`} name={name} type={name === 'phone' ? 'tel' : 'text'} autoComplete={autocomplete} required={name !== 'instructions'} maxLength={maxLength} disabled={pending} value={form[name] ?? ''} onChange={(event) => setForm((current) => ({ ...current, [name]: event.target.value }))} />
+          {label}<input id={`address-${name}`} name={name} type={name === 'phone' ? 'tel' : 'text'} inputMode={name === 'phone' ? 'tel' : 'text'} autoComplete={autocomplete} required={name !== 'instructions'} maxLength={maxLength} disabled={pending} aria-invalid={Boolean(fieldErrors[name])} aria-describedby={fieldErrors[name] ? `address-${name}-error` : undefined} value={form[name] ?? ''} onChange={(event) => { setForm((current) => ({ ...current, [name]: event.target.value })); setFieldErrors((current) => ({ ...current, [name]: undefined })) }} />
+          {fieldErrors[name] && <span className="address-field-error" id={`address-${name}-error`}>{fieldErrors[name]}</span>}
+          {name === 'zipCode' && <span className="address-field-hint">Argentina: 1000 o C1000ABC. Se guarda en mayúsculas. <a href="https://www.correoargentino.com.ar/formularios/cpa" target="_blank" rel="noreferrer">Consultar CPA</a></span>}
         </label>)}
         <button className="primary-button" type="submit" disabled={pending}>{pending ? 'Guardando…' : 'Guardar dirección'}</button>
         <button className="secondary-button" type="button" disabled={pending} onClick={() => setForm(null)}>Cancelar</button>

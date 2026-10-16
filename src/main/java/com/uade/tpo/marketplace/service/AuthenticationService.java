@@ -1,6 +1,7 @@
 package com.uade.tpo.marketplace.service;
 
 import java.time.Instant;
+import java.nio.charset.StandardCharsets;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,6 +22,7 @@ import com.uade.tpo.marketplace.repository.UserRepository;
 @Service
 public class AuthenticationService {
     private static final int MIN_PASSWORD_LENGTH = 8;
+    private static final int MAX_PASSWORD_BYTES = 72;
     private final UserRepository repository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
@@ -35,7 +37,7 @@ public class AuthenticationService {
         }
         String email = requireText(request.getEmail(), "email");
         String password = request.getPassword() == null ? "" : request.getPassword();
-        if (password.length() < MIN_PASSWORD_LENGTH) {
+        if (password.length() < MIN_PASSWORD_LENGTH || password.getBytes(StandardCharsets.UTF_8).length > MAX_PASSWORD_BYTES) {
             throw new WeakPasswordException();
         }
         if (repository.findByEmail(email).isPresent()) {

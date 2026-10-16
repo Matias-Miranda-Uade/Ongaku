@@ -68,9 +68,6 @@ const DashboardPage = () => {
           <h1 id="dashboard-title">Dashboard</h1>
         </div>
         <div className="admin-page-actions">
-          <button type="button" className="secondary-button" onClick={load} disabled={loading}>
-            {loading ? 'Actualizando…' : 'Actualizar'}
-          </button>
           <Link className="primary-button" to="/app/admin/vinyls/new">Nuevo vinilo</Link>
         </div>
       </header>

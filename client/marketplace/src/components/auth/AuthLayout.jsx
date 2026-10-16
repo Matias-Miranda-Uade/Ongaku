@@ -3,7 +3,7 @@ import AuthTabs from './AuthTabs'
 
 const AuthLayout = ({ children, activeTab, onNavigate }) => (
   <section className="auth-layout">
-    <AuthVisualPanel />
+    <AuthVisualPanel activeTab={activeTab} />
     <div className="auth-content">
       <AuthTabs activeTab={activeTab} onNavigate={onNavigate} />
       <div className="auth-form-content">{children}</div>

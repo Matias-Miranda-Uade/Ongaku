@@ -248,6 +248,10 @@ class MarketplaceSecurityTests {
         mvc.perform(post("/api/v1/auth/register").contentType(MediaType.APPLICATION_JSON)
                 .content("{\"email\":\"x" + email + "\",\"password\":\"short\",\"firstName\":\"New\",\"lastName\":\"X\"}"))
                 .andExpect(status().isBadRequest());
+        mvc.perform(post("/api/v1/auth/register").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"email\":\"long" + email + "\",\"password\":\"" + "a".repeat(73)
+                        + "\",\"firstName\":\"New\",\"lastName\":\"X\"}"))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -281,6 +285,11 @@ class MarketplaceSecurityTests {
         mvc.perform(post("/favorites").header("Authorization", otherToken).contentType(MediaType.APPLICATION_JSON)
                 .content("{\"userId\":" + owner.getId() + ",\"vinylId\":" + vinyl.getId() + "}"))
                 .andExpect(status().isForbidden());
+        long favoriteId = dataId(mvc.perform(post("/favorites").header("Authorization", ownerToken)
+                .contentType(MediaType.APPLICATION_JSON).content("{\"vinylId\":" + vinyl.getId() + "}"))
+                .andExpect(status().isCreated()).andReturn());
+        mvc.perform(delete("/favorites/" + favoriteId).header("Authorization", ownerToken))
+                .andExpect(status().isNoContent());
     }
 
     @Test
@@ -421,7 +430,7 @@ class MarketplaceSecurityTests {
         mvc.perform(get("/orders/" + orderId).header("Authorization", ownerToken)).andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.orderStatus.name").value("PAGADA"));
         mvc.perform(get("/reviews/vinyl/" + vinyl.getId() + "/eligibility").header("Authorization", ownerToken))
-                .andExpect(status().isOk()).andExpect(jsonPath("$.data.canReview").value(true));
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.canReview").value(false));
         mvc.perform(post("/payments").header("Authorization", ownerToken)
                 .contentType(MediaType.APPLICATION_JSON).content(payment)).andExpect(status().isConflict());
         mvc.perform(get("/payments/" + paymentId).header("Authorization", otherToken)).andExpect(status().isForbidden());
@@ -450,6 +459,8 @@ class MarketplaceSecurityTests {
         mvc.perform(patch(statusPath).header("Authorization", adminToken).contentType(MediaType.APPLICATION_JSON)
                 .content("{\"orderStatusId\":4}")).andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.orderStatus.name").value("ENTREGADA"));
+        mvc.perform(get("/reviews/vinyl/" + vinyl.getId() + "/eligibility").header("Authorization", ownerToken))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.canReview").value(true));
         // Una orden entregada ya no vuelve atras.
         mvc.perform(patch(statusPath).header("Authorization", adminToken).contentType(MediaType.APPLICATION_JSON)
                 .content(statusBody(OrderStatusType.PENDIENTE))).andExpect(status().isConflict());
@@ -493,7 +504,7 @@ class MarketplaceSecurityTests {
     }
 
     @Test
-    void reviewsRequireAPurchaseAndCannotImpersonateAnotherUser() throws Exception {
+    void reviewsRequireDeliveredOrderAndCannotImpersonateAnotherUser() throws Exception {
         cart(owner, 1);
         long orderId = orderService.createOrder(owner.getEmail()).getId();
         String body = "{\"userId\":" + owner.getId() + ",\"vinylId\":" + vinyl.getId() + ",\"comment\":\"Great\",\"score\":5}";
@@ -503,6 +514,8 @@ class MarketplaceSecurityTests {
                 .content(body)).andExpect(status().isUnprocessableEntity());
 
         orderService.updateStatus(orderId, OrderStatusType.PAGADA, admin.getEmail());
+        mvc.perform(post("/reviews").header("Authorization", ownerToken).contentType(MediaType.APPLICATION_JSON)
+                .content(body)).andExpect(status().isUnprocessableEntity());
 
         mvc.perform(post("/reviews").contentType(MediaType.APPLICATION_JSON).content(body)).andExpect(status().isUnauthorized());
         mvc.perform(post("/reviews").header("Authorization", otherToken).contentType(MediaType.APPLICATION_JSON).content(body))
@@ -513,6 +526,11 @@ class MarketplaceSecurityTests {
                 .content(body.replace("\"score\":5", "\"score\":6"))).andExpect(status().isBadRequest());
         mvc.perform(post("/reviews").header("Authorization", ownerToken).contentType(MediaType.APPLICATION_JSON)
                 .content(body.replace("\"comment\":\"Great\"", "\"comment\":\"   \""))).andExpect(status().isBadRequest());
+
+        orderService.updateStatus(orderId, OrderStatusType.ENVIADA, admin.getEmail());
+        mvc.perform(post("/reviews").header("Authorization", ownerToken).contentType(MediaType.APPLICATION_JSON)
+                .content(body)).andExpect(status().isUnprocessableEntity());
+        orderService.updateStatus(orderId, OrderStatusType.ENTREGADA, admin.getEmail());
 
         long reviewId = dataId(mvc.perform(post("/reviews").header("Authorization", ownerToken)
                 .contentType(MediaType.APPLICATION_JSON).content(body)).andExpect(status().isCreated())
@@ -548,7 +566,7 @@ class MarketplaceSecurityTests {
     }
 
     @Test
-    void reviewEligibilityMatchesPaidPurchaseAndPreventsDuplicates() throws Exception {
+    void reviewEligibilityMatchesDeliveredPurchaseAndPreventsDuplicates() throws Exception {
         String path = "/reviews/vinyl/" + vinyl.getId() + "/eligibility";
         mvc.perform(get(path)).andExpect(status().isUnauthorized());
         mvc.perform(get(path).header("Authorization", adminToken)).andExpect(status().isForbidden());
@@ -560,6 +578,14 @@ class MarketplaceSecurityTests {
         mvc.perform(get(path).header("Authorization", ownerToken)).andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.canReview").value(false));
         orderService.updateStatus(orderId, OrderStatusType.PAGADA, admin.getEmail());
+        mvc.perform(get(path).header("Authorization", ownerToken)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.purchased").value(false))
+                .andExpect(jsonPath("$.data.canReview").value(false));
+        orderService.updateStatus(orderId, OrderStatusType.ENVIADA, admin.getEmail());
+        mvc.perform(get(path).header("Authorization", ownerToken)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.purchased").value(false))
+                .andExpect(jsonPath("$.data.canReview").value(false));
+        orderService.updateStatus(orderId, OrderStatusType.ENTREGADA, admin.getEmail());
         mvc.perform(get(path).header("Authorization", ownerToken)).andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.purchased").value(true))
                 .andExpect(jsonPath("$.data.canReview").value(true));
@@ -574,9 +600,6 @@ class MarketplaceSecurityTests {
         mvc.perform(delete("/reviews/" + reviewId).header("Authorization", ownerToken)).andExpect(status().isNoContent());
         mvc.perform(get(path).header("Authorization", ownerToken)).andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.canReview").value(true));
-        orderService.updateStatus(orderId, OrderStatusType.CANCELADA, admin.getEmail());
-        mvc.perform(get(path).header("Authorization", ownerToken)).andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.canReview").value(false));
     }
 
     @Test
@@ -608,6 +631,18 @@ class MarketplaceSecurityTests {
                 .content("{}")).andExpect(status().isBadRequest());
         long id = dataId(mvc.perform(post(endpoint).header("Authorization", ownerToken)
                 .contentType(MediaType.APPLICATION_JSON).content(body)).andExpect(status().isCreated()).andReturn());
+        String duplicateBody = body.replace("Calle 123", "Otra calle 55")
+                .replace("1112345678", "11 1234-5678");
+        mvc.perform(post(endpoint).header("Authorization", ownerToken).contentType(MediaType.APPLICATION_JSON)
+                .content(duplicateBody)).andExpect(status().isConflict());
+        mvc.perform(patch(endpoint + "/" + id).header("Authorization", ownerToken)
+                .contentType(MediaType.APPLICATION_JSON).content(body)).andExpect(status().isOk());
+        for (String invalidBody : new String[]{body.replace("1000", "hola"), body.replace("1000", "12345"), body.replace("1112345678", "abc"), body.replace("Test User", "123"), body.replace("Calle 123", "Sin altura"), body.replace("Calle 123", "Calle 10000000000"), body.replace("Buenos Aires", "123"), body.replace("CABA", "@@"), body.replace("Argentina", "Argentina123")}) {
+            mvc.perform(post(endpoint).header("Authorization", ownerToken).contentType(MediaType.APPLICATION_JSON)
+                    .content(invalidBody)).andExpect(status().isBadRequest());
+            mvc.perform(patch(endpoint + "/" + id).header("Authorization", ownerToken).contentType(MediaType.APPLICATION_JSON)
+                    .content(invalidBody)).andExpect(status().isBadRequest());
+        }
         mvc.perform(get(endpoint).header("Authorization", ownerToken)).andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[0].details.street").value("Calle 123"));
         mvc.perform(get(endpoint).header("Authorization", otherToken)).andExpect(status().isOk())
@@ -635,6 +670,8 @@ class MarketplaceSecurityTests {
         cart(owner, 1);
         long orderId = orderService.createOrder(owner.getEmail()).getId();
         orderService.updateStatus(orderId, OrderStatusType.PAGADA, admin.getEmail());
+        orderService.updateStatus(orderId, OrderStatusType.ENVIADA, admin.getEmail());
+        orderService.updateStatus(orderId, OrderStatusType.ENTREGADA, admin.getEmail());
         long reviewId = dataId(mvc.perform(post("/reviews").header("Authorization", ownerToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"vinylId\":" + vinyl.getId() + ",\"comment\":\"Great\",\"score\":5}"))
@@ -674,6 +711,8 @@ class MarketplaceSecurityTests {
         cart(owner, 1);
         long orderId = orderService.createOrder(owner.getEmail()).getId();
         orderService.updateStatus(orderId, OrderStatusType.PAGADA, admin.getEmail());
+        orderService.updateStatus(orderId, OrderStatusType.ENVIADA, admin.getEmail());
+        orderService.updateStatus(orderId, OrderStatusType.ENTREGADA, admin.getEmail());
         long reviewId = dataId(mvc.perform(post("/reviews").header("Authorization", ownerToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"vinylId\":" + vinyl.getId() + ",\"comment\":\"Great\",\"score\":5}"))

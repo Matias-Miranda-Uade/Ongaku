@@ -31,7 +31,7 @@ export const FavoritesProvider = ({ children }) => {
             const favorite = favorites.find((product) => product.id === id)
             if (user && favorite) await deleteFavorite(favorite.favoriteId)
             if (currentUserId.current !== requestUserId) return
-        setFavorites((current) => current.filter((product) => product.id !== id))
+            setFavorites((current) => current.filter((product) => product.id !== id))
         } catch (requestError) { setError(requestError.message) }
         finally { busy.current.delete(id) }
     }

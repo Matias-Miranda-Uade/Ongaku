@@ -56,14 +56,13 @@ public class FavoriteServiceImpl implements FavoriteService {
         if (request == null) {
             throw new InvalidRequestException("El favorito requiere usuario y vinilo");
         }
-        if (request.getUserId() <= 0) {
-            throw new InvalidFieldException("userId", "debe ser un identificador positivo");
-        }
         if (request.getVinylId() <= 0) {
             throw new InvalidFieldException("vinylId", "debe ser un identificador positivo");
         }
 
-        User user = ownershipGuard.assertOwner(requesterEmail, (long) request.getUserId());
+        User user = request.getUserId() == 0
+                ? ownershipGuard.requireCustomer(requesterEmail)
+                : ownershipGuard.assertOwner(requesterEmail, (long) request.getUserId());
 
         Vinyl vinyl = vinylRepository.findById((long) request.getVinylId())
                 .orElseThrow(() -> new ResourceNotFoundException("Vinilo", request.getVinylId()));
@@ -73,7 +72,7 @@ public class FavoriteServiceImpl implements FavoriteService {
         }
 
         boolean alreadyExists = !favoriteRepository
-                .findByUserIdAndVinylId(request.getUserId(), request.getVinylId())
+                .findByUserIdAndVinylId(Math.toIntExact(user.getId()), request.getVinylId())
                 .isEmpty();
 
         if (alreadyExists) {

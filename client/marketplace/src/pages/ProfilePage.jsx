@@ -112,7 +112,7 @@ const ProfilePage = ({ user, onNavigate, onUserChange }) => {
           <section aria-labelledby="addresses-heading">
             <p className="eyebrow">ENTREGAS</p>
             <h2 id="addresses-heading">Direcciones de envío</h2>
-            <AddressBook key={user.id} />
+            <AddressBook key={user.id} showHeading={false} />
           </section>
         )}
 

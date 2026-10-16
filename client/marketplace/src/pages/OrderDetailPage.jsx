@@ -4,10 +4,11 @@ import OrderItem from '../components/order/OrderItem'
 import OrderRating from '../components/order/OrderRating'
 import ShippingAddress from '../components/order/ShippingAddress'
 import PaymentInfo from '../components/order/PaymentInfo'
+import DemoPaymentForm from '../components/order/DemoPaymentForm'
 import OrderTotals from '../components/order/OrderTotals'
 import TrackingButton from '../components/order/TrackingButton'
 
-const OrderDetailPage = ({ order, onBack, onCancel, onRate, onPay, paying = false, cancelling = false, submittingReview = false }) => (
+const OrderDetailPage = ({ order, onBack, onCancel, onRate, onPay, isAdmin = false, paying = false, cancelling = false, submittingReview = false }) => (
   <article className="order-detail">
     <button className="back-link-button" type="button" onClick={onBack}>← Volver a mis órdenes</button>
     <header className="order-detail-heading">
@@ -31,7 +32,7 @@ const OrderDetailPage = ({ order, onBack, onCancel, onRate, onPay, paying = fals
         {order.items.map((item, index) => (
           <article className="order-detail-item" key={item.vinylId ?? `historical-${index}`}>
             <OrderItem item={item} />
-            {item.vinylId != null && ['PAGADA', 'ENVIADA', 'ENTREGADA'].includes(order.status) && (
+            {item.vinylId != null && order.status === 'ENTREGADA' && (
               <OrderRating item={item} onRate={onRate} submitting={submittingReview} />
             )}
           </article>
@@ -48,12 +49,10 @@ const OrderDetailPage = ({ order, onBack, onCancel, onRate, onPay, paying = fals
         </section>
         <section className="order-info-card">
           <PaymentInfo payment={order.payment} />
-          {order.status === 'PENDIENTE' && (
+          {order.status === 'PENDIENTE' && !isAdmin && (
             <div className="order-payment-actions">
-              <p>Pago de prueba: no se realizan cargos reales ni se solicitan datos de tarjeta.</p>
-              <button className="primary-button" type="button" disabled={paying || cancelling || order.total <= 0} onClick={() => onPay(order)}>
-                {paying ? 'Registrando pago…' : 'Pagar orden de prueba'}
-              </button>
+              <h3>Completar pago de prueba</h3>
+              <DemoPaymentForm order={order} onPay={onPay} paying={paying} disabled={cancelling} />
             </div>
           )}
         </section>
