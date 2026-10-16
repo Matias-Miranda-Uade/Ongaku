@@ -124,6 +124,11 @@
 .gallery-motion-control { position: absolute; top: 20px; right: 20px; z-index: 3; }
 .address-book { margin-bottom: 24px; }
 .card-book { margin-bottom: 24px; }
+.album-listen { margin: 22px 0; }
+.album-listen-link { display: inline-flex; align-items: center; gap: 12px; padding: 13px 18px; color: #17181b; background: #f2a7af; border: 1px solid #f2a7af; font-size: 16px; line-height: 1.5; font-weight: 600; text-decoration: none; }
+.album-listen-link:hover { background: #ffc2c8; border-color: #ffc2c8; }
+.album-listen-link:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
+.album-listen p { max-width: 52ch; font-size: 14px; line-height: 1.6; color: var(--muted); margin: 10px 0 0; }
 .card-book > p { font-size: 15px; line-height: 1.6; color: var(--muted); }
 .saved-card { margin: 16px 0; }
 .saved-card-choice { display: flex; gap: 8px; align-items: center; font-size: 15px; }

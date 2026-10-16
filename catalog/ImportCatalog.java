@@ -43,6 +43,13 @@ class ImportCatalog {
                     }
                 }
             }
+            // Permite importar también antes de reiniciar el backend actualizado.
+            try (var s = c.createStatement(); var r = s.executeQuery("select count(*) from information_schema.columns where table_schema=database() and table_name='vinyl' and column_name='album_url'")) {
+                r.next();
+                if (r.getInt(1) == 0) {
+                    try (var ddl = c.createStatement()) { ddl.executeUpdate("alter table vinyl add column album_url varchar(2048) null"); }
+                }
+            }
             c.setAutoCommit(false);
             int created = 0, updated = 0;
             try {
@@ -57,13 +64,13 @@ class ImportCatalog {
                         try (var r = s.executeQuery()) { if (r.next()) id = r.getLong(1); }
                     }
                     if (id != null) {
-                        try (var s = c.prepareStatement("update vinyl set image=?,description=?,year=?,genre_id=?,category_id=? where id=?")) {
-                            s.setString(1,a[8]); s.setString(2,a[7]); s.setInt(3,Integer.parseInt(a[3])); s.setLong(4,genre); s.setLong(5,category); s.setLong(6,id); s.executeUpdate(); updated++;
+                        try (var s = c.prepareStatement("update vinyl set image=?,description=?,year=?,genre_id=?,category_id=?,album_url=? where id=?")) {
+                            s.setString(1,a[8]); s.setString(2,a[7]); s.setInt(3,Integer.parseInt(a[3])); s.setLong(4,genre); s.setLong(5,category); s.setString(6,a[9]); s.setLong(7,id); s.executeUpdate(); updated++;
                         }
                     } else {
-                        try (var s = c.prepareStatement("insert into vinyl (name,description,price,discount_percentage,stock,enabled,image,year,artist_id,genre_id,category_id) values (?,?,?,?,?,true,?,?,?,?,?)")) {
+                        try (var s = c.prepareStatement("insert into vinyl (name,description,price,discount_percentage,stock,enabled,image,year,artist_id,genre_id,category_id,album_url) values (?,?,?,?,?,true,?,?,?,?,?,?)")) {
                             s.setString(1,a[0]); s.setString(2,a[7]); s.setInt(3,Integer.parseInt(a[4])); s.setInt(4,Integer.parseInt(a[5])); s.setInt(5,Integer.parseInt(a[6]));
-                            s.setString(6,a[8]); s.setInt(7,Integer.parseInt(a[3])); s.setLong(8,artist); s.setLong(9,genre); s.setLong(10,category); s.executeUpdate(); created++;
+                            s.setString(6,a[8]); s.setInt(7,Integer.parseInt(a[3])); s.setLong(8,artist); s.setLong(9,genre); s.setLong(10,category); s.setString(11,a[9]); s.executeUpdate(); created++;
                         }
                     }
                 }

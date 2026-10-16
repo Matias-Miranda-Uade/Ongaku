@@ -3,6 +3,7 @@ import base64
 import json
 from pathlib import Path
 import subprocess
+from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -13,7 +14,10 @@ def main():
         image = ROOT / 'client/marketplace/public' / album['image'].lstrip('/')
         if not image.is_file() or len(album['description']) > 255:
             raise ValueError(f"Imagen o descripción inválida: {album['name']}")
-        values = [album[key] for key in ('name', 'artist', 'genre', 'year', 'price', 'discountPercentage', 'stock', 'description', 'image')]
+        source = urlparse(album['source'])
+        if source.scheme != 'https' or source.hostname != 'music.apple.com' or '/album/' not in source.path:
+            raise ValueError(f"Enlace de álbum inválido: {album['name']}")
+        values = [album[key] for key in ('name', 'artist', 'genre', 'year', 'price', 'discountPercentage', 'stock', 'description', 'image', 'source')]
         rows.append('\t'.join(base64.b64encode(str(value).encode('utf-8')).decode('ascii') for value in values))
     target = ROOT / 'target'
     target.mkdir(exist_ok=True)

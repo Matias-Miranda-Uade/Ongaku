@@ -11,6 +11,10 @@ public class VinylResponse {
     private int finalPrice;
     private int stock;
     private String image;
+    private String albumUrl;
+
+    public String getAlbumUrl() { return albumUrl; }
+    public void setAlbumUrl(String albumUrl) { this.albumUrl = albumUrl; }
     private Long categoryId;
     private Long artistId;
     private Long genreId;

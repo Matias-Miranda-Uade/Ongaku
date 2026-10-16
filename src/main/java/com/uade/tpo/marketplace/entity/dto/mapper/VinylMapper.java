@@ -41,6 +41,7 @@ public final class VinylMapper {
         response.setFinalPrice(vinyl.getFinalPrice());
         response.setStock(vinyl.getStock());
         response.setImage(vinyl.getImage());
+        response.setAlbumUrl(vinyl.getAlbumUrl());
         response.setYear(vinyl.getYear());
         response.setCategoryId(vinyl.getCategory() != null ? vinyl.getCategory().getId() : null);
         response.setArtistId(vinyl.getArtist() != null ? vinyl.getArtist().getId() : null);

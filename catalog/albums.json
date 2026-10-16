@@ -856,5 +856,4448 @@
         "durationMs": 165240
       }
     ]
+  },
+  {
+    "slug": "michael-jackson-thriller",
+    "name": "Thriller",
+    "artist": "Michael Jackson",
+    "genre": "Pop",
+    "year": 1982,
+    "price": 28000,
+    "discountPercentage": 15,
+    "stock": 0,
+    "description": "Álbum de Michael Jackson, publicado originalmente en 1982. Género: Pop. Incluye Wanna Be Startin' Somethin', Baby Be Mine, The Girl Is Mine (with Paul McCartney).",
+    "image": "/covers/real/michael-jackson-thriller.jpg",
+    "source": "https://music.apple.com/us/album/thriller/269572838?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/32/4f/fd/324ffda2-9e51-8f6a-0c2d-c6fd2b41ac55/074643811224.jpg/600x600bb.jpg",
+    "referenceEdition": "Thriller",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Wanna Be Startin' Somethin'",
+        "durationMs": 363400
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "Baby Be Mine",
+        "durationMs": 260368
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "The Girl Is Mine (with Paul McCartney)",
+        "durationMs": 222153
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "Thriller",
+        "durationMs": 358807
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "Beat It",
+        "durationMs": 258297
+      },
+      {
+        "number": 6,
+        "disc": 1,
+        "name": "Billie Jean",
+        "durationMs": 293802
+      },
+      {
+        "number": 7,
+        "disc": 1,
+        "name": "Human Nature",
+        "durationMs": 245838
+      },
+      {
+        "number": 8,
+        "disc": 1,
+        "name": "P.Y.T. (Pretty Young Thing)",
+        "durationMs": 238334
+      },
+      {
+        "number": 9,
+        "disc": 1,
+        "name": "The Lady in My Life",
+        "durationMs": 298251
+      }
+    ]
+  },
+  {
+    "slug": "michael-jackson-bad",
+    "name": "Bad",
+    "artist": "Michael Jackson",
+    "genre": "Pop",
+    "year": 1987,
+    "price": 29500,
+    "discountPercentage": 0,
+    "stock": 4,
+    "description": "Álbum de Michael Jackson, publicado originalmente en 1987. Género: Pop. Incluye Bad (2012 Remaster), The Way You Make Me Feel (2012 Remaster), Speed Demon (2012 Remaster).",
+    "image": "/covers/real/michael-jackson-bad.jpg",
+    "source": "https://music.apple.com/us/album/bad/559334659?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/d5/5f/28/d55f28f4-610c-ee81-dc16-a01cda46bbc4/886443546264.jpg/600x600bb.jpg",
+    "referenceEdition": "Bad",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Bad (2012 Remaster)",
+        "durationMs": 247369
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "The Way You Make Me Feel (2012 Remaster)",
+        "durationMs": 298122
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "Speed Demon (2012 Remaster)",
+        "durationMs": 242022
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "Liberian Girl (2012 Remastered Version)",
+        "durationMs": 232802
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "Just Good Friends (2012 Remaster)",
+        "durationMs": 247334
+      },
+      {
+        "number": 6,
+        "disc": 1,
+        "name": "Another Part of Me (2012 Remaster)",
+        "durationMs": 234715
+      },
+      {
+        "number": 7,
+        "disc": 1,
+        "name": "Man in the Mirror (2012 Remaster)",
+        "durationMs": 318688
+      },
+      {
+        "number": 8,
+        "disc": 1,
+        "name": "I Just Can't Stop Loving You (feat. Siedah Garrett) [2012 Remaster]",
+        "durationMs": 253785
+      },
+      {
+        "number": 9,
+        "disc": 1,
+        "name": "Dirty Diana (2012 Remaster)",
+        "durationMs": 280753
+      },
+      {
+        "number": 10,
+        "disc": 1,
+        "name": "Smooth Criminal (2012 Remaster)",
+        "durationMs": 257766
+      },
+      {
+        "number": 11,
+        "disc": 1,
+        "name": "Leave Me Alone (2012 Remaster)",
+        "durationMs": 280359
+      }
+    ]
+  },
+  {
+    "slug": "prince-purple-rain",
+    "name": "Purple Rain",
+    "artist": "Prince & The Revolution",
+    "genre": "Soundtrack",
+    "year": 1984,
+    "price": 31000,
+    "discountPercentage": 0,
+    "stock": 5,
+    "description": "Álbum de Prince & The Revolution, publicado originalmente en 1984. Género: Soundtrack. Incluye Let's Go Crazy, Take Me with U, The Beautiful Ones.",
+    "image": "/covers/real/prince-purple-rain.jpg",
+    "source": "https://music.apple.com/us/album/purple-rain/1746833068?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/00/17/f2/0017f24f-e580-b77a-71a8-1bc7b75881bf/603497822065.jpg/600x600bb.jpg",
+    "referenceEdition": "Purple Rain",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Let's Go Crazy",
+        "durationMs": 279240
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "Take Me with U",
+        "durationMs": 234133
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "The Beautiful Ones",
+        "durationMs": 313960
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "Computer Blue",
+        "durationMs": 239507
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "Darling Nikki",
+        "durationMs": 254493
+      },
+      {
+        "number": 6,
+        "disc": 1,
+        "name": "When Doves Cry",
+        "durationMs": 354133
+      },
+      {
+        "number": 7,
+        "disc": 1,
+        "name": "I Would Die 4 U",
+        "durationMs": 169667
+      },
+      {
+        "number": 8,
+        "disc": 1,
+        "name": "Baby I'm a Star",
+        "durationMs": 264400
+      },
+      {
+        "number": 9,
+        "disc": 1,
+        "name": "Purple Rain",
+        "durationMs": 521867
+      }
+    ]
+  },
+  {
+    "slug": "madonna-like-a-prayer",
+    "name": "Like a Prayer",
+    "artist": "Madonna",
+    "genre": "Pop",
+    "year": 1989,
+    "price": 32500,
+    "discountPercentage": 0,
+    "stock": 6,
+    "description": "Álbum de Madonna, publicado originalmente en 1989. Género: Pop. Incluye Like a Prayer, Express Yourself, Love Song.",
+    "image": "/covers/real/madonna-like-a-prayer.jpg",
+    "source": "https://music.apple.com/us/album/like-a-prayer/83448003?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/20/3c/f5/203cf53d-689e-528f-29d7-ba33758254aa/mzi.rotbotfl.jpg/600x600bb.jpg",
+    "referenceEdition": "Like a Prayer",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Like a Prayer",
+        "durationMs": 340867
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "Express Yourself",
+        "durationMs": 279133
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "Love Song",
+        "durationMs": 292800
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "Till Death Do Us Part",
+        "durationMs": 318467
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "Promise to Try",
+        "durationMs": 218067
+      },
+      {
+        "number": 6,
+        "disc": 1,
+        "name": "Cherish",
+        "durationMs": 303493
+      },
+      {
+        "number": 7,
+        "disc": 1,
+        "name": "Dear Jessie",
+        "durationMs": 261507
+      },
+      {
+        "number": 8,
+        "disc": 1,
+        "name": "Oh Father",
+        "durationMs": 298760
+      },
+      {
+        "number": 9,
+        "disc": 1,
+        "name": "Keep It Together",
+        "durationMs": 303200
+      },
+      {
+        "number": 10,
+        "disc": 1,
+        "name": "Pray for Spanish Eyes",
+        "durationMs": 317707
+      },
+      {
+        "number": 11,
+        "disc": 1,
+        "name": "Act of Contrition",
+        "durationMs": 139200
+      }
+    ]
+  },
+  {
+    "slug": "david-bowie-heroes",
+    "name": "Heroes",
+    "artist": "David Bowie",
+    "genre": "Rock",
+    "year": 1977,
+    "price": 34000,
+    "discountPercentage": 15,
+    "stock": 7,
+    "description": "Álbum de David Bowie, publicado originalmente en 1977. Género: Rock. Incluye Beauty and the Beast (2017 Remaster), Joe the Lion (2017 Remaster), \"Heroes\" (2017 Remaster).",
+    "image": "/covers/real/david-bowie-heroes.jpg",
+    "source": "https://music.apple.com/us/album/heroes-2017-remaster/1347894082?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/e2/65/b2/e265b2ae-48d5-9dd8-0251-6cd6c6c4eb53/190295842826.jpg/600x600bb.jpg",
+    "referenceEdition": "\"Heroes\" (2017 Remaster)",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Beauty and the Beast (2017 Remaster)",
+        "durationMs": 216657
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "Joe the Lion (2017 Remaster)",
+        "durationMs": 188123
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "\"Heroes\" (2017 Remaster)",
+        "durationMs": 371417
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "Sons of the Silent Age (2017 Remaster)",
+        "durationMs": 200318
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "Blackout (2017 Remaster)",
+        "durationMs": 229920
+      },
+      {
+        "number": 6,
+        "disc": 1,
+        "name": "V-2 Schneider (2017 Remaster)",
+        "durationMs": 191417
+      },
+      {
+        "number": 7,
+        "disc": 1,
+        "name": "Sense of Doubt (2017 Remaster)",
+        "durationMs": 239612
+      },
+      {
+        "number": 8,
+        "disc": 1,
+        "name": "Moss Garden (2017 Remaster)",
+        "durationMs": 305862
+      },
+      {
+        "number": 9,
+        "disc": 1,
+        "name": "Neuköln (2017 Remaster)",
+        "durationMs": 274566
+      },
+      {
+        "number": 10,
+        "disc": 1,
+        "name": "The Secret Life of Arabia (2017 Remaster)",
+        "durationMs": 226872
+      }
+    ]
+  },
+  {
+    "slug": "david-bowie-hunky-dory",
+    "name": "Hunky Dory",
+    "artist": "David Bowie",
+    "genre": "Rock",
+    "year": 1971,
+    "price": 35500,
+    "discountPercentage": 0,
+    "stock": 8,
+    "description": "Álbum de David Bowie, publicado originalmente en 1971. Género: Rock. Incluye Changes, Oh! You Pretty Things, Eight Line Poem.",
+    "image": "/covers/real/david-bowie-hunky-dory.jpg",
+    "source": "https://music.apple.com/us/album/hunky-dory-2015-remaster/1039798000?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/f0/b9/68/f0b9680e-b028-b3d6-f793-7c268256499a/825646286034.jpg/600x600bb.jpg",
+    "referenceEdition": "Hunky Dory (2015 Remaster)",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Changes",
+        "durationMs": 217152
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "Oh! You Pretty Things",
+        "durationMs": 192324
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "Eight Line Poem",
+        "durationMs": 175333
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "Life On Mars?",
+        "durationMs": 235982
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "Kooks",
+        "durationMs": 173755
+      },
+      {
+        "number": 6,
+        "disc": 1,
+        "name": "Quicksand",
+        "durationMs": 306488
+      },
+      {
+        "number": 7,
+        "disc": 1,
+        "name": "Fill Your Heart",
+        "durationMs": 190076
+      },
+      {
+        "number": 8,
+        "disc": 1,
+        "name": "Andy Warhol",
+        "durationMs": 234750
+      },
+      {
+        "number": 9,
+        "disc": 1,
+        "name": "Song for Bob Dylan",
+        "durationMs": 253084
+      },
+      {
+        "number": 10,
+        "disc": 1,
+        "name": "Queen Bitch",
+        "durationMs": 200510
+      },
+      {
+        "number": 11,
+        "disc": 1,
+        "name": "The Bewlay Brothers",
+        "durationMs": 329583
+      }
+    ]
+  },
+  {
+    "slug": "queen-a-night-at-the-opera",
+    "name": "A Night at the Opera",
+    "artist": "Queen",
+    "genre": "Rock",
+    "year": 1975,
+    "price": 37000,
+    "discountPercentage": 0,
+    "stock": 9,
+    "description": "Álbum de Queen, publicado originalmente en 1975. Género: Rock. Incluye Death On Two Legs (Dedicated To...), Lazing On A Sunday Afternoon, I'm In Love With My Car.",
+    "image": "/covers/real/queen-a-night-at-the-opera.jpg",
+    "source": "https://music.apple.com/us/album/a-night-at-the-opera/6781023399?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/dd/86/92/dd86925d-484d-8ee7-3985-ef3264214269/602527644264.jpg/600x600bb.jpg",
+    "referenceEdition": "A Night At The Opera",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Death On Two Legs (Dedicated To...)",
+        "durationMs": 223093
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "Lazing On A Sunday Afternoon",
+        "durationMs": 67228
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "I'm In Love With My Car",
+        "durationMs": 185066
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "You're My Best Friend",
+        "durationMs": 172917
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "'39",
+        "durationMs": 210640
+      },
+      {
+        "number": 6,
+        "disc": 1,
+        "name": "Sweet Lady",
+        "durationMs": 243863
+      },
+      {
+        "number": 7,
+        "disc": 1,
+        "name": "Seaside Rendezvous",
+        "durationMs": 139880
+      },
+      {
+        "number": 8,
+        "disc": 1,
+        "name": "The Prophet's Song",
+        "durationMs": 500790
+      },
+      {
+        "number": 9,
+        "disc": 1,
+        "name": "Love Of My Life",
+        "durationMs": 219051
+      },
+      {
+        "number": 10,
+        "disc": 1,
+        "name": "Good Company",
+        "durationMs": 203441
+      },
+      {
+        "number": 11,
+        "disc": 1,
+        "name": "Bohemian Rhapsody",
+        "durationMs": 355155
+      },
+      {
+        "number": 12,
+        "disc": 1,
+        "name": "God Save the Queen",
+        "durationMs": 73159
+      }
+    ]
+  },
+  {
+    "slug": "queen-the-game",
+    "name": "The Game",
+    "artist": "Queen",
+    "genre": "Rock",
+    "year": 1980,
+    "price": 38500,
+    "discountPercentage": 0,
+    "stock": 10,
+    "description": "Álbum de Queen, publicado originalmente en 1980. Género: Rock. Incluye Play The Game, Dragon Attack, Another One Bites The Dust.",
+    "image": "/covers/real/queen-the-game.jpg",
+    "source": "https://music.apple.com/us/album/the-game/6781074926?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/0e/93/88/0e9388c0-c842-56dc-311c-417e9c07db85/602527717517.jpg/600x600bb.jpg",
+    "referenceEdition": "The Game",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Play The Game",
+        "durationMs": 212533
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "Dragon Attack",
+        "durationMs": 258773
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "Another One Bites The Dust",
+        "durationMs": 214653
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "Need Your Loving Tonight",
+        "durationMs": 169200
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "Crazy Little Thing Called Love",
+        "durationMs": 163373
+      },
+      {
+        "number": 6,
+        "disc": 1,
+        "name": "Rock It (Prime Jive)",
+        "durationMs": 273013
+      },
+      {
+        "number": 7,
+        "disc": 1,
+        "name": "Don't Try Suicide",
+        "durationMs": 232120
+      },
+      {
+        "number": 8,
+        "disc": 1,
+        "name": "Sail Away Sweet Sister",
+        "durationMs": 213427
+      },
+      {
+        "number": 9,
+        "disc": 1,
+        "name": "Coming Soon",
+        "durationMs": 170040
+      },
+      {
+        "number": 10,
+        "disc": 1,
+        "name": "Save Me",
+        "durationMs": 229920
+      }
+    ]
+  },
+  {
+    "slug": "led-zeppelin-led-zeppelin-iv",
+    "name": "Led Zeppelin IV",
+    "artist": "Led Zeppelin",
+    "genre": "Rock",
+    "year": 1971,
+    "price": 40000,
+    "discountPercentage": 15,
+    "stock": 3,
+    "description": "Álbum de Led Zeppelin, publicado originalmente en 1971. Género: Rock. Incluye Black Dog, Rock and Roll, The Battle of Evermore.",
+    "image": "/covers/real/led-zeppelin-led-zeppelin-iv.jpg",
+    "source": "https://music.apple.com/us/album/led-zeppelin-iv-remastered/580708175?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/5c/15/9b/5c159b27-95ca-b9a7-84e3-28e795fffd39/dj.kvkrpptq.jpg/600x600bb.jpg",
+    "referenceEdition": "Led Zeppelin IV (Remastered)",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Black Dog",
+        "durationMs": 295387
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "Rock and Roll",
+        "durationMs": 220560
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "The Battle of Evermore",
+        "durationMs": 351678
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "Stairway to Heaven",
+        "durationMs": 482830
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "Misty Mountain Hop",
+        "durationMs": 278907
+      },
+      {
+        "number": 6,
+        "disc": 1,
+        "name": "Four Sticks",
+        "durationMs": 285227
+      },
+      {
+        "number": 7,
+        "disc": 1,
+        "name": "Going to California",
+        "durationMs": 212160
+      },
+      {
+        "number": 8,
+        "disc": 1,
+        "name": "When the Levee Breaks",
+        "durationMs": 428851
+      }
+    ]
+  },
+  {
+    "slug": "led-zeppelin-led-zeppelin-ii",
+    "name": "Led Zeppelin II",
+    "artist": "Led Zeppelin",
+    "genre": "Hard Rock",
+    "year": 1969,
+    "price": 28000,
+    "discountPercentage": 0,
+    "stock": 4,
+    "description": "Álbum de Led Zeppelin, publicado originalmente en 1969. Género: Hard Rock. Incluye Whole Lotta Love, What Is and What Should Never Be, The Lemon Song.",
+    "image": "/covers/real/led-zeppelin-led-zeppelin-ii.jpg",
+    "source": "https://music.apple.com/us/album/led-zeppelin-ii-remastered/580708374?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/1a/3d/bb/1a3dbb86-c1f8-737e-571f-d6b647a230be/dj.rhubuvkd.jpg/600x600bb.jpg",
+    "referenceEdition": "Led Zeppelin II (Remastered)",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Whole Lotta Love",
+        "durationMs": 334555
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "What Is and What Should Never Be",
+        "durationMs": 286231
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "The Lemon Song",
+        "durationMs": 379389
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "Thank You",
+        "durationMs": 289485
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "Heartbreaker",
+        "durationMs": 254068
+      },
+      {
+        "number": 6,
+        "disc": 1,
+        "name": "Living Loving Maid (She's Just a Woman)",
+        "durationMs": 159301
+      },
+      {
+        "number": 7,
+        "disc": 1,
+        "name": "Ramble On",
+        "durationMs": 274010
+      },
+      {
+        "number": 8,
+        "disc": 1,
+        "name": "Moby Dick",
+        "durationMs": 260914
+      },
+      {
+        "number": 9,
+        "disc": 1,
+        "name": "Bring It On Home",
+        "durationMs": 259741
+      }
+    ]
+  },
+  {
+    "slug": "pink-floyd-wish-you-were-here",
+    "name": "Wish You Were Here",
+    "artist": "Pink Floyd",
+    "genre": "Rock",
+    "year": 1975,
+    "price": 29500,
+    "discountPercentage": 0,
+    "stock": 5,
+    "description": "Álbum de Pink Floyd, publicado originalmente en 1975. Género: Rock. Incluye Shine On You Crazy Diamond, Pts. 1-5, Welcome to the Machine, Have a Cigar.",
+    "image": "/covers/real/pink-floyd-wish-you-were-here.jpg",
+    "source": "https://music.apple.com/us/album/wish-you-were-here/1065973975?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/aa/e0/ab/aae0ab6a-d906-a189-81bf-70b56aa43f7a/886445635843.jpg/600x600bb.jpg",
+    "referenceEdition": "Wish You Were Here",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Shine On You Crazy Diamond, Pts. 1-5",
+        "durationMs": 814800
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "Welcome to the Machine",
+        "durationMs": 450707
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "Have a Cigar",
+        "durationMs": 307400
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "Wish You Were Here",
+        "durationMs": 338467
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "Shine On You Crazy Diamond, Pts. 6-9",
+        "durationMs": 745080
+      }
+    ]
+  },
+  {
+    "slug": "pink-floyd-animals",
+    "name": "Animals",
+    "artist": "Pink Floyd",
+    "genre": "Rock",
+    "year": 1977,
+    "price": 31000,
+    "discountPercentage": 0,
+    "stock": 6,
+    "description": "Álbum de Pink Floyd, publicado originalmente en 1977. Género: Rock. Incluye Pigs On the Wing, Pt. 1, Dogs, Pigs (Three Different Ones).",
+    "image": "/covers/real/pink-floyd-animals.jpg",
+    "source": "https://music.apple.com/us/album/animals/1065974284?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/ef/03/66/ef036634-5956-38db-ba78-db6200adfdc4/886445635942.jpg/600x600bb.jpg",
+    "referenceEdition": "Animals",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Pigs On the Wing, Pt. 1",
+        "durationMs": 84693
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "Dogs",
+        "durationMs": 1024853
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "Pigs (Three Different Ones)",
+        "durationMs": 686333
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "Sheep",
+        "durationMs": 618933
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "Pigs On the Wing, Pt. 2",
+        "durationMs": 86853
+      }
+    ]
+  },
+  {
+    "slug": "the-beatles-revolver",
+    "name": "Revolver",
+    "artist": "The Beatles",
+    "genre": "Rock",
+    "year": 1966,
+    "price": 32500,
+    "discountPercentage": 15,
+    "stock": 7,
+    "description": "Álbum de The Beatles, publicado originalmente en 1966. Género: Rock. Incluye Taxman, Eleanor Rigby, I'm Only Sleeping.",
+    "image": "/covers/real/the-beatles-revolver.jpg",
+    "source": "https://music.apple.com/us/album/revolver/1441164670?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/58/4a/10/584a1058-de0a-6a6b-d0bd-da09a028b8bc/00602567705499.rgb.jpg/600x600bb.jpg",
+    "referenceEdition": "Revolver",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Taxman",
+        "durationMs": 157853
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "Eleanor Rigby",
+        "durationMs": 126533
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "I'm Only Sleeping",
+        "durationMs": 180320
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "Love You To",
+        "durationMs": 179827
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "Here, There and Everywhere",
+        "durationMs": 144880
+      },
+      {
+        "number": 6,
+        "disc": 1,
+        "name": "Yellow Submarine",
+        "durationMs": 158880
+      },
+      {
+        "number": 7,
+        "disc": 1,
+        "name": "She Said She Said",
+        "durationMs": 156040
+      },
+      {
+        "number": 8,
+        "disc": 1,
+        "name": "Good Day Sunshine",
+        "durationMs": 129293
+      },
+      {
+        "number": 9,
+        "disc": 1,
+        "name": "And Your Bird Can Sing",
+        "durationMs": 120493
+      },
+      {
+        "number": 10,
+        "disc": 1,
+        "name": "For No One",
+        "durationMs": 119813
+      },
+      {
+        "number": 11,
+        "disc": 1,
+        "name": "Doctor Robert",
+        "durationMs": 134267
+      },
+      {
+        "number": 12,
+        "disc": 1,
+        "name": "I Want to Tell You",
+        "durationMs": 147973
+      },
+      {
+        "number": 13,
+        "disc": 1,
+        "name": "Got to Get You Into My Life",
+        "durationMs": 149240
+      },
+      {
+        "number": 14,
+        "disc": 1,
+        "name": "Tomorrow Never Knows",
+        "durationMs": 177545
+      }
+    ]
+  },
+  {
+    "slug": "the-beatles-rubber-soul",
+    "name": "Rubber Soul",
+    "artist": "The Beatles",
+    "genre": "Rock",
+    "year": 1965,
+    "price": 34000,
+    "discountPercentage": 0,
+    "stock": 0,
+    "description": "Álbum de The Beatles, publicado originalmente en 1965. Género: Rock. Incluye Drive My Car, Norwegian Wood (This Bird Has Flown), You Won't See Me.",
+    "image": "/covers/real/the-beatles-rubber-soul.jpg",
+    "source": "https://music.apple.com/us/album/rubber-soul/1441164359?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/af/20/aa/af20aa89-4002-11fb-25d8-ff544af67eb4/00602567725404.rgb.jpg/600x600bb.jpg",
+    "referenceEdition": "Rubber Soul",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Drive My Car",
+        "durationMs": 147893
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "Norwegian Wood (This Bird Has Flown)",
+        "durationMs": 124693
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "You Won't See Me",
+        "durationMs": 199960
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "Nowhere Man",
+        "durationMs": 163693
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "Think For Yourself",
+        "durationMs": 138520
+      },
+      {
+        "number": 6,
+        "disc": 1,
+        "name": "The Word",
+        "durationMs": 163107
+      },
+      {
+        "number": 7,
+        "disc": 1,
+        "name": "Michelle",
+        "durationMs": 162373
+      },
+      {
+        "number": 8,
+        "disc": 1,
+        "name": "What Goes On",
+        "durationMs": 168573
+      },
+      {
+        "number": 9,
+        "disc": 1,
+        "name": "Girl",
+        "durationMs": 151720
+      },
+      {
+        "number": 10,
+        "disc": 1,
+        "name": "I'm Looking Through You",
+        "durationMs": 146387
+      },
+      {
+        "number": 11,
+        "disc": 1,
+        "name": "In My Life",
+        "durationMs": 146333
+      },
+      {
+        "number": 12,
+        "disc": 1,
+        "name": "Wait",
+        "durationMs": 134720
+      },
+      {
+        "number": 13,
+        "disc": 1,
+        "name": "If I Needed Someone",
+        "durationMs": 142267
+      },
+      {
+        "number": 14,
+        "disc": 1,
+        "name": "Run For Your Life",
+        "durationMs": 139086
+      }
+    ]
+  },
+  {
+    "slug": "the-rolling-stones-let-it-bleed",
+    "name": "Let It Bleed",
+    "artist": "The Rolling Stones",
+    "genre": "Rock",
+    "year": 1969,
+    "price": 35500,
+    "discountPercentage": 0,
+    "stock": 9,
+    "description": "Álbum de The Rolling Stones, publicado originalmente en 1969. Género: Rock. Incluye Gimme Shelter (Remastered 2019), Love In Vain (Remastered 2019), Country Honk (Remastered 2019).",
+    "image": "/covers/real/the-rolling-stones-let-it-bleed.jpg",
+    "source": "https://music.apple.com/us/album/let-it-bleed-remastered-2019/1500642838?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/69/64/67/696467fe-9ed1-b65e-1016-a10d07e6464d/20UMGIM14087.rgb.jpg/600x600bb.jpg",
+    "referenceEdition": "Let It Bleed (Remastered 2019)",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Gimme Shelter (Remastered 2019)",
+        "durationMs": 270549
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "Love In Vain (Remastered 2019)",
+        "durationMs": 259162
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "Country Honk (Remastered 2019)",
+        "durationMs": 187503
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "Live with Me (Remastered 2019)",
+        "durationMs": 213125
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "Let It Bleed (Remastered 2019)",
+        "durationMs": 328012
+      },
+      {
+        "number": 6,
+        "disc": 1,
+        "name": "Midnight Rambler (Remastered 2019)",
+        "durationMs": 412635
+      },
+      {
+        "number": 7,
+        "disc": 1,
+        "name": "You Got the Silver (Remastered 2019)",
+        "durationMs": 170969
+      },
+      {
+        "number": 8,
+        "disc": 1,
+        "name": "Monkey Man (Remastered 2019)",
+        "durationMs": 251759
+      },
+      {
+        "number": 9,
+        "disc": 1,
+        "name": "You Can't Always Get What You Want (Remastered 2019)",
+        "durationMs": 448255
+      }
+    ]
+  },
+  {
+    "slug": "the-rolling-stones-sticky-fingers",
+    "name": "Sticky Fingers",
+    "artist": "The Rolling Stones",
+    "genre": "Rock",
+    "year": 1971,
+    "price": 37000,
+    "discountPercentage": 0,
+    "stock": 10,
+    "description": "Álbum de The Rolling Stones, publicado originalmente en 1971. Género: Rock. Incluye Brown Sugar, Sway, Wild Horses.",
+    "image": "/covers/real/the-rolling-stones-sticky-fingers.jpg",
+    "source": "https://music.apple.com/us/album/sticky-fingers-2015-remaster/1440812661?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/7f/e0/b4/7fe0b4da-36cd-a1d0-0f19-ef3fec18e3cd/08UMGIM15742.rgb.jpg/600x600bb.jpg",
+    "referenceEdition": "Sticky Fingers (2015 Remaster)",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Brown Sugar",
+        "durationMs": 229324
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "Sway",
+        "durationMs": 232969
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "Wild Horses",
+        "durationMs": 344067
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "Can't You Hear Me Knocking",
+        "durationMs": 435949
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "You Gotta Move",
+        "durationMs": 153757
+      },
+      {
+        "number": 6,
+        "disc": 1,
+        "name": "Bitch",
+        "durationMs": 217533
+      },
+      {
+        "number": 7,
+        "disc": 1,
+        "name": "I Got the Blues",
+        "durationMs": 235000
+      },
+      {
+        "number": 8,
+        "disc": 1,
+        "name": "Sister Morphine",
+        "durationMs": 334667
+      },
+      {
+        "number": 9,
+        "disc": 1,
+        "name": "Dead Flowers",
+        "durationMs": 245267
+      },
+      {
+        "number": 10,
+        "disc": 1,
+        "name": "Moonlight Mile",
+        "durationMs": 357200
+      }
+    ]
+  },
+  {
+    "slug": "fleetwood-mac-tusk",
+    "name": "Tusk",
+    "artist": "Fleetwood Mac",
+    "genre": "Rock",
+    "year": 1979,
+    "price": 38500,
+    "discountPercentage": 15,
+    "stock": 3,
+    "description": "Álbum de Fleetwood Mac, publicado originalmente en 1979. Género: Rock. Incluye Over & Over, The Ledge, Think About Me.",
+    "image": "/covers/real/fleetwood-mac-tusk.jpg",
+    "source": "https://music.apple.com/us/album/tusk-remastered/1055803853?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/0c/80/b2/0c80b2a3-9409-d7ea-9044-c0c0c6eb00e3/mzm.ezalkqov.jpg/600x600bb.jpg",
+    "referenceEdition": "Tusk (Remastered)",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Over & Over",
+        "durationMs": 274492
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "The Ledge",
+        "durationMs": 127426
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "Think About Me",
+        "durationMs": 164349
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "Save Me a Place",
+        "durationMs": 162289
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "Sara",
+        "durationMs": 390680
+      },
+      {
+        "number": 6,
+        "disc": 1,
+        "name": "What Makes You Think You're the One",
+        "durationMs": 211496
+      },
+      {
+        "number": 7,
+        "disc": 1,
+        "name": "Storms",
+        "durationMs": 330903
+      },
+      {
+        "number": 8,
+        "disc": 1,
+        "name": "That's All for Everyone",
+        "durationMs": 182736
+      },
+      {
+        "number": 9,
+        "disc": 1,
+        "name": "Not That Funny",
+        "durationMs": 194709
+      },
+      {
+        "number": 10,
+        "disc": 1,
+        "name": "Sisters of the Moon",
+        "durationMs": 284129
+      },
+      {
+        "number": 11,
+        "disc": 1,
+        "name": "Angel",
+        "durationMs": 294226
+      },
+      {
+        "number": 12,
+        "disc": 1,
+        "name": "That's Enough for Me",
+        "durationMs": 110569
+      },
+      {
+        "number": 13,
+        "disc": 1,
+        "name": "Brown Eyes",
+        "durationMs": 267183
+      },
+      {
+        "number": 14,
+        "disc": 1,
+        "name": "Never Make Me Cry",
+        "durationMs": 138192
+      },
+      {
+        "number": 15,
+        "disc": 1,
+        "name": "I Know I'm Not Wrong",
+        "durationMs": 182262
+      },
+      {
+        "number": 16,
+        "disc": 1,
+        "name": "Honey Hi",
+        "durationMs": 165250
+      },
+      {
+        "number": 17,
+        "disc": 1,
+        "name": "Beautiful Child",
+        "durationMs": 321285
+      },
+      {
+        "number": 18,
+        "disc": 1,
+        "name": "Walk a Thin Line",
+        "durationMs": 227053
+      },
+      {
+        "number": 19,
+        "disc": 1,
+        "name": "Tusk",
+        "durationMs": 217506
+      },
+      {
+        "number": 20,
+        "disc": 1,
+        "name": "Never Forget",
+        "durationMs": 219236
+      }
+    ]
+  },
+  {
+    "slug": "eagles-hotel-california",
+    "name": "Hotel California",
+    "artist": "Eagles",
+    "genre": "Rock",
+    "year": 1976,
+    "price": 40000,
+    "discountPercentage": 0,
+    "stock": 4,
+    "description": "Álbum de Eagles, publicado originalmente en 1976. Género: Rock. Incluye Hotel California, New Kid In Town, Life In the Fast Lane.",
+    "image": "/covers/real/eagles-hotel-california.jpg",
+    "source": "https://music.apple.com/us/album/hotel-california/635770200?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/88/16/2c/88162c3d-46db-8321-61f3-3a47404cfe76/075596050920.jpg/600x600bb.jpg",
+    "referenceEdition": "Hotel California",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Hotel California",
+        "durationMs": 391357
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "New Kid In Town",
+        "durationMs": 304933
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "Life In the Fast Lane",
+        "durationMs": 286218
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "Wasted Time",
+        "durationMs": 296165
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "Wasted Time (Reprise)",
+        "durationMs": 83386
+      },
+      {
+        "number": 6,
+        "disc": 1,
+        "name": "Victim of Love",
+        "durationMs": 250071
+      },
+      {
+        "number": 7,
+        "disc": 1,
+        "name": "Pretty Maids All In a Row",
+        "durationMs": 239328
+      },
+      {
+        "number": 8,
+        "disc": 1,
+        "name": "Try and Love Again",
+        "durationMs": 311058
+      },
+      {
+        "number": 9,
+        "disc": 1,
+        "name": "The Last Resort",
+        "durationMs": 444366
+      }
+    ]
+  },
+  {
+    "slug": "ac-dc-back-in-black",
+    "name": "Back in Black",
+    "artist": "AC/DC",
+    "genre": "Hard Rock",
+    "year": 1980,
+    "price": 28000,
+    "discountPercentage": 0,
+    "stock": 5,
+    "description": "Álbum de AC/DC, publicado originalmente en 1980. Género: Hard Rock. Incluye Hells Bells, Shoot to Thrill, What Do You Do for Money Honey.",
+    "image": "/covers/real/ac-dc-back-in-black.jpg",
+    "source": "https://music.apple.com/us/album/back-in-black/574050396?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/1e/14/58/1e145814-281a-58e0-3ab1-145f5d1af421/886443673441.jpg/600x600bb.jpg",
+    "referenceEdition": "Back In Black",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Hells Bells",
+        "durationMs": 312815
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "Shoot to Thrill",
+        "durationMs": 318231
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "What Do You Do for Money Honey",
+        "durationMs": 215676
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "Givin the Dog a Bone",
+        "durationMs": 212401
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "Let Me Put My Love Into You",
+        "durationMs": 256058
+      },
+      {
+        "number": 6,
+        "disc": 1,
+        "name": "Back In Black",
+        "durationMs": 256000
+      },
+      {
+        "number": 7,
+        "disc": 1,
+        "name": "You Shook Me All Night Long",
+        "durationMs": 210329
+      },
+      {
+        "number": 8,
+        "disc": 1,
+        "name": "Have a Drink On Me",
+        "durationMs": 239105
+      },
+      {
+        "number": 9,
+        "disc": 1,
+        "name": "Shake a Leg",
+        "durationMs": 246060
+      },
+      {
+        "number": 10,
+        "disc": 1,
+        "name": "Rock and Roll Ain't Noise Pollution",
+        "durationMs": 255648
+      }
+    ]
+  },
+  {
+    "slug": "metallica-master-of-puppets",
+    "name": "Master of Puppets",
+    "artist": "Metallica",
+    "genre": "Metal",
+    "year": 1986,
+    "price": 29500,
+    "discountPercentage": 0,
+    "stock": 6,
+    "description": "Álbum de Metallica, publicado originalmente en 1986. Género: Metal. Incluye Battery, Master of Puppets, The Thing That Should Not Be.",
+    "image": "/covers/real/metallica-master-of-puppets.jpg",
+    "source": "https://music.apple.com/us/album/master-of-puppets-expanded-edition/1275551221?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music118/v4/ed/ee/7f/edee7f18-85b6-ebb4-0620-89cbe56fe205/858978005554.png/600x600bb.jpg",
+    "referenceEdition": "Master of Puppets (Expanded Edition)",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Battery",
+        "durationMs": 312360
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "Master of Puppets",
+        "durationMs": 515387
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "The Thing That Should Not Be",
+        "durationMs": 396107
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "Welcome Home (Sanitarium)",
+        "durationMs": 387147
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "Disposable Heroes",
+        "durationMs": 496627
+      },
+      {
+        "number": 6,
+        "disc": 1,
+        "name": "Leper Messiah",
+        "durationMs": 339880
+      },
+      {
+        "number": 7,
+        "disc": 1,
+        "name": "Orion",
+        "durationMs": 507227
+      },
+      {
+        "number": 8,
+        "disc": 1,
+        "name": "Damage, Inc.",
+        "durationMs": 332467
+      },
+      {
+        "number": 1,
+        "disc": 2,
+        "name": "Battery (Early June 1985 Demo)",
+        "durationMs": 281826
+      },
+      {
+        "number": 2,
+        "disc": 2,
+        "name": "Master of Puppets (Late June 1985 Demo)",
+        "durationMs": 500959
+      },
+      {
+        "number": 3,
+        "disc": 2,
+        "name": "The Thing That Should Not Be (September 1985 Drum Room Demo)",
+        "durationMs": 382012
+      },
+      {
+        "number": 4,
+        "disc": 2,
+        "name": "Welcome Home (Sanitarium) [Late June 1985 Demo]",
+        "durationMs": 541701
+      },
+      {
+        "number": 5,
+        "disc": 2,
+        "name": "Disposable Heroes (May 1985, Writing In Progress II)",
+        "durationMs": 341374
+      },
+      {
+        "number": 6,
+        "disc": 2,
+        "name": "Leper Messiah (1985 from James' Riff Tapes II)",
+        "durationMs": 55536
+      },
+      {
+        "number": 7,
+        "disc": 2,
+        "name": "Orion (November 1985, Work In Progress Rough Mix)",
+        "durationMs": 503019
+      },
+      {
+        "number": 8,
+        "disc": 2,
+        "name": "Damage, Inc. (1985 from James' Riff Tapes)",
+        "durationMs": 114799
+      },
+      {
+        "number": 9,
+        "disc": 2,
+        "name": "The Money Will Roll Right In (Work In Progress Rough Mix)",
+        "durationMs": 177965
+      },
+      {
+        "number": 10,
+        "disc": 2,
+        "name": "The Prince (Work In Progress Rough Mix)",
+        "durationMs": 290155
+      },
+      {
+        "number": 1,
+        "disc": 3,
+        "name": "Battery (Live at the Meadowlands, East Rutherford, NJ - Apr. 21st, 1986)",
+        "durationMs": 280028
+      },
+      {
+        "number": 2,
+        "disc": 3,
+        "name": "Master of Puppets (Live at the Meadowlands, East Rutherford, NJ - Apr. 21st, 1986)",
+        "durationMs": 504603
+      },
+      {
+        "number": 3,
+        "disc": 3,
+        "name": "For Whom the Bell Tolls (Live at Hampton Coliseum, Hampton, VA - Aug. 3rd, 1986)",
+        "durationMs": 314676
+      },
+      {
+        "number": 4,
+        "disc": 3,
+        "name": "Ride the Lightning (Live at Grugahalle, Essen, West Germany - Jan. 25th, 1987)",
+        "durationMs": 375597
+      },
+      {
+        "number": 5,
+        "disc": 3,
+        "name": "Welcome Home (Sanitarium) [Live at the Country Club, Reseda, CA - Nov. 8th, 1986)",
+        "durationMs": 360035
+      },
+      {
+        "number": 6,
+        "disc": 3,
+        "name": "The Thing That Should Not Be (Live at the Aragon Ballroom, Chicago, IL - May 25th, 1986)",
+        "durationMs": 375716
+      },
+      {
+        "number": 7,
+        "disc": 3,
+        "name": "(Anesthesia)—Pulling Teeth (Live at the Aragon Ballroom, Chicago, IL - May 25th, 1986)",
+        "durationMs": 177404
+      },
+      {
+        "number": 8,
+        "disc": 3,
+        "name": "Damage, Inc. (Live at the Aragon Ballroom, Chicago, IL - May 25th, 1986)",
+        "durationMs": 247223
+      },
+      {
+        "number": 9,
+        "disc": 3,
+        "name": "Fade to Black (Fan Recording - Live at Solnahallen, Stockholm, Sweden - Sep. 26th, 1986)",
+        "durationMs": 393208
+      },
+      {
+        "number": 10,
+        "disc": 3,
+        "name": "Seek & Destroy (Live at the Country Club, Reseda, CA - Nov. 8th, 1986)",
+        "durationMs": 377353
+      },
+      {
+        "number": 11,
+        "disc": 3,
+        "name": "Creeping Death (Live at the Country Club, Reseda, CA - Nov. 8th, 1986)",
+        "durationMs": 363213
+      },
+      {
+        "number": 12,
+        "disc": 3,
+        "name": "The Four Horsemen (Live at Grugahalle, Essen, West Germany - Jan. 25th, 1987)",
+        "durationMs": 301295
+      },
+      {
+        "number": 13,
+        "disc": 3,
+        "name": "Am I Evil? (Live at Hampton Coliseum, Hampton, VA - Aug. 3rd, 1986)",
+        "durationMs": 217943
+      },
+      {
+        "number": 14,
+        "disc": 3,
+        "name": "Whiplash (Live at the Aragon Ballroom, Chicago, IL - May 25th, 1986)",
+        "durationMs": 283955
+      }
+    ]
+  },
+  {
+    "slug": "nirvana-in-utero",
+    "name": "In Utero",
+    "artist": "Nirvana",
+    "genre": "Rock alternativo",
+    "year": 1993,
+    "price": 31000,
+    "discountPercentage": 15,
+    "stock": 7,
+    "description": "Álbum de Nirvana, publicado originalmente en 1993. Género: Rock alternativo. Incluye Serve the Servants, Scentless Apprentice, Heart-Shaped Box.",
+    "image": "/covers/real/nirvana-in-utero.jpg",
+    "source": "https://music.apple.com/us/album/in-utero-20th-anniversary-edition/1440858699?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/e3/20/03/e32003a4-99bc-1c70-40ba-001882f35dba/00602537526840.rgb.jpg/600x600bb.jpg",
+    "referenceEdition": "In Utero (20th Anniversary Edition)",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Serve the Servants",
+        "durationMs": 217200
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "Scentless Apprentice",
+        "durationMs": 228080
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "Heart-Shaped Box",
+        "durationMs": 281093
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "Rape Me",
+        "durationMs": 170000
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "Frances Farmer Will Have Her Revenge On Seattle",
+        "durationMs": 250133
+      },
+      {
+        "number": 6,
+        "disc": 1,
+        "name": "Dumb",
+        "durationMs": 151880
+      },
+      {
+        "number": 7,
+        "disc": 1,
+        "name": "Very Ape",
+        "durationMs": 115733
+      },
+      {
+        "number": 8,
+        "disc": 1,
+        "name": "Milk It",
+        "durationMs": 234773
+      },
+      {
+        "number": 9,
+        "disc": 1,
+        "name": "Pennyroyal Tea",
+        "durationMs": 218827
+      },
+      {
+        "number": 10,
+        "disc": 1,
+        "name": "Radio Friendly Unit Shifter",
+        "durationMs": 291560
+      },
+      {
+        "number": 11,
+        "disc": 1,
+        "name": "Tourette's",
+        "durationMs": 95387
+      },
+      {
+        "number": 12,
+        "disc": 1,
+        "name": "All Apologies",
+        "durationMs": 236320
+      }
+    ]
+  },
+  {
+    "slug": "pearl-jam-ten",
+    "name": "Ten",
+    "artist": "Pearl Jam",
+    "genre": "Rock",
+    "year": 1991,
+    "price": 32500,
+    "discountPercentage": 0,
+    "stock": 8,
+    "description": "Álbum de Pearl Jam, publicado originalmente en 1991. Género: Rock. Incluye Once, Even Flow, Alive.",
+    "image": "/covers/real/pearl-jam-ten.jpg",
+    "source": "https://music.apple.com/us/album/ten/425465247?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/e0/e1/7c/e0e17cf0-62e5-6312-f3df-2462960cc8f1/884977724745.jpg/600x600bb.jpg",
+    "referenceEdition": "Ten",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Once",
+        "durationMs": 231368
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "Even Flow",
+        "durationMs": 292581
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "Alive",
+        "durationMs": 340907
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "Why Go",
+        "durationMs": 200039
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "Black",
+        "durationMs": 342653
+      },
+      {
+        "number": 6,
+        "disc": 1,
+        "name": "Jeremy",
+        "durationMs": 318227
+      },
+      {
+        "number": 7,
+        "disc": 1,
+        "name": "Oceans",
+        "durationMs": 161893
+      },
+      {
+        "number": 8,
+        "disc": 1,
+        "name": "Porch",
+        "durationMs": 210520
+      },
+      {
+        "number": 9,
+        "disc": 1,
+        "name": "Garden",
+        "durationMs": 298933
+      },
+      {
+        "number": 10,
+        "disc": 1,
+        "name": "Deep",
+        "durationMs": 258186
+      },
+      {
+        "number": 11,
+        "disc": 1,
+        "name": "Release",
+        "durationMs": 546019
+      }
+    ]
+  },
+  {
+    "slug": "radiohead-the-bends",
+    "name": "The Bends",
+    "artist": "Radiohead",
+    "genre": "Rock alternativo",
+    "year": 1995,
+    "price": 34000,
+    "discountPercentage": 0,
+    "stock": 9,
+    "description": "Álbum de Radiohead, publicado originalmente en 1995. Género: Rock alternativo. Incluye Planet Telex, The Bends, High and Dry.",
+    "image": "/covers/real/radiohead-the-bends.jpg",
+    "source": "https://music.apple.com/us/album/the-bends/1097862703?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/1b/a9/5c/1ba95cac-b245-d386-63fb-6b857aa9dce8/634904078065.png/600x600bb.jpg",
+    "referenceEdition": "The Bends",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Planet Telex",
+        "durationMs": 259200
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "The Bends",
+        "durationMs": 246200
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "High and Dry",
+        "durationMs": 257480
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "Fake Plastic Trees",
+        "durationMs": 290707
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "Bones",
+        "durationMs": 189000
+      },
+      {
+        "number": 6,
+        "disc": 1,
+        "name": "(Nice Dream)",
+        "durationMs": 233227
+      },
+      {
+        "number": 7,
+        "disc": 1,
+        "name": "Just",
+        "durationMs": 234800
+      },
+      {
+        "number": 8,
+        "disc": 1,
+        "name": "My Iron Lung",
+        "durationMs": 276427
+      },
+      {
+        "number": 9,
+        "disc": 1,
+        "name": "Bullet Proof ... I Wish I Was",
+        "durationMs": 208733
+      },
+      {
+        "number": 10,
+        "disc": 1,
+        "name": "Black Star",
+        "durationMs": 247040
+      },
+      {
+        "number": 11,
+        "disc": 1,
+        "name": "Sulk",
+        "durationMs": 222960
+      },
+      {
+        "number": 12,
+        "disc": 1,
+        "name": "Street Spirit (Fade Out)",
+        "durationMs": 253853
+      }
+    ]
+  },
+  {
+    "slug": "radiohead-in-rainbows",
+    "name": "In Rainbows",
+    "artist": "Radiohead",
+    "genre": "Rock alternativo",
+    "year": 2007,
+    "price": 35500,
+    "discountPercentage": 0,
+    "stock": 10,
+    "description": "Álbum de Radiohead, publicado originalmente en 2007. Género: Rock alternativo. Incluye 15 Step, Bodysnatchers, Nude.",
+    "image": "/covers/real/radiohead-in-rainbows.jpg",
+    "source": "https://music.apple.com/us/album/in-rainbows/1109714933?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/dd/50/c7/dd50c790-99ac-d3d0-5ab8-e3891fb8fd52/634904032463.png/600x600bb.jpg",
+    "referenceEdition": "In Rainbows",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "15 Step",
+        "durationMs": 237293
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "Bodysnatchers",
+        "durationMs": 242293
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "Nude",
+        "durationMs": 255387
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "Weird Fishes / Arpeggi",
+        "durationMs": 318187
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "All I Need",
+        "durationMs": 228747
+      },
+      {
+        "number": 6,
+        "disc": 1,
+        "name": "Faust Arp",
+        "durationMs": 129680
+      },
+      {
+        "number": 7,
+        "disc": 1,
+        "name": "Reckoner",
+        "durationMs": 290213
+      },
+      {
+        "number": 8,
+        "disc": 1,
+        "name": "House of Cards",
+        "durationMs": 328293
+      },
+      {
+        "number": 9,
+        "disc": 1,
+        "name": "Jigsaw Falling Into Place",
+        "durationMs": 248893
+      },
+      {
+        "number": 10,
+        "disc": 1,
+        "name": "Videotape",
+        "durationMs": 279634
+      }
+    ]
+  },
+  {
+    "slug": "oasis-definitely-maybe",
+    "name": "Definitely Maybe",
+    "artist": "Oasis",
+    "genre": "Indie Rock",
+    "year": 1994,
+    "price": 37000,
+    "discountPercentage": 15,
+    "stock": 3,
+    "description": "Álbum de Oasis, publicado originalmente en 1994. Género: Indie Rock. Incluye Rock 'n' Roll Star (Remastered), Shakermaker (Remastered), Live Forever (Remastered).",
+    "image": "/covers/real/oasis-definitely-maybe.jpg",
+    "source": "https://music.apple.com/us/album/definitely-maybe-deluxe-edition-remastered/1525936190?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/00/af/e3/00afe365-35f8-04cb-379a-e12abead71cd/5051961070132.jpg/600x600bb.jpg",
+    "referenceEdition": "Definitely Maybe (Deluxe Edition Remastered)",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Rock 'n' Roll Star (Remastered)",
+        "durationMs": 321947
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "Shakermaker (Remastered)",
+        "durationMs": 308280
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "Live Forever (Remastered)",
+        "durationMs": 276667
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "Up in the Sky (Remastered)",
+        "durationMs": 268000
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "Columbia (Remastered)",
+        "durationMs": 377400
+      },
+      {
+        "number": 6,
+        "disc": 1,
+        "name": "Supersonic (Remastered)",
+        "durationMs": 283787
+      },
+      {
+        "number": 7,
+        "disc": 1,
+        "name": "Bring It On Down (Remastered)",
+        "durationMs": 257813
+      },
+      {
+        "number": 8,
+        "disc": 1,
+        "name": "Cigarettes & Alcohol (Remastered)",
+        "durationMs": 289147
+      },
+      {
+        "number": 9,
+        "disc": 1,
+        "name": "Digsy's Dinner (Remastered)",
+        "durationMs": 152267
+      },
+      {
+        "number": 10,
+        "disc": 1,
+        "name": "Slide Away (Remastered)",
+        "durationMs": 392307
+      },
+      {
+        "number": 11,
+        "disc": 1,
+        "name": "Married with Children (Remastered)",
+        "durationMs": 193000
+      },
+      {
+        "number": 1,
+        "disc": 2,
+        "name": "Columbia (White Label Demo) [Remastered]",
+        "durationMs": 327667
+      },
+      {
+        "number": 2,
+        "disc": 2,
+        "name": "Cigarettes & Alcohol (Demo) [Remastered]",
+        "durationMs": 277987
+      },
+      {
+        "number": 3,
+        "disc": 2,
+        "name": "Sad Song (Remastered)",
+        "durationMs": 269213
+      },
+      {
+        "number": 4,
+        "disc": 2,
+        "name": "I Will Believe (Live) [Remastered]",
+        "durationMs": 228880
+      },
+      {
+        "number": 5,
+        "disc": 2,
+        "name": "Take Me Away (Remastered)",
+        "durationMs": 272773
+      },
+      {
+        "number": 6,
+        "disc": 2,
+        "name": "Alive (Demo) [Remastered]",
+        "durationMs": 238227
+      },
+      {
+        "number": 7,
+        "disc": 2,
+        "name": "D’Yer Wanna Be a Spaceman? (Remastered)",
+        "durationMs": 161013
+      },
+      {
+        "number": 8,
+        "disc": 2,
+        "name": "Supersonic (Live) [Remastered]",
+        "durationMs": 315027
+      },
+      {
+        "number": 9,
+        "disc": 2,
+        "name": "Up in the Sky (Acoustic) [Remastered]",
+        "durationMs": 214320
+      },
+      {
+        "number": 10,
+        "disc": 2,
+        "name": "Cloudburst (Remastered)",
+        "durationMs": 323147
+      },
+      {
+        "number": 11,
+        "disc": 2,
+        "name": "Fade Away (Remastered)",
+        "durationMs": 256853
+      },
+      {
+        "number": 12,
+        "disc": 2,
+        "name": "Listen Up (Remastered)",
+        "durationMs": 402360
+      },
+      {
+        "number": 13,
+        "disc": 2,
+        "name": "I Am the Walrus (Live Glasgow Cathouse June '94) [Remastered]",
+        "durationMs": 498333
+      },
+      {
+        "number": 14,
+        "disc": 2,
+        "name": "Whatever (Remastered)",
+        "durationMs": 382267
+      },
+      {
+        "number": 15,
+        "disc": 2,
+        "name": "(It's Good) To Be Free (Remastered)",
+        "durationMs": 263533
+      },
+      {
+        "number": 16,
+        "disc": 2,
+        "name": "Half the World Away (Remastered)",
+        "durationMs": 265333
+      },
+      {
+        "number": 1,
+        "disc": 3,
+        "name": "Supersonic (Live at Glasgow Tramshed)",
+        "durationMs": 330360
+      },
+      {
+        "number": 2,
+        "disc": 3,
+        "name": "Rock 'n' Roll Star (Demo)",
+        "durationMs": 346227
+      },
+      {
+        "number": 3,
+        "disc": 3,
+        "name": "Shakermaker (Live Paris In-Store)",
+        "durationMs": 245253
+      },
+      {
+        "number": 4,
+        "disc": 3,
+        "name": "Columbia (Eden Studios Mix)",
+        "durationMs": 337133
+      },
+      {
+        "number": 5,
+        "disc": 3,
+        "name": "Cloudburst (Demo)",
+        "durationMs": 310373
+      },
+      {
+        "number": 6,
+        "disc": 3,
+        "name": "Strange Thing (Demo)",
+        "durationMs": 314867
+      },
+      {
+        "number": 7,
+        "disc": 3,
+        "name": "Live Forever (Live Paris In-Store)",
+        "durationMs": 282120
+      },
+      {
+        "number": 8,
+        "disc": 3,
+        "name": "Cigarettes & Alcohol (Live at Manchester Academy)",
+        "durationMs": 238560
+      },
+      {
+        "number": 9,
+        "disc": 3,
+        "name": "D'Yer Wanna Be a Spaceman? (Live at Manchester Academy)",
+        "durationMs": 166213
+      },
+      {
+        "number": 10,
+        "disc": 3,
+        "name": "Fade Away (Demo)",
+        "durationMs": 263200
+      },
+      {
+        "number": 11,
+        "disc": 3,
+        "name": "Take Me Away (Live at Manchester Academy)",
+        "durationMs": 255160
+      },
+      {
+        "number": 12,
+        "disc": 3,
+        "name": "Sad Song (Live at Manchester Academy)",
+        "durationMs": 269280
+      },
+      {
+        "number": 13,
+        "disc": 3,
+        "name": "Half the World Away (Live, Tokyo Hotel Room)",
+        "durationMs": 233373
+      },
+      {
+        "number": 14,
+        "disc": 3,
+        "name": "Digsy's Dinner (Live Paris In-Store)",
+        "durationMs": 156867
+      },
+      {
+        "number": 15,
+        "disc": 3,
+        "name": "Married With Children (Demo)",
+        "durationMs": 196067
+      },
+      {
+        "number": 16,
+        "disc": 3,
+        "name": "Up in the Sky (Live Paris In-Store)",
+        "durationMs": 199320
+      },
+      {
+        "number": 17,
+        "disc": 3,
+        "name": "Whatever (Strings)",
+        "durationMs": 289960
+      }
+    ]
+  },
+  {
+    "slug": "blur-parklife",
+    "name": "Parklife",
+    "artist": "Blur",
+    "genre": "Pop/Rock",
+    "year": 1994,
+    "price": 38500,
+    "discountPercentage": 0,
+    "stock": 4,
+    "description": "Álbum de Blur, publicado originalmente en 1994. Género: Pop/Rock. Incluye Girls and Boys, Tracy Jacks, End of a Century.",
+    "image": "/covers/real/blur-parklife.jpg",
+    "source": "https://music.apple.com/us/album/parklife/699665183?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/8a/71/66/8a71664b-3baa-537b-e008-b32d86da27bc/5099997227755.jpg/600x600bb.jpg",
+    "referenceEdition": "Parklife",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Girls and Boys",
+        "durationMs": 291200
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "Tracy Jacks",
+        "durationMs": 259627
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "End of a Century",
+        "durationMs": 165840
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "Parklife",
+        "durationMs": 185093
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "Bank Holiday",
+        "durationMs": 102307
+      },
+      {
+        "number": 6,
+        "disc": 1,
+        "name": "Badhead",
+        "durationMs": 205773
+      },
+      {
+        "number": 7,
+        "disc": 1,
+        "name": "The Debt Collector",
+        "durationMs": 130720
+      },
+      {
+        "number": 8,
+        "disc": 1,
+        "name": "Far Out",
+        "durationMs": 97547
+      },
+      {
+        "number": 9,
+        "disc": 1,
+        "name": "To the End",
+        "durationMs": 244600
+      },
+      {
+        "number": 10,
+        "disc": 1,
+        "name": "London Loves",
+        "durationMs": 255453
+      },
+      {
+        "number": 11,
+        "disc": 1,
+        "name": "Trouble in the Message Centre",
+        "durationMs": 249040
+      },
+      {
+        "number": 12,
+        "disc": 1,
+        "name": "Clover Over Dover",
+        "durationMs": 202253
+      },
+      {
+        "number": 13,
+        "disc": 1,
+        "name": "Magic America",
+        "durationMs": 217907
+      },
+      {
+        "number": 14,
+        "disc": 1,
+        "name": "Jubilee",
+        "durationMs": 167800
+      },
+      {
+        "number": 15,
+        "disc": 1,
+        "name": "This Is a Low",
+        "durationMs": 316747
+      },
+      {
+        "number": 16,
+        "disc": 1,
+        "name": "Lot 105",
+        "durationMs": 79000
+      }
+    ]
+  },
+  {
+    "slug": "the-strokes-is-this-it",
+    "name": "Is This It",
+    "artist": "The Strokes",
+    "genre": "Rock alternativo",
+    "year": 2001,
+    "price": 40000,
+    "discountPercentage": 0,
+    "stock": 0,
+    "description": "Álbum de The Strokes, publicado originalmente en 2001. Género: Rock alternativo. Incluye Is This It, The Modern Age, Soma.",
+    "image": "/covers/real/the-strokes-is-this-it.jpg",
+    "source": "https://music.apple.com/us/album/is-this-it/266376953?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Features115/v4/ea/04/d4/ea04d45d-6f5d-ede6-fb64-71f3e6a6e62f/dj.ojkzzidd.jpg/600x600bb.jpg",
+    "referenceEdition": "Is This It",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Is This It",
+        "durationMs": 151333
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "The Modern Age",
+        "durationMs": 208067
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "Soma",
+        "durationMs": 153840
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "Barely Legal",
+        "durationMs": 234693
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "Someday",
+        "durationMs": 183440
+      },
+      {
+        "number": 6,
+        "disc": 1,
+        "name": "Alone, Together",
+        "durationMs": 188640
+      },
+      {
+        "number": 7,
+        "disc": 1,
+        "name": "Last Nite",
+        "durationMs": 193373
+      },
+      {
+        "number": 8,
+        "disc": 1,
+        "name": "Hard to Explain",
+        "durationMs": 224333
+      },
+      {
+        "number": 9,
+        "disc": 1,
+        "name": "When It Started",
+        "durationMs": 175200
+      },
+      {
+        "number": 10,
+        "disc": 1,
+        "name": "Trying Your Luck",
+        "durationMs": 202760
+      },
+      {
+        "number": 11,
+        "disc": 1,
+        "name": "Take It or Leave It",
+        "durationMs": 196067
+      }
+    ]
+  },
+  {
+    "slug": "arctic-monkeys-am",
+    "name": "AM",
+    "artist": "Arctic Monkeys",
+    "genre": "Rock alternativo",
+    "year": 2013,
+    "price": 28000,
+    "discountPercentage": 0,
+    "stock": 6,
+    "description": "Álbum de Arctic Monkeys, publicado originalmente en 2013. Género: Rock alternativo. Incluye Do I Wanna Know?, R U Mine?, One for the Road.",
+    "image": "/covers/real/arctic-monkeys-am.jpg",
+    "source": "https://music.apple.com/us/album/am/663097964?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/69/9c/b5/699cb5d6-115c-ff73-9d26-e57ea4350d72/887828031795.png/600x600bb.jpg",
+    "referenceEdition": "AM",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Do I Wanna Know?",
+        "durationMs": 272394
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "R U Mine?",
+        "durationMs": 201726
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "One for the Road",
+        "durationMs": 206052
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "Arabella",
+        "durationMs": 207357
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "I Want It All",
+        "durationMs": 184350
+      },
+      {
+        "number": 6,
+        "disc": 1,
+        "name": "No. 1 Party Anthem",
+        "durationMs": 243060
+      },
+      {
+        "number": 7,
+        "disc": 1,
+        "name": "Mad Sounds",
+        "durationMs": 215064
+      },
+      {
+        "number": 8,
+        "disc": 1,
+        "name": "Fireside",
+        "durationMs": 181034
+      },
+      {
+        "number": 9,
+        "disc": 1,
+        "name": "Why'd You Only Call Me When You're High?",
+        "durationMs": 161125
+      },
+      {
+        "number": 10,
+        "disc": 1,
+        "name": "Snap Out of It",
+        "durationMs": 192889
+      },
+      {
+        "number": 11,
+        "disc": 1,
+        "name": "Knee Socks",
+        "durationMs": 257563
+      },
+      {
+        "number": 12,
+        "disc": 1,
+        "name": "I Wanna Be Yours",
+        "durationMs": 184019
+      }
+    ]
+  },
+  {
+    "slug": "gorillaz-demon-days",
+    "name": "Demon Days",
+    "artist": "Gorillaz",
+    "genre": "Rock alternativo",
+    "year": 2005,
+    "price": 29500,
+    "discountPercentage": 15,
+    "stock": 7,
+    "description": "Álbum de Gorillaz, publicado originalmente en 2005. Género: Rock alternativo. Incluye Intro, Last Living Souls, Kids with Guns.",
+    "image": "/covers/real/gorillaz-demon-days.jpg",
+    "source": "https://music.apple.com/us/album/demon-days/850571319?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/1c/0f/81/1c0f818a-e458-dd84-6f1b-ccbdf5fe14d6/825646291045.jpg/600x600bb.jpg",
+    "referenceEdition": "Demon Days",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Intro",
+        "durationMs": 63160
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "Last Living Souls",
+        "durationMs": 190400
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "Kids with Guns",
+        "durationMs": 225840
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "O Green World",
+        "durationMs": 271960
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "Dirty Harry (feat. Bootie Brown)",
+        "durationMs": 223800
+      },
+      {
+        "number": 6,
+        "disc": 1,
+        "name": "Feel Good Inc. (feat. David Jolicoeur, Kelvin Mercer & Vincent Mason)",
+        "durationMs": 221173
+      },
+      {
+        "number": 7,
+        "disc": 1,
+        "name": "El Mañana",
+        "durationMs": 230027
+      },
+      {
+        "number": 8,
+        "disc": 1,
+        "name": "Every Planet We Reach Is Dead",
+        "durationMs": 293267
+      },
+      {
+        "number": 9,
+        "disc": 1,
+        "name": "November Has Come",
+        "durationMs": 161107
+      },
+      {
+        "number": 10,
+        "disc": 1,
+        "name": "All Alone (feat. Martina Topley-Bird & Roots Manuva)",
+        "durationMs": 210067
+      },
+      {
+        "number": 11,
+        "disc": 1,
+        "name": "White Light",
+        "durationMs": 128427
+      },
+      {
+        "number": 12,
+        "disc": 1,
+        "name": "DARE (feat. Shaun Ryder & Roses Gabor)",
+        "durationMs": 244307
+      },
+      {
+        "number": 13,
+        "disc": 1,
+        "name": "Fire Coming out of the Monkey's Head",
+        "durationMs": 196427
+      },
+      {
+        "number": 14,
+        "disc": 1,
+        "name": "Don't Get Lost in Heaven",
+        "durationMs": 120373
+      },
+      {
+        "number": 15,
+        "disc": 1,
+        "name": "Demon Days",
+        "durationMs": 268893
+      }
+    ]
+  },
+  {
+    "slug": "tame-impala-currents",
+    "name": "Currents",
+    "artist": "Tame Impala",
+    "genre": "Rock alternativo",
+    "year": 2015,
+    "price": 31000,
+    "discountPercentage": 0,
+    "stock": 8,
+    "description": "Álbum de Tame Impala, publicado originalmente en 2015. Género: Rock alternativo. Incluye Let It Happen, Nangs, The Moment.",
+    "image": "/covers/real/tame-impala-currents.jpg",
+    "source": "https://music.apple.com/us/album/currents/1440838039?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/a8/2e/b4/a82eb490-f30a-a321-461a-0383c88fec95/15UMGIM23316.rgb.jpg/600x600bb.jpg",
+    "referenceEdition": "Currents",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Let It Happen",
+        "durationMs": 466893
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "Nangs",
+        "durationMs": 107973
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "The Moment",
+        "durationMs": 255440
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "Yes I'm Changing",
+        "durationMs": 270653
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "Eventually",
+        "durationMs": 319307
+      },
+      {
+        "number": 6,
+        "disc": 1,
+        "name": "Gossip",
+        "durationMs": 55400
+      },
+      {
+        "number": 7,
+        "disc": 1,
+        "name": "The Less I Know the Better",
+        "durationMs": 218880
+      },
+      {
+        "number": 8,
+        "disc": 1,
+        "name": "Past Life",
+        "durationMs": 227747
+      },
+      {
+        "number": 9,
+        "disc": 1,
+        "name": "Disciples",
+        "durationMs": 108480
+      },
+      {
+        "number": 10,
+        "disc": 1,
+        "name": "'Cause I'm a Man",
+        "durationMs": 241973
+      },
+      {
+        "number": 11,
+        "disc": 1,
+        "name": "Reality In Motion",
+        "durationMs": 252653
+      },
+      {
+        "number": 12,
+        "disc": 1,
+        "name": "Love/Paranoia",
+        "durationMs": 186427
+      },
+      {
+        "number": 13,
+        "disc": 1,
+        "name": "New Person, Same Old Mistakes",
+        "durationMs": 362173
+      }
+    ]
+  },
+  {
+    "slug": "daft-punk-homework",
+    "name": "Homework",
+    "artist": "Daft Punk",
+    "genre": "Electrónica",
+    "year": 1997,
+    "price": 32500,
+    "discountPercentage": 0,
+    "stock": 9,
+    "description": "Álbum de Daft Punk, publicado originalmente en 1997. Género: Electrónica. Incluye Daftendirekt, Wdpk 837 FM, Revolution 909.",
+    "image": "/covers/real/daft-punk-homework.jpg",
+    "source": "https://music.apple.com/us/album/homework/696884422?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Features115/v4/34/8d/c7/348dc71c-d75e-9baf-671a-994e9e74b018/dj.pimdxdmf.jpg/600x600bb.jpg",
+    "referenceEdition": "Homework",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Daftendirekt",
+        "durationMs": 164560
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "Wdpk 837 FM",
+        "durationMs": 28333
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "Revolution 909",
+        "durationMs": 335027
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "Da Funk",
+        "durationMs": 328680
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "Phoenix",
+        "durationMs": 297107
+      },
+      {
+        "number": 6,
+        "disc": 1,
+        "name": "Fresh",
+        "durationMs": 244400
+      },
+      {
+        "number": 7,
+        "disc": 1,
+        "name": "Around the World",
+        "durationMs": 429533
+      },
+      {
+        "number": 8,
+        "disc": 1,
+        "name": "Rollin' & Scratchin'",
+        "durationMs": 448627
+      },
+      {
+        "number": 9,
+        "disc": 1,
+        "name": "Teachers",
+        "durationMs": 173493
+      },
+      {
+        "number": 10,
+        "disc": 1,
+        "name": "High Fidelity",
+        "durationMs": 362467
+      },
+      {
+        "number": 11,
+        "disc": 1,
+        "name": "Rock'n Roll",
+        "durationMs": 453867
+      },
+      {
+        "number": 12,
+        "disc": 1,
+        "name": "Oh Yeah",
+        "durationMs": 121200
+      },
+      {
+        "number": 13,
+        "disc": 1,
+        "name": "Burnin'",
+        "durationMs": 414173
+      },
+      {
+        "number": 14,
+        "disc": 1,
+        "name": "Indo Silver Club",
+        "durationMs": 274733
+      },
+      {
+        "number": 15,
+        "disc": 1,
+        "name": "Alive",
+        "durationMs": 316253
+      },
+      {
+        "number": 16,
+        "disc": 1,
+        "name": "Funk Ad",
+        "durationMs": 51400
+      }
+    ]
+  },
+  {
+    "slug": "massive-attack-mezzanine",
+    "name": "Mezzanine",
+    "artist": "Massive Attack",
+    "genre": "Electrónica",
+    "year": 1998,
+    "price": 34000,
+    "discountPercentage": 0,
+    "stock": 10,
+    "description": "Álbum de Massive Attack, publicado originalmente en 1998. Género: Electrónica. Incluye Angel, Risingson, Teardrop.",
+    "image": "/covers/real/massive-attack-mezzanine.jpg",
+    "source": "https://music.apple.com/us/album/mezzanine/724466069?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/0a/98/55/0a98555b-8d9d-3b46-660a-b91261557d17/00724384559953.rgb.jpg/600x600bb.jpg",
+    "referenceEdition": "Mezzanine",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Angel",
+        "durationMs": 379533
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "Risingson",
+        "durationMs": 298827
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "Teardrop",
+        "durationMs": 330773
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "Inertia Creeps",
+        "durationMs": 357133
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "Exchange",
+        "durationMs": 251200
+      },
+      {
+        "number": 6,
+        "disc": 1,
+        "name": "Dissolved Girl",
+        "durationMs": 366893
+      },
+      {
+        "number": 7,
+        "disc": 1,
+        "name": "Man Next Door",
+        "durationMs": 356267
+      },
+      {
+        "number": 8,
+        "disc": 1,
+        "name": "Black Milk",
+        "durationMs": 381667
+      },
+      {
+        "number": 9,
+        "disc": 1,
+        "name": "Mezzanine",
+        "durationMs": 356800
+      },
+      {
+        "number": 10,
+        "disc": 1,
+        "name": "Group Four",
+        "durationMs": 492267
+      },
+      {
+        "number": 11,
+        "disc": 1,
+        "name": "(Exchange)",
+        "durationMs": 250867
+      }
+    ]
+  },
+  {
+    "slug": "portishead-dummy",
+    "name": "Dummy",
+    "artist": "Portishead",
+    "genre": "Electrónica",
+    "year": 1994,
+    "price": 35500,
+    "discountPercentage": 15,
+    "stock": 3,
+    "description": "Álbum de Portishead, publicado originalmente en 1994. Género: Electrónica. Incluye Mysterons, Sour Times, Strangers.",
+    "image": "/covers/real/portishead-dummy.jpg",
+    "source": "https://music.apple.com/us/album/dummy/1440653096?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/c1/71/93/c1719342-df7d-e9c5-c87c-53dae5afb289/00042282855329.rgb.jpg/600x600bb.jpg",
+    "referenceEdition": "Dummy",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Mysterons",
+        "durationMs": 305240
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "Sour Times",
+        "durationMs": 252267
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "Strangers",
+        "durationMs": 237600
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "It Could Be Sweet",
+        "durationMs": 257160
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "Wandering Star",
+        "durationMs": 293200
+      },
+      {
+        "number": 6,
+        "disc": 1,
+        "name": "It's a Fire",
+        "durationMs": 226200
+      },
+      {
+        "number": 7,
+        "disc": 1,
+        "name": "Numb",
+        "durationMs": 235800
+      },
+      {
+        "number": 8,
+        "disc": 1,
+        "name": "Roads",
+        "durationMs": 303973
+      },
+      {
+        "number": 9,
+        "disc": 1,
+        "name": "Pedestal",
+        "durationMs": 220400
+      },
+      {
+        "number": 10,
+        "disc": 1,
+        "name": "Biscuit",
+        "durationMs": 302600
+      },
+      {
+        "number": 11,
+        "disc": 1,
+        "name": "Glory Box",
+        "durationMs": 308627
+      }
+    ]
+  },
+  {
+    "slug": "the-chemical-brothers-dig-your-own-hole",
+    "name": "Dig Your Own Hole",
+    "artist": "The Chemical Brothers",
+    "genre": "Electrónica",
+    "year": 1997,
+    "price": 37000,
+    "discountPercentage": 0,
+    "stock": 4,
+    "description": "Álbum de The Chemical Brothers, publicado originalmente en 1997. Género: Electrónica. Incluye Block Rockin' Beats, Dig Your Own Hole, Elektrobank.",
+    "image": "/covers/real/the-chemical-brothers-dig-your-own-hole.jpg",
+    "source": "https://music.apple.com/us/album/dig-your-own-hole/714366008?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/54/c6/e4/54c6e459-524b-790c-80d6-5dee6cde1633/00724384295059.jpg/600x600bb.jpg",
+    "referenceEdition": "Dig Your Own Hole",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Block Rockin' Beats",
+        "durationMs": 313667
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "Dig Your Own Hole",
+        "durationMs": 327267
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "Elektrobank",
+        "durationMs": 498693
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "Piku",
+        "durationMs": 295133
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "Setting Sun",
+        "durationMs": 328733
+      },
+      {
+        "number": 6,
+        "disc": 1,
+        "name": "It Doesn't Matter",
+        "durationMs": 374240
+      },
+      {
+        "number": 7,
+        "disc": 1,
+        "name": "Don't Stop the Rock",
+        "durationMs": 289827
+      },
+      {
+        "number": 8,
+        "disc": 1,
+        "name": "Get Up On It Like This",
+        "durationMs": 166733
+      },
+      {
+        "number": 9,
+        "disc": 1,
+        "name": "Lost In the K-Hole",
+        "durationMs": 232707
+      },
+      {
+        "number": 10,
+        "disc": 1,
+        "name": "Where Do I Begin",
+        "durationMs": 416867
+      },
+      {
+        "number": 11,
+        "disc": 1,
+        "name": "The Private Psychedelic Reel",
+        "durationMs": 561733
+      }
+    ]
+  },
+  {
+    "slug": "bjork-post",
+    "name": "Post",
+    "artist": "Björk",
+    "genre": "Pop",
+    "year": 1995,
+    "price": 38500,
+    "discountPercentage": 0,
+    "stock": 5,
+    "description": "Álbum de Björk, publicado originalmente en 1995. Género: Pop. Incluye Army of Me, Hyper-Ballad (Family Tree Version), Modern Things.",
+    "image": "/covers/real/bjork-post.jpg",
+    "source": "https://music.apple.com/us/album/post/300205609?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/69/62/1c/69621c9a-514f-00cf-1de6-6e49f004fb28/075596174060.jpg/600x600bb.jpg",
+    "referenceEdition": "Post",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Army of Me",
+        "durationMs": 234333
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "Hyper-Ballad (Family Tree Version)",
+        "durationMs": 321360
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "Modern Things",
+        "durationMs": 249400
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "It's Oh So Quiet",
+        "durationMs": 217733
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "Enjoy",
+        "durationMs": 234227
+      },
+      {
+        "number": 6,
+        "disc": 1,
+        "name": "You've Been Flirting Again",
+        "durationMs": 149600
+      },
+      {
+        "number": 7,
+        "disc": 1,
+        "name": "Isobel (Family Tree Version)",
+        "durationMs": 346467
+      },
+      {
+        "number": 8,
+        "disc": 1,
+        "name": "Possibly Maybe",
+        "durationMs": 305440
+      },
+      {
+        "number": 9,
+        "disc": 1,
+        "name": "I Miss You",
+        "durationMs": 239507
+      },
+      {
+        "number": 10,
+        "disc": 1,
+        "name": "Cover Me",
+        "durationMs": 126133
+      },
+      {
+        "number": 11,
+        "disc": 1,
+        "name": "Headphones",
+        "durationMs": 340067
+      }
+    ]
+  },
+  {
+    "slug": "bjork-homogenic",
+    "name": "Homogenic",
+    "artist": "Björk",
+    "genre": "Electrónica",
+    "year": 1997,
+    "price": 40000,
+    "discountPercentage": 0,
+    "stock": 6,
+    "description": "Álbum de Björk, publicado originalmente en 1997. Género: Electrónica. Incluye Hunter, Jóga, Unravel.",
+    "image": "/covers/real/bjork-homogenic.jpg",
+    "source": "https://music.apple.com/us/album/homogenic/20833577?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/7f/bd/d0/7fbdd0e0-c588-ef4b-a6dd-4dca21f8b41f/081227607364.jpg/600x600bb.jpg",
+    "referenceEdition": "Homogenic",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Hunter",
+        "durationMs": 253200
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "Jóga",
+        "durationMs": 304427
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "Unravel",
+        "durationMs": 197973
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "Bachelorette",
+        "durationMs": 316600
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "All Neon Like",
+        "durationMs": 352960
+      },
+      {
+        "number": 6,
+        "disc": 1,
+        "name": "5 Years",
+        "durationMs": 269133
+      },
+      {
+        "number": 7,
+        "disc": 1,
+        "name": "Immature",
+        "durationMs": 187200
+      },
+      {
+        "number": 8,
+        "disc": 1,
+        "name": "Alarm Call",
+        "durationMs": 259560
+      },
+      {
+        "number": 9,
+        "disc": 1,
+        "name": "Pluto",
+        "durationMs": 199240
+      },
+      {
+        "number": 10,
+        "disc": 1,
+        "name": "All Is Full of Love",
+        "durationMs": 272027
+      }
+    ]
+  },
+  {
+    "slug": "miles-davis-bitches-brew",
+    "name": "Bitches Brew",
+    "artist": "Miles Davis",
+    "genre": "Jazz",
+    "year": 1970,
+    "price": 28000,
+    "discountPercentage": 15,
+    "stock": 7,
+    "description": "Álbum de Miles Davis, publicado originalmente en 1970. Género: Jazz.",
+    "image": "/covers/real/miles-davis-bitches-brew.jpg",
+    "source": "https://music.apple.com/us/album/bitches-brew/168376392?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/9b/e1/63/9be1630c-486d-760c-76cf-04282174700a/074646577424.jpg/600x600bb.jpg",
+    "referenceEdition": "Bitches Brew",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Pharaoh's Dance (feat. Wayne Shorter, Bennie Maupin, John McLaughlin, Chick Corea, Joe Zawinul, Dave Holland & Harvey Brooks)",
+        "durationMs": 1204067
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "Bitches Brew (feat. Wayne Shorter, Bennie Maupin, John McLaughlin, Chick Corea, Joe Zawinul, Dave Holland & Harvey Brooks)",
+        "durationMs": 1619373
+      },
+      {
+        "number": 1,
+        "disc": 2,
+        "name": "Spanish Key (feat. Wayne Shorter, Bennie Maupin, John McLaughlin, Chick Corea, Joe Zawinul, Dave Holland & Harvey Brooks)",
+        "durationMs": 1052200
+      },
+      {
+        "number": 2,
+        "disc": 2,
+        "name": "John McLaughlin (feat. Wayne Shorter, Bennie Maupin, John McLaughlin, Chick Corea, Joe Zawinul, Dave Holland & Harvey Brooks)",
+        "durationMs": 262707
+      },
+      {
+        "number": 3,
+        "disc": 2,
+        "name": "Miles Runs the Voodoo Down (feat. Wayne Shorter, Bennie Maupin, John McLaughlin, Chick Corea, Joe Zawinul, Dave Holland & Harvey Brooks)",
+        "durationMs": 841333
+      },
+      {
+        "number": 4,
+        "disc": 2,
+        "name": "Sanctuary (feat. Wayne Shorter, Bennie Maupin, John McLaughlin, Chick Corea, Joe Zawinul, Dave Holland & Harvey Brooks)",
+        "durationMs": 656427
+      },
+      {
+        "number": 5,
+        "disc": 2,
+        "name": "Feio (feat. Wayne Shorter, John McLaughlin, Chick Corea, Joe Zawinul & Dave Holland)",
+        "durationMs": 709160
+      }
+    ]
+  },
+  {
+    "slug": "john-coltrane-a-love-supreme",
+    "name": "A Love Supreme",
+    "artist": "John Coltrane",
+    "genre": "Jazz",
+    "year": 1965,
+    "price": 29500,
+    "discountPercentage": 0,
+    "stock": 8,
+    "description": "Álbum de John Coltrane, publicado originalmente en 1965. Género: Jazz. Incluye A Love Supreme, Pt. 1: Acknowledgement, A Love Supreme, Pt. 2: Resolution, A Love Supreme, Pt. 3: Pursuance.",
+    "image": "/covers/real/john-coltrane-a-love-supreme.jpg",
+    "source": "https://music.apple.com/us/album/a-love-supreme-deluxe-edition/1445734006?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/51/bd/6e/51bd6e29-fa36-c1a9-52a1-9edcd849b6a3/06UMGIM09428.rgb.jpg/600x600bb.jpg",
+    "referenceEdition": "A Love Supreme (Deluxe Edition)",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "A Love Supreme, Pt. 1: Acknowledgement",
+        "durationMs": 462867
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "A Love Supreme, Pt. 2: Resolution",
+        "durationMs": 437840
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "A Love Supreme, Pt. 3: Pursuance",
+        "durationMs": 642507
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "A Love Supreme, Pt. 4: Psalm",
+        "durationMs": 422907
+      },
+      {
+        "number": 1,
+        "disc": 2,
+        "name": "Introduction by André Francis (Live at Festival Mondial du Jazz Antibes, FR, 07/26/65)",
+        "durationMs": 74027
+      },
+      {
+        "number": 2,
+        "disc": 2,
+        "name": "A Love Supreme, Pt. 1: Acknowledgement (Live at Festival Mondial du Jazz Antibes, FR, 07/26/65)",
+        "durationMs": 370853
+      },
+      {
+        "number": 3,
+        "disc": 2,
+        "name": "A Love Supreme, Pt. 2: Resolution (Live at Festival Mondial du Jazz Antibes, FR, 07/26/65)",
+        "durationMs": 696613
+      },
+      {
+        "number": 4,
+        "disc": 2,
+        "name": "A Love Supreme, Pt. 3: Pursuance (Live at Festival Mondial du Jazz Antibes, FR, 07/26/65)",
+        "durationMs": 1290493
+      },
+      {
+        "number": 5,
+        "disc": 2,
+        "name": "A Love Supreme, Pt. 4: Psalm (Live at Festival Mondial du Jazz Antibes, FR, 07/26/65)",
+        "durationMs": 527120
+      },
+      {
+        "number": 6,
+        "disc": 2,
+        "name": "A Love Supreme, Pt. 2: Resolution (Alternate Take)",
+        "durationMs": 443000
+      },
+      {
+        "number": 7,
+        "disc": 2,
+        "name": "A Love Supreme, Pt. 2: Resolution (Breakdown)",
+        "durationMs": 131827
+      },
+      {
+        "number": 8,
+        "disc": 2,
+        "name": "A Love Supreme, Pt. 1: Acknowledgement (Alternate Take 1)",
+        "durationMs": 549587
+      },
+      {
+        "number": 9,
+        "disc": 2,
+        "name": "A Love Supreme, Pt. 1: Acknowledgement (Alternate Take 2)",
+        "durationMs": 562120
+      }
+    ]
+  },
+  {
+    "slug": "dave-brubeck-time-out",
+    "name": "Time Out",
+    "artist": "The Dave Brubeck Quartet",
+    "genre": "Jazz",
+    "year": 1959,
+    "price": 31000,
+    "discountPercentage": 0,
+    "stock": 9,
+    "description": "Álbum de The Dave Brubeck Quartet, publicado originalmente en 1959. Género: Jazz. Incluye Blue Rondo À la Turk, Strange Meadow Lark, Take Five.",
+    "image": "/covers/real/dave-brubeck-time-out.jpg",
+    "source": "https://music.apple.com/us/album/time-out/193085545?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/7a/e3/06/7ae30672-0c73-a4d4-0a74-624eefc2843b/dj.ytdbjvto.jpg/600x600bb.jpg",
+    "referenceEdition": "Time Out",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Blue Rondo À la Turk",
+        "durationMs": 409359
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "Strange Meadow Lark",
+        "durationMs": 446314
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "Take Five",
+        "durationMs": 328832
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "Three to Get Ready",
+        "durationMs": 326546
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "Kathy's Waltz",
+        "durationMs": 291224
+      },
+      {
+        "number": 6,
+        "disc": 1,
+        "name": "Everybody's Jumpin'",
+        "durationMs": 264634
+      },
+      {
+        "number": 7,
+        "disc": 1,
+        "name": "Pick Up Sticks",
+        "durationMs": 259554
+      }
+    ]
+  },
+  {
+    "slug": "herbie-hancock-head-hunters",
+    "name": "Head Hunters",
+    "artist": "Herbie Hancock",
+    "genre": "Jazz",
+    "year": 1973,
+    "price": 32500,
+    "discountPercentage": 0,
+    "stock": 0,
+    "description": "Álbum de Herbie Hancock, publicado originalmente en 1973. Género: Jazz. Incluye Chameleon, Watermelon Man, Sly.",
+    "image": "/covers/real/herbie-hancock-head-hunters.jpg",
+    "source": "https://music.apple.com/us/album/head-hunters/158571524?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/4f/e5/f5/4fe5f511-462e-e87b-0711-d4e42809fb17/dj.goshfswo.jpg/600x600bb.jpg",
+    "referenceEdition": "Head Hunters",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Chameleon",
+        "durationMs": 944617
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "Watermelon Man",
+        "durationMs": 390432
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "Sly",
+        "durationMs": 621122
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "Vein Melter",
+        "durationMs": 549376
+      }
+    ]
+  },
+  {
+    "slug": "nina-simone-i-put-a-spell-on-you",
+    "name": "I Put a Spell on You",
+    "artist": "Nina Simone",
+    "genre": "Jazz",
+    "year": 1965,
+    "price": 34000,
+    "discountPercentage": 15,
+    "stock": 3,
+    "description": "Álbum de Nina Simone, publicado originalmente en 1965. Género: Jazz. Incluye I Put a Spell On You, Tomorrow Is My Turn, Ne Me Quitte Pas.",
+    "image": "/covers/real/nina-simone-i-put-a-spell-on-you.jpg",
+    "source": "https://music.apple.com/us/album/i-put-a-spell-on-you/1445667726?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/18/db/05/18db0507-f276-d93d-a4a7-e856a3f1590a/13UAAIM08283.rgb.jpg/600x600bb.jpg",
+    "referenceEdition": "I Put a Spell On You",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "I Put a Spell On You",
+        "durationMs": 157328
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "Tomorrow Is My Turn",
+        "durationMs": 172529
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "Ne Me Quitte Pas",
+        "durationMs": 218531
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "Marriage Is For Old Folks",
+        "durationMs": 213600
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "July Tree",
+        "durationMs": 164880
+      },
+      {
+        "number": 6,
+        "disc": 1,
+        "name": "Gimme Some",
+        "durationMs": 182215
+      },
+      {
+        "number": 7,
+        "disc": 1,
+        "name": "Feeling Good",
+        "durationMs": 177655
+      },
+      {
+        "number": 8,
+        "disc": 1,
+        "name": "One September Day",
+        "durationMs": 171680
+      },
+      {
+        "number": 9,
+        "disc": 1,
+        "name": "Blues On Purpose",
+        "durationMs": 200277
+      },
+      {
+        "number": 10,
+        "disc": 1,
+        "name": "Beautiful Land",
+        "durationMs": 117413
+      },
+      {
+        "number": 11,
+        "disc": 1,
+        "name": "You've Got to Learn",
+        "durationMs": 164168
+      },
+      {
+        "number": 12,
+        "disc": 1,
+        "name": "Take Care of Business",
+        "durationMs": 123611
+      }
+    ]
+  },
+  {
+    "slug": "marvin-gaye-what-s-going-on",
+    "name": "What's Going On",
+    "artist": "Marvin Gaye",
+    "genre": "R&B/Soul",
+    "year": 1971,
+    "price": 35500,
+    "discountPercentage": 0,
+    "stock": 4,
+    "description": "Álbum de Marvin Gaye, publicado originalmente en 1971. Género: R&B/Soul. Incluye What's Going On, What's Happening Brother, Flyin' High (In the Friendly Sky).",
+    "image": "/covers/real/marvin-gaye-what-s-going-on.jpg",
+    "source": "https://music.apple.com/us/album/whats-going-on/1538081586?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/76/36/2d/76362d74-cb7a-8ef9-104e-cde1d858e9a9/20UMGIM95279.rgb.jpg/600x600bb.jpg",
+    "referenceEdition": "What's Going On",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "What's Going On",
+        "durationMs": 232628
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "What's Happening Brother",
+        "durationMs": 163504
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "Flyin' High (In the Friendly Sky)",
+        "durationMs": 229295
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "Save the Children",
+        "durationMs": 242786
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "God Is Love",
+        "durationMs": 101699
+      },
+      {
+        "number": 6,
+        "disc": 1,
+        "name": "Mercy Mercy Me (The Ecology)",
+        "durationMs": 195999
+      },
+      {
+        "number": 7,
+        "disc": 1,
+        "name": "Right On",
+        "durationMs": 451392
+      },
+      {
+        "number": 8,
+        "disc": 1,
+        "name": "Wholy Holy",
+        "durationMs": 187656
+      },
+      {
+        "number": 9,
+        "disc": 1,
+        "name": "Inner City Blues (Make Me Wanna Holler)",
+        "durationMs": 330340
+      }
+    ]
+  },
+  {
+    "slug": "stevie-wonder-songs-in-the-key-of-life",
+    "name": "Songs in the Key of Life",
+    "artist": "Stevie Wonder",
+    "genre": "Motown",
+    "year": 1976,
+    "price": 37000,
+    "discountPercentage": 0,
+    "stock": 5,
+    "description": "Álbum de Stevie Wonder, publicado originalmente en 1976. Género: Motown. Incluye Love's In Need of Love Today, Have a Talk With God, Village Ghetto Land.",
+    "image": "/covers/real/stevie-wonder-songs-in-the-key-of-life.jpg",
+    "source": "https://music.apple.com/us/album/songs-in-the-key-of-life/1440788438?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music118/v4/eb/1f/12/eb1f12ec-474c-63aa-43af-09282f423b9d/00602537004737.rgb.jpg/600x600bb.jpg",
+    "referenceEdition": "Songs in the Key of Life",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Love's In Need of Love Today",
+        "durationMs": 425904
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "Have a Talk With God",
+        "durationMs": 162432
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "Village Ghetto Land",
+        "durationMs": 205109
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "Contusion",
+        "durationMs": 226006
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "Sir Duke",
+        "durationMs": 233606
+      },
+      {
+        "number": 6,
+        "disc": 1,
+        "name": "I Wish",
+        "durationMs": 252319
+      },
+      {
+        "number": 7,
+        "disc": 1,
+        "name": "Knocks Me Off My Feet",
+        "durationMs": 216452
+      },
+      {
+        "number": 8,
+        "disc": 1,
+        "name": "Pastime Paradise",
+        "durationMs": 207720
+      },
+      {
+        "number": 9,
+        "disc": 1,
+        "name": "Summer Soft",
+        "durationMs": 254230
+      },
+      {
+        "number": 10,
+        "disc": 1,
+        "name": "Ordinary Pain",
+        "durationMs": 382937
+      },
+      {
+        "number": 1,
+        "disc": 2,
+        "name": "Isn't She Lovely",
+        "durationMs": 394377
+      },
+      {
+        "number": 2,
+        "disc": 2,
+        "name": "Joy Inside My Tears",
+        "durationMs": 389658
+      },
+      {
+        "number": 3,
+        "disc": 2,
+        "name": "Black Man",
+        "durationMs": 511226
+      },
+      {
+        "number": 4,
+        "disc": 2,
+        "name": "Ngiculela-Es Una Historia-I Am Singing",
+        "durationMs": 228604
+      },
+      {
+        "number": 5,
+        "disc": 2,
+        "name": "If It's Magic",
+        "durationMs": 192201
+      },
+      {
+        "number": 6,
+        "disc": 2,
+        "name": "As",
+        "durationMs": 428463
+      },
+      {
+        "number": 7,
+        "disc": 2,
+        "name": "Another Star",
+        "durationMs": 504709
+      },
+      {
+        "number": 8,
+        "disc": 2,
+        "name": "Saturn",
+        "durationMs": 293808
+      },
+      {
+        "number": 9,
+        "disc": 2,
+        "name": "Ebony Eyes",
+        "durationMs": 250231
+      },
+      {
+        "number": 10,
+        "disc": 2,
+        "name": "All Day Sucker",
+        "durationMs": 305709
+      },
+      {
+        "number": 11,
+        "disc": 2,
+        "name": "Easy Goin' Evening (My Mama's Call)",
+        "durationMs": 245170
+      }
+    ]
+  },
+  {
+    "slug": "lauryn-hill-the-miseducation-of-lauryn-hill",
+    "name": "The Miseducation of Lauryn Hill",
+    "artist": "Lauryn Hill",
+    "genre": "Pop",
+    "year": 1998,
+    "price": 38500,
+    "discountPercentage": 0,
+    "stock": 6,
+    "description": "Álbum de Lauryn Hill, publicado originalmente en 1998. Género: Pop. Incluye Intro, Lost Ones, Ex-Factor.",
+    "image": "/covers/real/lauryn-hill-the-miseducation-of-lauryn-hill.jpg",
+    "source": "https://music.apple.com/us/album/the-miseducation-of-lauryn-hill/1276760743?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/09/6b/55/096b55c4-ee8f-23bd-df8f-0ca0821f3028/886446727189.jpg/600x600bb.jpg",
+    "referenceEdition": "The Miseducation of Lauryn Hill",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Intro",
+        "durationMs": 47293
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "Lost Ones",
+        "durationMs": 333907
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "Ex-Factor",
+        "durationMs": 326533
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "To Zion (feat. Carlos Santana)",
+        "durationMs": 369293
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "Doo Wop (That Thing)",
+        "durationMs": 320267
+      },
+      {
+        "number": 6,
+        "disc": 1,
+        "name": "Superstar",
+        "durationMs": 297107
+      },
+      {
+        "number": 7,
+        "disc": 1,
+        "name": "Final Hour",
+        "durationMs": 256000
+      },
+      {
+        "number": 8,
+        "disc": 1,
+        "name": "When It Hurts so Bad",
+        "durationMs": 342200
+      },
+      {
+        "number": 9,
+        "disc": 1,
+        "name": "I Used to Love Him (feat. Mary J. Blige)",
+        "durationMs": 339867
+      },
+      {
+        "number": 10,
+        "disc": 1,
+        "name": "Forgive Them Father",
+        "durationMs": 315293
+      },
+      {
+        "number": 11,
+        "disc": 1,
+        "name": "Every Ghetto, Every City",
+        "durationMs": 314707
+      },
+      {
+        "number": 12,
+        "disc": 1,
+        "name": "Nothing Even Matters (feat. D'Angelo)",
+        "durationMs": 350533
+      },
+      {
+        "number": 13,
+        "disc": 1,
+        "name": "Everything Is Everything",
+        "durationMs": 293267
+      },
+      {
+        "number": 14,
+        "disc": 1,
+        "name": "The Miseducation of Lauryn Hill",
+        "durationMs": 235467
+      },
+      {
+        "number": 15,
+        "disc": 1,
+        "name": "Can't Take My Eyes Off of You (I Love You Baby)",
+        "durationMs": 221467
+      },
+      {
+        "number": 16,
+        "disc": 1,
+        "name": "Tell Him",
+        "durationMs": 280760
+      }
+    ]
+  },
+  {
+    "slug": "soda-stereo-dynamo",
+    "name": "Dynamo",
+    "artist": "Soda Stereo",
+    "genre": "Rock nacional",
+    "year": 1992,
+    "price": 40000,
+    "discountPercentage": 15,
+    "stock": 7,
+    "description": "Álbum de Soda Stereo, publicado originalmente en 1992. Género: Rock nacional. Incluye Secuencia Inicial, Toma la Ruta, En Remolinos.",
+    "image": "/covers/real/soda-stereo-dynamo.jpg",
+    "source": "https://music.apple.com/us/album/dynamo/321884222?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music/c6/cd/45/mzi.nciirdcf.jpg/600x600bb.jpg",
+    "referenceEdition": "Dynamo",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Secuencia Inicial",
+        "durationMs": 206381
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "Toma la Ruta",
+        "durationMs": 269128
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "En Remolinos",
+        "durationMs": 277127
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "Primavera 0",
+        "durationMs": 221362
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "Camaleón",
+        "durationMs": 281441
+      },
+      {
+        "number": 6,
+        "disc": 1,
+        "name": "Luna Roja",
+        "durationMs": 330548
+      },
+      {
+        "number": 7,
+        "disc": 1,
+        "name": "Sweet Sahumerío",
+        "durationMs": 363281
+      },
+      {
+        "number": 8,
+        "disc": 1,
+        "name": "Ameba",
+        "durationMs": 256614
+      },
+      {
+        "number": 9,
+        "disc": 1,
+        "name": "Nuestra Fe",
+        "durationMs": 396497
+      },
+      {
+        "number": 10,
+        "disc": 1,
+        "name": "Claroscuro",
+        "durationMs": 244475
+      },
+      {
+        "number": 11,
+        "disc": 1,
+        "name": "Fue",
+        "durationMs": 232924
+      },
+      {
+        "number": 12,
+        "disc": 1,
+        "name": "Texturas",
+        "durationMs": 283880
+      }
+    ]
+  },
+  {
+    "slug": "soda-stereo-signos",
+    "name": "Signos",
+    "artist": "Soda Stereo",
+    "genre": "Rock nacional",
+    "year": 1986,
+    "price": 28000,
+    "discountPercentage": 0,
+    "stock": 8,
+    "description": "Álbum de Soda Stereo, publicado originalmente en 1986. Género: Rock nacional. Incluye Sin Sobresaltos, El Rito, Prófugos.",
+    "image": "/covers/real/soda-stereo-signos.jpg",
+    "source": "https://music.apple.com/us/album/signos/321882453?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/05/e3/65/05e365e6-c318-e16d-0a27-1d896ba231f2/mzi.hvktyhmz.jpg/600x600bb.jpg",
+    "referenceEdition": "Signos",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Sin Sobresaltos",
+        "durationMs": 262335
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "El Rito",
+        "durationMs": 366215
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "Prófugos",
+        "durationMs": 317613
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "No Existes",
+        "durationMs": 283572
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "Persiana Americana",
+        "durationMs": 292241
+      },
+      {
+        "number": 6,
+        "disc": 1,
+        "name": "En Camino",
+        "durationMs": 269717
+      },
+      {
+        "number": 7,
+        "disc": 1,
+        "name": "Signos",
+        "durationMs": 315273
+      },
+      {
+        "number": 8,
+        "disc": 1,
+        "name": "Final Caja Negra",
+        "durationMs": 343759
+      }
+    ]
+  },
+  {
+    "slug": "gustavo-cerati-ahi-vamos",
+    "name": "Ahí Vamos",
+    "artist": "Gustavo Cerati",
+    "genre": "Rock nacional",
+    "year": 2006,
+    "price": 29500,
+    "discountPercentage": 0,
+    "stock": 9,
+    "description": "Álbum de Gustavo Cerati, publicado originalmente en 2006. Género: Rock nacional. Incluye Al Fin Sucede, La Excepcion, Uno Entre 1000.",
+    "image": "/covers/real/gustavo-cerati-ahi-vamos.jpg",
+    "source": "https://music.apple.com/us/album/ah%C3%AD-vamos/157363880?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/f3/3d/d5/f33dd5c7-bbb8-c2b3-e5e8-0d2a4dd7f1a7/828768164426.jpg/600x600bb.jpg",
+    "referenceEdition": "Ahí Vamos",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Al Fin Sucede",
+        "durationMs": 209222
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "La Excepcion",
+        "durationMs": 251589
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "Uno Entre 1000",
+        "durationMs": 249298
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "Caravana",
+        "durationMs": 249566
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "Adiós",
+        "durationMs": 233747
+      },
+      {
+        "number": 6,
+        "disc": 1,
+        "name": "Me Quedo Aquí",
+        "durationMs": 217107
+      },
+      {
+        "number": 7,
+        "disc": 1,
+        "name": "Lago en el Cielo",
+        "durationMs": 308947
+      },
+      {
+        "number": 8,
+        "disc": 1,
+        "name": "Dios Nos Libre",
+        "durationMs": 271594
+      },
+      {
+        "number": 9,
+        "disc": 1,
+        "name": "Otra Piel",
+        "durationMs": 280544
+      },
+      {
+        "number": 10,
+        "disc": 1,
+        "name": "Médium",
+        "durationMs": 333107
+      },
+      {
+        "number": 11,
+        "disc": 1,
+        "name": "Bomba de Tiempo",
+        "durationMs": 311388
+      },
+      {
+        "number": 12,
+        "disc": 1,
+        "name": "Crimen",
+        "durationMs": 232027
+      },
+      {
+        "number": 13,
+        "disc": 1,
+        "name": "Jugo de Luna",
+        "durationMs": 246337
+      }
+    ]
+  },
+  {
+    "slug": "gustavo-cerati-fuerza-natural",
+    "name": "Fuerza Natural",
+    "artist": "Gustavo Cerati",
+    "genre": "Rock nacional",
+    "year": 2009,
+    "price": 31000,
+    "discountPercentage": 0,
+    "stock": 10,
+    "description": "Álbum de Gustavo Cerati, publicado originalmente en 2009. Género: Rock nacional. Incluye Fuerza Natural, Deja Vu, Magia.",
+    "image": "/covers/real/gustavo-cerati-fuerza-natural.jpg",
+    "source": "https://music.apple.com/us/album/fuerza-natural/1358493163?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/62/31/0a/62310a20-6650-23d2-bd22-13e23a413335/886447012215.jpg/600x600bb.jpg",
+    "referenceEdition": "Fuerza Natural",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Fuerza Natural",
+        "durationMs": 289947
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "Deja Vu",
+        "durationMs": 204920
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "Magia",
+        "durationMs": 268773
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "Amor Sin Rodeos",
+        "durationMs": 233040
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "Tracción a Sangre",
+        "durationMs": 256813
+      },
+      {
+        "number": 6,
+        "disc": 1,
+        "name": "Desastre",
+        "durationMs": 216413
+      },
+      {
+        "number": 7,
+        "disc": 1,
+        "name": "Rapto",
+        "durationMs": 236667
+      },
+      {
+        "number": 8,
+        "disc": 1,
+        "name": "Cactus",
+        "durationMs": 234760
+      },
+      {
+        "number": 9,
+        "disc": 1,
+        "name": "Naturaleza Muerta",
+        "durationMs": 233667
+      },
+      {
+        "number": 10,
+        "disc": 1,
+        "name": "Dominó",
+        "durationMs": 198053
+      },
+      {
+        "number": 11,
+        "disc": 1,
+        "name": "Sal",
+        "durationMs": 257653
+      },
+      {
+        "number": 12,
+        "disc": 1,
+        "name": "Convoy",
+        "durationMs": 194893
+      },
+      {
+        "number": 13,
+        "disc": 1,
+        "name": "He Visto a Lucy",
+        "durationMs": 331453
+      },
+      {
+        "number": 14,
+        "disc": 1,
+        "name": "# (Numeral)",
+        "durationMs": 220960
+      }
+    ]
+  },
+  {
+    "slug": "charly-garcia-piano-bar",
+    "name": "Piano Bar",
+    "artist": "Charly Garcia",
+    "genre": "Rock nacional",
+    "year": 1984,
+    "price": 32500,
+    "discountPercentage": 15,
+    "stock": 3,
+    "description": "Álbum de Charly Garcia, publicado originalmente en 1984. Género: Rock nacional.",
+    "image": "/covers/real/charly-garcia-piano-bar.jpg",
+    "source": "https://music.apple.com/us/album/piano-bar/1421884385?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/17/47/db/1747dbb2-b278-3a40-893f-64e38b48b1cc/00602567965305.rgb.jpg/600x600bb.jpg",
+    "referenceEdition": "Piano Bar",
+    "tracks": []
+  },
+  {
+    "slug": "pescado-rabioso-artaud",
+    "name": "Artaud",
+    "artist": "Pescado Rabioso",
+    "genre": "Rock nacional",
+    "year": 1973,
+    "price": 34000,
+    "discountPercentage": 0,
+    "stock": 4,
+    "description": "Álbum de Pescado Rabioso, publicado originalmente en 1973. Género: Rock nacional. Incluye Todas las Hojas Son del Viento, Cementerio Club, Por.",
+    "image": "/covers/real/pescado-rabioso-artaud.jpg",
+    "source": "https://music.apple.com/us/album/artaud/321645242?uo=4",
+    "artworkSource": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/7e/c9/8f/7ec98fd0-3710-6ca4-e179-3e2817855bd9/mzi.wqfuqhhn.jpg/600x600bb.jpg",
+    "referenceEdition": "Artaud",
+    "tracks": [
+      {
+        "number": 1,
+        "disc": 1,
+        "name": "Todas las Hojas Son del Viento",
+        "durationMs": 130035
+      },
+      {
+        "number": 2,
+        "disc": 1,
+        "name": "Cementerio Club",
+        "durationMs": 295738
+      },
+      {
+        "number": 3,
+        "disc": 1,
+        "name": "Por",
+        "durationMs": 99285
+      },
+      {
+        "number": 4,
+        "disc": 1,
+        "name": "Supercheria",
+        "durationMs": 255904
+      },
+      {
+        "number": 5,
+        "disc": 1,
+        "name": "La Sed Verdadera",
+        "durationMs": 209945
+      },
+      {
+        "number": 6,
+        "disc": 1,
+        "name": "Cantata de Puentes Amarillos",
+        "durationMs": 547929
+      },
+      {
+        "number": 7,
+        "disc": 1,
+        "name": "Bajan",
+        "durationMs": 204412
+      },
+      {
+        "number": 8,
+        "disc": 1,
+        "name": "A Starosta, el Idiota",
+        "durationMs": 193666
+      },
+      {
+        "number": 9,
+        "disc": 1,
+        "name": "Las Habladurías del Mundo",
+        "durationMs": 243188
+      }
+    ]
   }
 ]

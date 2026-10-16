@@ -40,6 +40,11 @@ public class Vinyl {
     private Boolean enabled = true;
     @Column
     private String image;
+    @Column(length = 2048)
+    private String albumUrl;
+
+    public String getAlbumUrl() { return albumUrl; }
+    public void setAlbumUrl(String albumUrl) { this.albumUrl = albumUrl; }
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;

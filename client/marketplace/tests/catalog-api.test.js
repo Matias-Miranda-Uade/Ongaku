@@ -61,9 +61,10 @@ test('el detalle conserva el error de autenticación del backend', async () => {
 })
 
 test('el detalle carga el vinilo solicitado con sus relaciones', async () => {
-  routes['/vinyls/7'] = { id: 7, artistId: 2, genreId: 3, categoryId: 4 }
+  routes['/vinyls/7'] = { id: 7, artistId: 2, genreId: 3, categoryId: 4, albumUrl: 'https://music.apple.com/us/album/animals/1065974284' }
   const vinyl = await getVinylById(7)
   assert.equal(vinyl.id, 7)
+  assert.equal(vinyl.albumUrl, routes['/vinyls/7'].albumUrl)
   assert.equal(vinyl.artistName, 'Artista real')
 })
 

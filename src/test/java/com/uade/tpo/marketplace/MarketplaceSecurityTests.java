@@ -163,6 +163,21 @@ class MarketplaceSecurityTests {
     }
 
     @Test
+    void albumLinkSurvivesPersistenceAndIsIncludedInCatalogAndDetail() throws Exception {
+        String albumUrl = "https://music.apple.com/us/album/animals/1065974284";
+        vinyl.setAlbumUrl(albumUrl);
+        vinyls.saveAndFlush(vinyl);
+        em.clear();
+        assertThat(vinyls.findById(vinyl.getId()).orElseThrow().getAlbumUrl()).isEqualTo(albumUrl);
+        mvc.perform(get("/vinyls"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[?(@.id == " + vinyl.getId() + ")].albumUrl").value(org.hamcrest.Matchers.hasItem(albumUrl)));
+        mvc.perform(get("/vinyls/" + vinyl.getId()).header("Authorization", ownerToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.albumUrl").value(albumUrl));
+    }
+
+    @Test
     void administrationAndWritesRequireCorrectRole() throws Exception {
         for (String path : new String[]{"/dashboard", "/admin/vinyls", "/admin/vinyls/" + vinyl.getId()}) {
             mvc.perform(get(path)).andExpect(status().isUnauthorized());
