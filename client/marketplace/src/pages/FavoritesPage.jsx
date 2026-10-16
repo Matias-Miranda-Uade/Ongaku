@@ -1,12 +1,25 @@
 import { useState } from "react"
 import useFavorites from "../hooks/useFavorites"
 import useCart from "../hooks/useCart"
+import { useAuth } from "../context/AuthContext"
 
 const FavoritesPage = ({ onNavigate }) => {
 
     const { favorites, removeFavorite } = useFavorites()
     const { items, addItem } = useCart()
+    const { isAdmin } = useAuth()
     const [message, setMessage] = useState('')
+
+    if (isAdmin) {
+        return (
+            <section className="empty-state-card">
+                <p className="eyebrow">CUENTA ADMINISTRADORA</p>
+                <h2>Los favoritos son para clientes</h2>
+                <p>Las cuentas de administración no pueden guardar favoritos ni agregar productos a una compra.</p>
+                <button className="secondary-button" type="button" onClick={() => onNavigate?.('admin')}>Volver al panel</button>
+            </section>
+        )
+    }
 
     const handleAdd = (product) => {
         const inCart = items.find((item) => item.id === product.id)
@@ -36,8 +49,9 @@ const FavoritesPage = ({ onNavigate }) => {
                 {
                     favorites.map((product) => (
                         <li className="favorite-card" key={product.id}>
-                            <div className="favorite-card-image">
+                            <div className={`favorite-card-image ${product.stock <= 0 ? 'is-out-of-stock' : ''}`}>
                                 <img src={product.image} alt={`Portada de ${product.name}`} />
+                                {product.stock <= 0 && <span className="stock-out-overlay">SIN STOCK</span>}
                                 <button className="favorite-remove" aria-label={`Quitar ${product.name} de favoritos`} onClick={() => removeFavorite(product.id)}>♥</button>
                             </div>
                             <div className="favorite-card-copy">

@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import useCart from '../../hooks/useCart'
+import { useAuth } from '../../context/AuthContext'
 
 const AddToCartButton = ({ vinyl, compact = false }) => {
   const { addItem } = useCart()
+  const { isAdmin } = useAuth()
   const [added, setAdded] = useState(false)
   const [pending, setPending] = useState(false)
   const timer = useRef(null)
@@ -10,6 +12,8 @@ const AddToCartButton = ({ vinyl, compact = false }) => {
   const disabled = outOfStock || pending
 
   useEffect(() => () => window.clearTimeout(timer.current), [])
+
+  if (isAdmin) return null
 
   const handleClick = async (event) => {
     event.preventDefault()

@@ -181,6 +181,7 @@ const AppContent = ({
   const { refreshCart } = useCart()
 
   const handleCheckout = async ({ addressId } = {}) => {
+    if (isAdmin) return { error: 'Las cuentas de administración no pueden crear compras.' }
     if (!user) {
       openPage('login')
       return false
@@ -192,7 +193,7 @@ const AppContent = ({
       handleOrdersChange([order, ...orders])
       await refreshCart()
       reloadOrders()
-      openPage('orders')
+      navigate(`/app/orders/${order.id}`)
       return true
     } catch (error) {
       return { error: error.message }
@@ -201,7 +202,14 @@ const AppContent = ({
 
   return (
     <div className="app-shell">
-      <Header page={page} onNavigate={openPage} user={user} isAdmin={isAdmin} onLogout={handleLogout} />
+      <Header
+        page={page}
+        onNavigate={openPage}
+        onSearch={() => navigate(pagePaths.catalog, { state: { focusCatalogSearch: true } })}
+        user={user}
+        isAdmin={isAdmin}
+        onLogout={handleLogout}
+      />
       {storageError && <p className="storage-notice" role="alert">{storageError}</p>}
       <PageContainer>
         {page === 'admin' && <AppRoutes />}

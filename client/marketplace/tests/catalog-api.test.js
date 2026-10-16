@@ -181,3 +181,9 @@ test('los favoritos conservan el id de la relación al recuperar y eliminar', as
   await deleteFavorite(99)
   assert.equal(calls.at(-1).url, '/favorites/99')
 })
+
+test('crear un favorito solo necesita el id del vinilo autenticado', async () => {
+  routes['/favorites'] = { id: 99, vinylId: 7 }
+  await createFavorite(7)
+  assert.deepEqual(JSON.parse(calls[0].body), { vinylId: 7 })
+})

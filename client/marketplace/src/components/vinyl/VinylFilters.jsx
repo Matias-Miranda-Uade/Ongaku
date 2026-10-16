@@ -1,8 +1,9 @@
-const VinylFilters = ({ filters, onChange, onClear }) => (
+const VinylFilters = ({ filters, onChange, onClear, searchInputRef }) => (
   <section className="filters" aria-label="Filtros de catálogo">
     <label className="search-field">
       <span>BUSCAR</span>
       <input
+        ref={searchInputRef}
         value={filters.search}
         onChange={(event) => onChange('search', event.target.value)}
         placeholder="Título o artista"

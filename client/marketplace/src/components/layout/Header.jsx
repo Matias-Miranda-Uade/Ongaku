@@ -36,7 +36,7 @@ const ProfileIcon = () => (
   </svg>
 )
 
-const Header = ({ page, onNavigate, user, isAdmin = false, onLogout }) => {
+const Header = ({ page, onNavigate, onSearch, user, isAdmin = false, onLogout }) => {
   const { totalUnits } = useCart()
   const { favorites } = useFavorites()
   const activePage = page === 'vinyl-detail' ? 'catalog' : page
@@ -62,26 +62,30 @@ const Header = ({ page, onNavigate, user, isAdmin = false, onLogout }) => {
       </nav>
 
       <div className="header-actions">
-        <Button className="header-action" aria-label="Buscar discos" onClick={() => onNavigate('catalog')}>
+        <Button className="header-action" aria-label="Buscar discos" onClick={onSearch}>
           <SearchIcon />
           <span>Buscar</span>
         </Button>
-        <Button
-          className="header-action header-action-icon"
-          aria-label={`Favoritos${favorites.length ? `, ${favorites.length} guardados` : ''}`}
-          onClick={() => onNavigate('favorites')}
-        >
-          <HeartIcon />
-          {favorites.length > 0 && <span className="header-count">{favorites.length}</span>}
-        </Button>
-        <Button
-          className="header-action header-action-icon"
-          aria-label={`Bolsa${totalUnits ? `, ${totalUnits} productos` : ''}`}
-          onClick={() => onNavigate('cart')}
-        >
-          <BagIcon />
-          {totalUnits > 0 && <span className="header-count">{totalUnits}</span>}
-        </Button>
+        {!isAdmin && (
+          <>
+            <Button
+              className="header-action header-action-icon"
+              aria-label={`Favoritos${favorites.length ? `, ${favorites.length} guardados` : ''}`}
+              onClick={() => onNavigate('favorites')}
+            >
+              <HeartIcon />
+              {favorites.length > 0 && <span className="header-count">{favorites.length}</span>}
+            </Button>
+            <Button
+              className="header-action header-action-icon"
+              aria-label={`Bolsa${totalUnits ? `, ${totalUnits} productos` : ''}`}
+              onClick={() => onNavigate('cart')}
+            >
+              <BagIcon />
+              {totalUnits > 0 && <span className="header-count">{totalUnits}</span>}
+            </Button>
+          </>
+        )}
         <Button
           className="header-action account-action"
           aria-label={user ? 'Mi gabinete' : 'Mi cuenta'}

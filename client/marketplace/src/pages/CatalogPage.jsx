@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useLocation, useSearchParams } from 'react-router-dom'
 import { collections, matchesCollection } from '../data/collections'
 import VinylFilters from '../components/vinyl/VinylFilters'
 import VinylGrid from '../components/vinyl/VinylGrid'
@@ -8,6 +8,7 @@ import { getVinyls } from '../services/vinylService'
 const emptyFilters = { search: '', stock: 'all', sort: 'featured' }
 
 const CatalogPage = ({ onOpenVinyl }) => {
+  const location = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
   const collection = collections.find((item) => item.id === searchParams.get('collection'))
   const [vinyls, setVinyls] = useState([])
@@ -16,6 +17,11 @@ const CatalogPage = ({ onOpenVinyl }) => {
   const [reload, setReload] = useState(0)
   const [motionPaused, setMotionPaused] = useState(false)
   const [filters, setFilters] = useState(emptyFilters)
+  const searchInputRef = useRef(null)
+
+  useEffect(() => {
+    if (location.state?.focusCatalogSearch) searchInputRef.current?.focus()
+  }, [location.key, location.state])
 
   useEffect(() => {
     let active = true
@@ -53,6 +59,7 @@ const CatalogPage = ({ onOpenVinyl }) => {
       </section>
 
       <VinylFilters
+        searchInputRef={searchInputRef}
         filters={filters}
         onChange={(name, value) => setFilters((current) => ({ ...current, [name]: value }))}
         onClear={() => { setFilters(emptyFilters); setSearchParams({}) }}

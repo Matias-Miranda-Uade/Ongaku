@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import OrderFilters from '../components/order/OrderFilters'
 import OrderCard from '../components/order/OrderCard'
 import OrderDetailPage from './OrderDetailPage'
+import { useAuth } from '../context/AuthContext'
 import {
   cancelOrder as cancelOrderRequest,
   createReview,
@@ -18,6 +19,7 @@ const OrdersPage = ({
   onSelectOrder,
   onOrdersChange,
 }) => {
+  const { isAdmin } = useAuth()
   const [status, setStatus] = useState('TODAS')
   const [error, setError] = useState('')
   const [myReviews, setMyReviews] = useState([])
@@ -104,7 +106,7 @@ const OrdersPage = ({
   }
 
   const payOrder = async (order) => {
-    if (paying || cancelling || order.status !== 'PENDIENTE') return
+    if (isAdmin || paying || cancelling || order.status !== 'PENDIENTE') return
     setError('')
     setNotice('')
     setPaying(true)
@@ -118,7 +120,7 @@ const OrdersPage = ({
       }
       onOrdersChange?.(accountOrders.map((item) => item.id === order.id ? updatedOrder : item))
       setDetailOrder(updatedOrder)
-      setNotice('Pago de prueba registrado. Tu orden está pagada y ya podés reseñar sus vinilos.')
+      setNotice('Pago de prueba registrado. Vas a poder reseñar los vinilos cuando la orden sea entregada.')
     } catch (requestError) {
       setError(`No se pudo pagar la orden: ${requestError.message}`)
     } finally { setPaying(false) }
@@ -172,6 +174,7 @@ const OrdersPage = ({
                 onCancel={cancelOrder}
                 onRate={rateItem}
                 onPay={payOrder}
+                isAdmin={isAdmin}
                 paying={paying}
                 cancelling={cancelling}
                 submittingReview={submittingReview}

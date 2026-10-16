@@ -26,10 +26,7 @@ import com.uade.tpo.marketplace.repository.VinylRepository;
 @Transactional
 public class ReviewServiceImpl implements ReviewService {
     private static final int MAX_COMMENT_LENGTH = 1000;
-    /**
-     * Una compra cuenta como tal desde que esta pagada.
-     */
-    private static final Set<Long> PURCHASED_STATUS_IDS = Set.of(OrderStatusType.PAGADA.getId(), OrderStatusType.ENVIADA.getId(), OrderStatusType.ENTREGADA.getId());
+    private static final Set<Long> REVIEWABLE_STATUS_IDS = Set.of(OrderStatusType.ENTREGADA.getId());
     private final ReviewRepository reviewRepository;
     private final VinylRepository vinylRepository;
     private final OrderRepository orderRepository;
@@ -80,7 +77,7 @@ public class ReviewServiceImpl implements ReviewService {
         if (reviewRepository.findByUserIdAndVinylId(user.getId(), vinyl.getId()).isPresent()) {
             throw new DuplicateReviewException();
         }
-        if (!orderRepository.hasPurchasedVinyl(user.getId(), vinyl.getId(), PURCHASED_STATUS_IDS)) {
+        if (!orderRepository.hasPurchasedVinyl(user.getId(), vinyl.getId(), REVIEWABLE_STATUS_IDS)) {
             throw new ReviewNotAllowedException();
         }
         Review review = new Review();
@@ -97,7 +94,7 @@ public class ReviewServiceImpl implements ReviewService {
         User user = ownershipGuard.requireCustomer(requesterEmail);
         Vinyl vinyl = requireVinyl(vinylId);
         Review existing = reviewRepository.findByUserIdAndVinylId(user.getId(), vinyl.getId()).orElse(null);
-        boolean purchased = orderRepository.hasPurchasedVinyl(user.getId(), vinyl.getId(), PURCHASED_STATUS_IDS);
+        boolean purchased = orderRepository.hasPurchasedVinyl(user.getId(), vinyl.getId(), REVIEWABLE_STATUS_IDS);
         return new ReviewEligibilityResponse(purchased, purchased && existing == null, ReviewMapper.toResponse(existing));
     }
 

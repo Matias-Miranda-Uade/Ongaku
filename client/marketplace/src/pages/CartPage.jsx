@@ -14,13 +14,14 @@ const CartPage = ({ onCheckout, onNavigate }) => {
     const [suggestionError, setSuggestionError] = useState('')
     const [addressId, setAddressId] = useState(null)
     const [pending, setPending] = useState(false)
-    const { user } = useAuth()
+    const { user, isAdmin } = useAuth()
     useEffect(() => {
+        if (isAdmin) return undefined
         let active = true
         getVinyls().then((data) => { if (active) setProducts(data.map((product) => ({ ...product, artist: product.artistName, price: product.finalPrice ?? product.price }))) })
             .catch((error) => { if (active) setSuggestionError(error.message) })
         return () => { active = false }
-    }, [])
+    }, [isAdmin])
     const { items, updateQuantity, removeItem, clearCart, addItem, isInCart, totalProducts, totalUnits, total } = useCart()
 
     const handleCheckout = async () => {
@@ -35,6 +36,17 @@ const CartPage = ({ onCheckout, onNavigate }) => {
     }
 
     const suggested = products.filter((p) => !isInCart(p.id)).slice(0, 3)
+
+    if (isAdmin) {
+        return (
+            <section className="empty-state-card cart-admin-notice">
+                <p className="eyebrow">CUENTA ADMINISTRADORA</p>
+                <h2>Las compras son solo para clientes</h2>
+                <p>Podés revisar el catálogo y administrar el inventario, pero las cuentas de administración no pueden agregar productos ni crear órdenes.</p>
+                <button className="secondary-button" type="button" onClick={() => onNavigate?.('admin')}>Volver al panel</button>
+            </section>
+        )
+    }
 
     return (
         <section className="cart-page">
