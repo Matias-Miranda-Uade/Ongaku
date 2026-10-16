@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { after, beforeEach, test } from 'node:test'
 import {
-  ApiError, createFavorite, createOrder, createPayment, createReview, deleteAddress, deleteFavorite, deleteReview, getAddresses, getAudioPreview, getFavorites, getOrder, getOrders, saveAddress,
+  ApiError, createFavorite, createOrder, createPayment, createReview, deleteAddress, deleteCard, deleteFavorite, deleteReview, getAddresses, getAudioPreview, getFavorites, getOrder, getOrders, getSavedCards, saveAddress, saveCard,
   getReviewEligibility, getReviews, getReviewsByVinyl, getVinylById, getVinyls, request, updateReview,
 } from '../src/services/api.js'
 
@@ -186,4 +186,22 @@ test('crear un favorito solo necesita el id del vinilo autenticado', async () =>
   routes['/favorites'] = { id: 99, vinylId: 7 }
   await createFavorite(7)
   assert.deepEqual(JSON.parse(calls[0].body), { vinylId: 7 })
+})
+
+test('las tarjetas se guardan en el backend y se envía solo su id al comprar y pagar', async () => {
+  const card = { holder: 'Test User', brand: 'VISA', lastFour: '4242', expiryMonth: 12, expiryYear: 2030 }
+  routes['/users/me/cards'] = { id: 6, ...card }
+  assert.equal((await saveCard(card)).id, 6)
+  assert.deepEqual(JSON.parse(calls.at(-1).body), card)
+  routes['/users/me/cards'] = [{ id: 6, ...card }]
+  assert.equal((await getSavedCards())[0].id, 6)
+  routes['/orders'] = { id: 9, items: [], savedCardId: 6 }
+  await createOrder(5, 6)
+  assert.deepEqual(JSON.parse(calls.at(-1).body), { addressId: 5, savedCardId: 6 })
+  routes['/payments'] = { id: 10, cardBrand: 'VISA', cardLastFour: '4242' }
+  await createPayment({ orderId: 9, amount: 100, savedCardId: 6 })
+  assert.deepEqual(JSON.parse(calls.at(-1).body), { orderId: 9, amount: 100, method: 'SIMULADO', savedCardId: 6 })
+  routes['/users/me/cards/6'] = new Response(null, { status: 204 })
+  await deleteCard(6)
+  assert.equal(calls.at(-1).method, 'DELETE')
 })

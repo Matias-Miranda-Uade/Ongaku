@@ -11,6 +11,8 @@ public final class PaymentMapper {
         if (payment == null) return null;
         PaymentResponse response = new PaymentResponse();
         response.setId(payment.getId());
+        response.setCardBrand(payment.getCardBrand());
+        response.setCardLastFour(payment.getCardLastFour());
         response.setOrderId(payment.getOrder() != null ? payment.getOrder().getId() : null);
         response.setAmount(payment.getAmount());
         response.setMethod(payment.getMethod());

@@ -15,12 +15,12 @@ import {
   toVinylPayload,
   validateVinyl,
 } from './vinylFormModel'
-import useCatalogLookups from '../../../hooks/useCatalogLookups'
 import {
   createAudioPreview,
   createVinyl,
   getAdminVinyls,
   getAudioPreviews,
+  getCatalogLookups,
   setVinylEnabled,
   updateVinyl,
 } from '../../../services/adminService'
@@ -35,7 +35,16 @@ const FOCUS_TARGETS = {
 const VinylForm = ({ mode = 'create', initialData = null, onSuccess, onCancel }) => {
   const isEdit = mode === 'edit'
   const initialValues = useMemo(() => toFormValues(initialData), [initialData])
-  const { artists, categories, genres, addGenre } = useCatalogLookups()
+  const [lookups, setLookups] = useState({ artists: [], genres: [], categories: [] })
+  const { artists, categories, genres } = lookups
+  useEffect(() => {
+    let active = true
+    getCatalogLookups().then((data) => { if (active) setLookups(data) })
+    return () => { active = false }
+  }, [])
+  const addGenre = (genre) => {
+    setLookups((current) => ({ ...current, genres: [...current.genres, genre] }))
+  }
 
   const [values, setValues] = useState(initialValues)
   const [errors, setErrors] = useState({})

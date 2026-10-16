@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from 'react'
-import useCart from '../../hooks/useCart'
-import { useAuth } from '../../context/AuthContext'
+import { useContext, useEffect, useRef, useState } from 'react'
+import { CartContext } from '../../context/CartContext'
+import { AuthContext } from '../../context/AuthContext'
 
 const AddToCartButton = ({ vinyl, compact = false }) => {
-  const { addItem } = useCart()
-  const { isAdmin } = useAuth()
+  const { addItem } = useContext(CartContext)
+  const { isAdmin } = useContext(AuthContext)
   const [added, setAdded] = useState(false)
   const [pending, setPending] = useState(false)
   const timer = useRef(null)

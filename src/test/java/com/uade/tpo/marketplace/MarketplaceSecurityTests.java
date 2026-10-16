@@ -223,6 +223,62 @@ class MarketplaceSecurityTests {
     }
 
     @Test
+    void savedCardsArePrivateAndCanBeUsedAtCheckoutAndPayment() throws Exception {
+        String endpoint = "/users/me/cards";
+        int futureYear = java.time.YearMonth.now().getYear() + 1;
+        String body = "{\"holder\":\"Test User\",\"brand\":\"VISA\",\"lastFour\":\"4242\",\"expiryMonth\":12,\"expiryYear\":" + futureYear + "}";
+        mvc.perform(get(endpoint)).andExpect(status().isUnauthorized());
+        mvc.perform(get(endpoint).header("Authorization", adminToken)).andExpect(status().isForbidden());
+        long cardId = dataId(mvc.perform(post(endpoint).header("Authorization", ownerToken)
+                .contentType(MediaType.APPLICATION_JSON).content(body)).andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.lastFour").value("4242")).andReturn());
+        mvc.perform(get(endpoint).header("Authorization", ownerToken)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].lastFour").value("4242"))
+                .andExpect(jsonPath("$.data[0].number").doesNotExist())
+                .andExpect(jsonPath("$.data[0].securityCode").doesNotExist());
+        mvc.perform(get(endpoint).header("Authorization", otherToken)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.length()").value(0));
+        mvc.perform(post(endpoint).header("Authorization", ownerToken).contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isConflict());
+        for (String invalid : new String[]{"{}", body.replace("4242", "4242424242424242"), body.replace("VISA", "INVALID"), body.replace("Test User", "123"), body.replace("\"expiryMonth\":12", "\"expiryMonth\":13"), body.replace(String.valueOf(futureYear), "2000")}) {
+            mvc.perform(post(endpoint).header("Authorization", ownerToken).contentType(MediaType.APPLICATION_JSON).content(invalid))
+                    .andExpect(status().isBadRequest());
+        }
+        mvc.perform(patch(endpoint + "/" + cardId).header("Authorization", otherToken).contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isForbidden());
+        mvc.perform(delete(endpoint + "/" + cardId).header("Authorization", otherToken)).andExpect(status().isForbidden());
+        mvc.perform(patch(endpoint + "/" + cardId).header("Authorization", ownerToken).contentType(MediaType.APPLICATION_JSON)
+                .content(body.replace("Test User", "Updated User"))).andExpect(status().isOk());
+        cart(other, 1);
+        mvc.perform(post("/orders").header("Authorization", otherToken).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"savedCardId\":" + cardId + "}")).andExpect(status().isForbidden());
+        long otherOrder = orderService.createOrder(other.getEmail()).getId();
+        mvc.perform(post("/payments").header("Authorization", otherToken).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"orderId\":" + otherOrder + ",\"amount\":100,\"method\":\"SIMULADO\",\"savedCardId\":" + cardId + "}"))
+                .andExpect(status().isForbidden());
+        cart(owner, 1);
+        long orderId = dataId(mvc.perform(post("/orders").header("Authorization", ownerToken).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"savedCardId\":" + cardId + "}"))
+                .andExpect(status().isCreated()).andExpect(jsonPath("$.data.savedCardId").value(cardId)).andReturn());
+        jdbc.update("update saved_card set expiry_year=2000 where id=?",cardId);
+        em.flush(); em.clear();
+        mvc.perform(get(endpoint).header("Authorization", ownerToken)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].expired").value(true));
+        mvc.perform(post("/payments").header("Authorization", ownerToken).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"orderId\":" + orderId + ",\"amount\":100,\"method\":\"SIMULADO\",\"savedCardId\":" + cardId + "}"))
+                .andExpect(status().isBadRequest());
+        mvc.perform(patch(endpoint + "/" + cardId).header("Authorization", ownerToken).contentType(MediaType.APPLICATION_JSON)
+                .content(body)).andExpect(status().isOk());
+        long paymentId = dataId(mvc.perform(post("/payments").header("Authorization", ownerToken).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"orderId\":" + orderId + ",\"amount\":100,\"method\":\"SIMULADO\",\"savedCardId\":" + cardId + "}"))
+                .andExpect(status().isCreated()).andExpect(jsonPath("$.data.cardLastFour").value("4242"))
+                .andExpect(jsonPath("$.data.cardBrand").value("VISA")).andReturn());
+        mvc.perform(delete(endpoint + "/" + cardId).header("Authorization", ownerToken)).andExpect(status().isNoContent());
+        mvc.perform(get("/payments/" + paymentId).header("Authorization", ownerToken)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.cardLastFour").value("4242"));
+    }
+
+    @Test
     void registrationCreatesAnEmptyCartForARegularUser() throws Exception {
         String email = UUID.randomUUID() + "@test.local";
         String body = "{\"email\":\"" + email + "\",\"password\":\"test-password\",\"firstName\":\"New\","

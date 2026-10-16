@@ -67,9 +67,9 @@ const CatalogPage = ({ onOpenVinyl }) => {
       {collection && <p className="collection-notice">Colección: <strong>{collection.name}</strong> <button className="clear-button" type="button" onClick={() => setSearchParams({})}>Ver todo el catálogo</button></p>}
 
       <div className="catalog-count">{loading ? 'CARGANDO…' : `${filteredVinyls.length} VINILOS`}</div>
-      <button className="clear-button disc-motion-control" type="button" aria-pressed={motionPaused} onClick={() => setMotionPaused((value) => !value)}>
+      {filteredVinyls.some((vinyl) => vinyl.image?.startsWith('/covers/') && vinyl.image.endsWith('.svg')) && <button className="clear-button disc-motion-control" type="button" aria-pressed={motionPaused} onClick={() => setMotionPaused((value) => !value)}>
         {motionPaused ? 'Reanudar giro de discos' : 'Pausar giro de discos'}
-      </button>
+      </button>}
       {error && <div role="alert"><p>{error}</p><button type="button" onClick={() => setReload((value) => value + 1)}>Reintentar</button></div>}
       {!loading && !error && <VinylGrid vinyls={filteredVinyls} onOpenVinyl={onOpenVinyl} />}
     </div>

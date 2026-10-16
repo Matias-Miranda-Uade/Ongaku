@@ -11,6 +11,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 public class Payment {
+    private String cardBrand;
+    @Column(length=4) private String cardLastFour;
+    public String getCardBrand() { return cardBrand; }
+    public void setCardBrand(String value) { cardBrand=value; }
+    public String getCardLastFour() { return cardLastFour; }
+    public void setCardLastFour(String value) { cardLastFour=value; }
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

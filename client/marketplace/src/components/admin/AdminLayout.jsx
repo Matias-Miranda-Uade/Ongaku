@@ -1,5 +1,6 @@
+import { useContext } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
-import { useAuth } from '../../context/AuthContext'
+import { AuthContext } from '../../context/AuthContext'
 
 const sections = [
   { to: '/app/admin/dashboard', label: 'Dashboard', kana: '概要' },
@@ -9,7 +10,7 @@ const sections = [
 ]
 
 const AdminLayout = () => {
-  const { user } = useAuth()
+  const { user } = useContext(AuthContext)
 
   return (
     <div className="admin-shell">

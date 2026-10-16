@@ -52,7 +52,7 @@ const OrderDetailPage = ({ order, onBack, onCancel, onRate, onPay, isAdmin = fal
           {order.status === 'PENDIENTE' && !isAdmin && (
             <div className="order-payment-actions">
               <h3>Completar pago de prueba</h3>
-              <DemoPaymentForm order={order} onPay={onPay} paying={paying} disabled={cancelling} />
+              <DemoPaymentForm key={order.id} order={order} onPay={onPay} paying={paying} disabled={cancelling} />
             </div>
           )}
         </section>

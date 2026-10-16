@@ -175,11 +175,15 @@ export const getPayments = async () => {
   return Array.isArray(data) ? data : []
 }
 
-export const createPayment = ({ orderId, amount, method = 'SIMULADO' }) => request(
-  '/payments', jsonRequest('POST', { orderId, amount, method }),
+export const createPayment = ({ orderId, amount, method = 'SIMULADO', savedCardId }) => request(
+  '/payments', jsonRequest('POST', { orderId, amount, method, ...(savedCardId == null ? {} : { savedCardId }) }),
 )
 
-export const createOrder = async (addressId) => normalizeOrder(await request('/orders', jsonRequest('POST', addressId == null ? undefined : { addressId })))
+export const createOrder = async (addressId, savedCardId) => normalizeOrder(await request('/orders', jsonRequest('POST', addressId == null ? undefined : { addressId, ...(savedCardId == null ? {} : { savedCardId }) })))
+
+export const getSavedCards = () => request('/users/me/cards')
+export const saveCard = (card, id) => request(id == null ? '/users/me/cards' : `/users/me/cards/${id}`, jsonRequest(id == null ? 'POST' : 'PATCH', card))
+export const deleteCard = (id) => request(`/users/me/cards/${id}`, jsonRequest('DELETE'))
 
 export const getAddresses = () => request('/users/me/addresses')
 export const saveAddress = (address, id) => request(id == null ? '/users/me/addresses' : `/users/me/addresses/${id}`, jsonRequest(id == null ? 'POST' : 'PATCH', address))

@@ -20,6 +20,9 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "orders")
 public class Order {
+    private Long savedCardId;
+    public Long getSavedCardId() { return savedCardId; }
+    public void setSavedCardId(Long value) { savedCardId=value; }
     @jakarta.persistence.Embedded
     private ShippingAddress shippingAddress;
     public ShippingAddress getShippingAddress() { return shippingAddress; }

@@ -33,6 +33,10 @@ Las direcciones se gestionan en Perfil → Direcciones, mediante GET/POST/PATCH/
 
 Las cuentas registradas guardan sus favoritos en `/favorites`. El carrito y los favoritos de visitantes sin sesión son temporales en memoria.
 
+Perfil → Tarjetas permite guardar, editar y eliminar tarjetas de prueba mediante `/users/me/cards`. Se persisten solo titular, marca, últimos cuatro dígitos y vencimiento; no hay campos de base de datos para el número completo ni el código de seguridad. Las tarjetas son privadas de cada comprador y el servidor rechaza tarjetas vencidas o ajenas.
+
+En el carrito se puede elegir una tarjeta guardada y su identificador viaja en `POST /orders` como `savedCardId`. El detalle preselecciona esa tarjeta y `POST /payments` recibe únicamente su identificador. El recibo conserva marca y últimos cuatro dígitos aunque luego se elimine la tarjeta del perfil. Sigue siendo un pago simulado, sin cargos ni conexión con una entidad financiera.
+
 Las tarjetas de curaduría de inicio llevan a `/app/catalog?collection=:id`. Las colecciones Rock y alternativo, Jazz, Electrónica y Rock nacional filtran los géneros reales del catálogo y permiten volver a ver todos los vinilos.
 
 Catálogo, detalle de vinilos, reseñas y audio se cargan desde el backend, sin reemplazarlos por datos de prueba cuando hay un error. El catálogo combina `/vinyls` con `/artists`, `/genres` y `/categories` para mostrar sus nombres. El detalle requiere iniciar sesión, según los permisos de la API.

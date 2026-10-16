@@ -1,5 +1,6 @@
+import { useContext } from 'react'
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
+import { AuthContext } from '../context/AuthContext'
 
 export const RouteLoader = ({ label = 'Verificando tu sesión…' }) => (
   <div className="route-loader" role="status" aria-live="polite">
@@ -9,7 +10,7 @@ export const RouteLoader = ({ label = 'Verificando tu sesión…' }) => (
 )
 
 const ProtectedRoute = ({ children, redirectTo = '/app/login' }) => {
-  const { isAuthenticated, isRestoringSession } = useAuth()
+  const { isAuthenticated, isRestoringSession } = useContext(AuthContext)
   const location = useLocation()
 
   if (isRestoringSession) return <RouteLoader />

@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react"
-import useCart from "../hooks/useCart"
+import { useContext, useEffect, useState } from 'react'
+import { CartContext } from '../context/CartContext'
 import { getVinyls } from '../services/vinylService'
-import { useAuth } from '../context/AuthContext'
+import { AuthContext } from '../context/AuthContext'
 import AddressBook from '../components/profile/AddressBook'
+import CardBook from '../components/profile/CardBook'
 import CartItemsList from "../components/cart/CartItemsList"
 import CartSummary from "../components/cart/CartSummary"
 import CartGuarantees from "../components/cart/CartGuarantees"
@@ -13,8 +14,9 @@ const CartPage = ({ onCheckout, onNavigate }) => {
     const [products, setProducts] = useState([])
     const [suggestionError, setSuggestionError] = useState('')
     const [addressId, setAddressId] = useState(null)
+    const [savedCardId, setSavedCardId] = useState(null)
     const [pending, setPending] = useState(false)
-    const { user, isAdmin } = useAuth()
+    const { user, isAdmin } = useContext(AuthContext)
     useEffect(() => {
         if (isAdmin) return undefined
         let active = true
@@ -22,7 +24,7 @@ const CartPage = ({ onCheckout, onNavigate }) => {
             .catch((error) => { if (active) setSuggestionError(error.message) })
         return () => { active = false }
     }, [isAdmin])
-    const { items, updateQuantity, removeItem, clearCart, addItem, isInCart, totalProducts, totalUnits, total } = useCart()
+    const { items, updateQuantity, removeItem, clearCart, addItem, isInCart, totalProducts, totalUnits, total } = useContext(CartContext)
 
     const handleCheckout = async () => {
         setCheckoutError('')
@@ -30,7 +32,7 @@ const CartPage = ({ onCheckout, onNavigate }) => {
         if (user && !addressId) { setCheckoutError('Agregá y seleccioná una dirección de envío.'); return }
         setPending(true)
         try {
-            const result = await onCheckout?.({ addressId })
+            const result = await onCheckout?.({ addressId, savedCardId })
             if (result?.error) setCheckoutError(result.error)
         } finally { setPending(false) }
     }
@@ -69,6 +71,7 @@ const CartPage = ({ onCheckout, onNavigate }) => {
                 </div>
                 <aside className="cart-summary-panel">
                     {user && <AddressBook key={user.id} selectable selectedId={addressId} onSelect={setAddressId} />}
+                    {user && <CardBook key={`cards-${user.id}`} selectable selectedId={savedCardId} onSelect={setSavedCardId} disabled={pending} />}
                     <CartSummary
                         totalProducts={totalProducts}
                         totalUnits={totalUnits}

@@ -23,7 +23,7 @@ import com.uade.tpo.marketplace.service.OrderService;
 public class OrdersController {
     private final OrderService orderService;
     private final com.uade.tpo.marketplace.service.AddressService addressService;
-    public record CheckoutRequest(Long addressId) {}
+    public record CheckoutRequest(Long addressId, Long savedCardId) {}
 
     /**
      * Todas las ordenes del usuario autenticado (para un admin, las de todos).
@@ -49,7 +49,7 @@ public class OrdersController {
     @PostMapping
     public ResponseEntity<ApiResponse<OrderResponse>> createOrder(Principal principal, @RequestBody(required=false) CheckoutRequest request) {
         var shipping = request == null || request.addressId() == null ? null : addressService.owned(request.addressId(),principal.getName()).details.copy();
-        OrderResponse response = OrderMapper.toResponse(orderService.createOrder(principal.getName(),shipping));
+        OrderResponse response = OrderMapper.toResponse(orderService.createOrder(principal.getName(),shipping,request==null ? null : request.savedCardId()));
         return ResponseEntity.status(201).body(ApiResponse.created(response, "Orden creada a partir del carrito"));
     }
 

@@ -4,9 +4,8 @@ import InventoryStats from '../../components/admin/inventory/InventoryStats'
 import InventoryActions from '../../components/admin/inventory/InventoryActions'
 import InventoryFilters, { DEFAULT_INVENTORY_FILTERS } from '../../components/admin/inventory/InventoryFilters'
 import InventoryTable from '../../components/admin/inventory/InventoryTable'
-import useCatalogLookups from '../../hooks/useCatalogLookups'
-import { getStockStatus, normalizeText } from '../../components/admin/adminUtils'
-import { adjustVinylStock, deleteVinyl, getAdminVinyls, setVinylEnabled } from '../../services/adminService'
+import { getStockStatus, indexById, normalizeText } from '../../components/admin/adminUtils'
+import { adjustVinylStock, deleteVinyl, getAdminVinyls, getCatalogLookups, setVinylEnabled } from '../../services/adminService'
 
 const compare = (a, b) => {
   if (typeof a === 'number' && typeof b === 'number') return a - b
@@ -16,7 +15,15 @@ const compare = (a, b) => {
 const InventoryPage = () => {
   const navigate = useNavigate()
   const location = useLocation()
-  const { genres, categories, artistsById, genresById } = useCatalogLookups()
+  const [lookups, setLookups] = useState({ artists: [], genres: [], categories: [] })
+  const { genres, categories } = lookups
+  const artistsById = useMemo(() => indexById(lookups.artists), [lookups.artists])
+  const genresById = useMemo(() => indexById(lookups.genres), [lookups.genres])
+  useEffect(() => {
+    let active = true
+    getCatalogLookups().then((data) => { if (active) setLookups(data) })
+    return () => { active = false }
+  }, [])
 
   const [vinyls, setVinyls] = useState([])
   const [loading, setLoading] = useState(true)

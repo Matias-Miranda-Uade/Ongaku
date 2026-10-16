@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import CardBook from '../profile/CardBook'
 
 const isValidCardNumber = (value) => {
   const digits = value.replace(/\D/g, '')
@@ -39,7 +40,7 @@ const validateCard = ({ holder, number, expiry, securityCode }) => {
 
 const initialCard = { holder: '', number: '', expiry: '', securityCode: '' }
 
-const DemoPaymentForm = ({ order, onPay, paying, disabled }) => {
+const ManualDemoPaymentForm = ({ order, onPay, paying, disabled }) => {
   const [card, setCard] = useState(initialCard)
   const [errors, setErrors] = useState({})
 
@@ -132,6 +133,18 @@ const DemoPaymentForm = ({ order, onPay, paying, disabled }) => {
         {paying ? 'Simulando pago…' : 'Simular pago'}
       </button>
     </form>
+  )
+}
+
+const DemoPaymentForm = ({ order, onPay, paying, disabled }) => {
+  const [selectedId, setSelectedId] = useState(null)
+  return (
+    <section>
+      <CardBook selectable selectedId={selectedId} preferredId={order.savedCardId} onSelect={setSelectedId} disabled={paying || disabled} />
+      {selectedId != null
+        ? <button className="primary-button" type="button" disabled={paying || disabled || order.total <= 0} onClick={() => onPay(order, { savedCardId: selectedId })}>{paying ? 'Simulando pago…' : 'Simular pago con la tarjeta elegida'}</button>
+        : <ManualDemoPaymentForm order={order} onPay={onPay} paying={paying} disabled={disabled} />}
+    </section>
   )
 }
 

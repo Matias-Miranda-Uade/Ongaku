@@ -2,9 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import ShowcaseHeader from '../../components/admin/showcase/ShowcaseHeader'
 import ShowcaseFilters, { DEFAULT_SHOWCASE_FILTERS } from '../../components/admin/showcase/ShowcaseFilters'
 import ShowcaseTable from '../../components/admin/showcase/ShowcaseTable'
-import useCatalogLookups from '../../hooks/useCatalogLookups'
-import { normalizeText } from '../../components/admin/adminUtils'
-import { getAdminVinyls, setVinylEnabled } from '../../services/adminService'
+import { indexById, normalizeText } from '../../components/admin/adminUtils'
+import { getAdminVinyls, getCatalogLookups, setVinylEnabled } from '../../services/adminService'
 
 const MODE_STORAGE_KEY = 'ongaku-admin-showcase-mode'
 
@@ -17,7 +16,15 @@ const readStoredMode = () => {
 }
 
 const ShowcasePage = () => {
-  const { genres, artistsById, genresById } = useCatalogLookups()
+  const [lookups, setLookups] = useState({ artists: [], genres: [], categories: [] })
+  const { genres } = lookups
+  const artistsById = useMemo(() => indexById(lookups.artists), [lookups.artists])
+  const genresById = useMemo(() => indexById(lookups.genres), [lookups.genres])
+  useEffect(() => {
+    let active = true
+    getCatalogLookups().then((data) => { if (active) setLookups(data) })
+    return () => { active = false }
+  }, [])
   const [vinyls, setVinyls] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
