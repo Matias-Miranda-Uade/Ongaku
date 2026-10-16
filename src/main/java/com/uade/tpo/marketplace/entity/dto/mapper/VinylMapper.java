@@ -80,6 +80,7 @@ public final class VinylMapper {
         if (request.getDiscountPercentage() != null) vinyl.setDiscountPercentage(request.getDiscountPercentage());
         vinyl.setStock(request.getStock());
         if (request.getImage() != null) vinyl.setImage(request.getImage());
+        if (request.getAlbumUrl() != null) vinyl.setAlbumUrl(request.getAlbumUrl());
         vinyl.setYear(request.getYear());
     }
 

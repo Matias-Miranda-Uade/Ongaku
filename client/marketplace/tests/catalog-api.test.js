@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { after, beforeEach, test } from 'node:test'
+import { createArtist, uploadCover } from '../src/services/adminService.js'
 import {
   ApiError, createFavorite, createOrder, createPayment, createReview, deleteAddress, deleteCard, deleteFavorite, deleteReview, getAddresses, getAudioPreview, getFavorites, getOrder, getOrders, getSavedCards, saveAddress, saveCard,
   getReviewEligibility, getReviews, getReviewsByVinyl, getVinylById, getVinyls, request, updateReview,
@@ -32,6 +33,24 @@ after(() => {
   globalThis.fetch = originalFetch
   if (originalWindow === undefined) delete globalThis.window
   else globalThis.window = originalWindow
+})
+
+test('crear artistas envía el nombre al backend y devuelve su identificador', async () => {
+  routes['/artists'] = { id: 80, name: 'Lana Del Rey' }
+  assert.equal((await createArtist('Lana Del Rey')).id, 80)
+  assert.equal(calls[0].method, 'POST')
+  assert.deepEqual(JSON.parse(calls[0].body), { name: 'Lana Del Rey' })
+})
+
+test('subir una portada envía el archivo multipart con autenticación y sin forzar JSON', async () => {
+  routes['/admin/vinyls/covers'] = { url: '/media/covers/cover.png' }
+  const result = await uploadCover(new Blob(['image'], { type: 'image/png' }))
+  assert.equal(result.url, '/media/covers/cover.png')
+  assert.equal(calls[0].method, 'POST')
+  assert.ok(calls[0].body instanceof FormData)
+  assert.ok(calls[0].body.get('file') instanceof Blob)
+  assert.equal(calls[0].headers['Content-Type'], undefined)
+  assert.equal(calls[0].headers.Authorization, 'Bearer session-token')
 })
 
 test('el catálogo resuelve nombres y conserva precio final cero y stock agotado', async () => {

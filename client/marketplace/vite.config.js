@@ -5,6 +5,7 @@ export default defineConfig(({ mode }) => {
   const backendUrl = loadEnv(mode, process.cwd(), '').VITE_BACKEND_URL || 'http://localhost:8080'
   const backendRoutes = [
     '/api',
+    '/media',
     '/vinyls',
     '/reviews',
     '/audio-previews',

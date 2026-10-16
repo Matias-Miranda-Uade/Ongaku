@@ -7,6 +7,10 @@ public class VinylRequest {
     private Integer discountPercentage;
     private Integer stock;
     private String image;
+    private String albumUrl;
+
+    public String getAlbumUrl() { return albumUrl; }
+    public void setAlbumUrl(String albumUrl) { this.albumUrl = albumUrl; }
     private Long categoryId;
     private Long artistId;
     private Long genreId;
@@ -108,6 +112,7 @@ public class VinylRequest {
     public boolean equals(Object o) {
         if (o == this) return true;
         if (!(o instanceof VinylRequest)) return false;
+        if (!java.util.Objects.equals(this.getAlbumUrl(), ((VinylRequest) o).getAlbumUrl())) return false;
         VinylRequest other = (VinylRequest) o;
         if (!other.canEqual((Object) this)) return false;
         if (!java.util.Objects.equals(this.getPrice(), other.getPrice())) return false;
@@ -148,6 +153,7 @@ public class VinylRequest {
     public int hashCode() {
         int PRIME = 59;
         int result = 1;
+        result = result * PRIME + java.util.Objects.hashCode(albumUrl);
         result = result * PRIME + (this.getPrice() == null ? 43 : this.getPrice().hashCode());
         result = result * PRIME + (this.getStock() == null ? 43 : this.getStock().hashCode());
         result = result * PRIME + (this.getYear() == null ? 43 : this.getYear().hashCode());

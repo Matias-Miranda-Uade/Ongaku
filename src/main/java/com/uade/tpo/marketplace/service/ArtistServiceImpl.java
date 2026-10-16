@@ -45,7 +45,11 @@ public class ArtistServiceImpl implements ArtistService {
         if (request.getName() == null || request.getName().isBlank()) {
             throw new InvalidFieldException("name", "no puede estar vacio");
         }
-        if (artistRepository.findByName(request.getName()) != null) {
+        request.setName(request.getName().trim());
+        if (request.getName().length() > 255) throw new InvalidFieldException("name", "no puede superar 255 caracteres");
+        if (request.getDescription() != null && request.getDescription().length() > 255) throw new InvalidFieldException("description", "no puede superar 255 caracteres");
+        if (request.getImage() != null && request.getImage().length() > 255) throw new InvalidFieldException("image", "no puede superar 255 caracteres");
+        if (artistRepository.findFirstByNameIgnoreCase(request.getName()) != null) {
             throw new DuplicateResourceException("Artista", request.getName());
         }
 

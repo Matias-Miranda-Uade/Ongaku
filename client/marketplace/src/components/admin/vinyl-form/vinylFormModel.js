@@ -1,5 +1,8 @@
 
+import { getAlbumUrl } from '../../vinyl-detail/albumUrl.js'
+
 export const MAX_TEXT_LENGTH = 255
+export const MAX_ALBUM_URL_LENGTH = 2048
 export const MAX_PRICE = 2_147_483_647
 export const MAX_STOCK = 100_000
 export const MAX_AUDIO_SECONDS = 600
@@ -19,6 +22,7 @@ export const EMPTY_VINYL = {
   discountPercentage: '0',
   stock: '0',
   image: '',
+  albumUrl: '',
   enabled: true,
   audio: EMPTY_AUDIO,
 }
@@ -39,6 +43,7 @@ export const toFormValues = (vinyl) => {
     discountPercentage: numberOrEmpty(vinyl.discountPercentage ?? 0),
     stock: numberOrEmpty(vinyl.stock ?? 0),
     image: vinyl.image ?? '',
+    albumUrl: vinyl.albumUrl ?? '',
     enabled: vinyl.enabled ?? true,
     audio: vinyl.audioPreviewId
       ? { ...EMPTY_AUDIO, mode: 'existing', audioPreviewId: String(vinyl.audioPreviewId) }
@@ -88,6 +93,9 @@ export const validateVinyl = (values) => {
   else if (image && !isValidUrl(image)) errors.image = 'Ingresá una URL válida (https://…) o una ruta que empiece con /.'
 
   const { audio } = values
+  const albumUrl = (values.albumUrl ?? '').trim()
+  if (albumUrl.length > MAX_ALBUM_URL_LENGTH) errors.albumUrl = `Máximo ${MAX_ALBUM_URL_LENGTH} caracteres.`
+  else if (albumUrl && !getAlbumUrl(albumUrl)) errors.albumUrl = 'Pegá el enlace HTTPS de un álbum de Apple Music o Spotify.'
   if (audio.mode === 'existing' && !audio.audioPreviewId) errors.audioPreviewId = 'Elegí una preview de la lista.'
   if (audio.mode === 'new') {
     const url = audio.url.trim()
@@ -110,6 +118,7 @@ export const toVinylPayload = (values, audioPreviewId) => ({
   discountPercentage: Number(values.discountPercentage) || 0,
   stock: Number(values.stock),
   image: values.image.trim(),
+  albumUrl: (values.albumUrl ?? '').trim(),
   year: Number(values.year),
   artistId: toId(values.artistId),
   categoryId: toId(values.categoryId),
@@ -124,6 +133,7 @@ const SERVER_FIELD_MAP = {
   discountPercentage: 'discountPercentage',
   stock: 'stock',
   image: 'image',
+  albumUrl: 'albumUrl',
   year: 'year',
   artistId: 'artistId',
   categoryId: 'categoryId',
@@ -142,5 +152,5 @@ export const mapServerFieldErrors = (fieldErrors = {}) =>
 
 export const FIELD_ORDER = [
   'name', 'artistId', 'year', 'categoryId', 'genreId', 'price', 'discountPercentage', 'stock',
-  'description', 'image', 'audioPreviewId', 'audioUrl', 'audioDuration',
+  'description', 'image', 'albumUrl', 'audioPreviewId', 'audioUrl', 'audioDuration',
 ]

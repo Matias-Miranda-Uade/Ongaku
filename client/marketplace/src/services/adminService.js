@@ -1,4 +1,4 @@
-import { jsonRequest, request } from './api'
+import { jsonRequest, request } from './api.js'
 
 const asList = (data) => (Array.isArray(data) ? data : [])
 
@@ -42,6 +42,12 @@ export const getCategories = async () => asList(await request('/categories'))
 export const getAudioPreviews = async () => asList(await request('/audio-previews'))
 
 export const createGenre = (name) => request('/genres', jsonRequest('POST', { name }))
+export const createArtist = (name) => request('/artists', jsonRequest('POST', { name }))
+export const uploadCover = (file) => {
+  const body = new FormData()
+  body.append('file', file)
+  return request('/admin/vinyls/covers', { method: 'POST', body })
+}
 
 export const createAudioPreview = ({ url, durationSeconds }) =>
   request('/audio-previews', jsonRequest('POST', { url, durationSeconds }))
@@ -69,6 +75,8 @@ const adminService = {
   getCategories,
   getAudioPreviews,
   createGenre,
+  createArtist,
+  uploadCover,
   createAudioPreview,
   getCatalogLookups,
 }
