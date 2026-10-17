@@ -45,7 +45,7 @@ const Header = ({ page, onNavigate, onSearch, user, isAdmin = false, onLogout })
   return (
     <header className="site-header">
       <Button className="brand brand-button" onClick={() => onNavigate('home')}>
-        <span className="brand-name"><span className="brand-mark">音</span> ONGAKU</span>
+        <span className="brand-name"><span className="brand-mark"> <img src="/covers/ongaku-logo.svg" alt="" width="40" height="40" /></span> ONGAKU</span>
         <span className="brand-caption">音楽 · EDICIONES DE ARCHIVO</span>
       </Button>
 
