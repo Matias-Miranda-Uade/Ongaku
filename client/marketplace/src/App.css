@@ -721,11 +721,13 @@ select:focus-visible {
   height: 22px;
   display: inline-grid;
   place-items: center;
-  background: var(--accent);
+  background: transparent;
   color: #fff;
   font-family: Inter, sans-serif;
   font-size: 11px;
   letter-spacing: 0;
+  object-fit: contain;
+  transform:translateX(-20px);
 }
 
 .brand-caption {
