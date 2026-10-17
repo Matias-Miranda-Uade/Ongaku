@@ -39,25 +39,6 @@ const VinylDetailPage = ({ vinylId, onBack, onReviews, onLogin }) => {
     return () => { active = false }
   }, [vinylId, reload, reviewReload])
 
-  if (error?.isUnauthorized) return (
-    <div className="page detail-page">
-      <button className="back-link link-button" type="button" onClick={onBack}>← VOLVER AL CATÁLOGO</button>
-      <section className="login-gate" aria-labelledby="login-gate-title">
-        <div className="login-gate-art" aria-hidden="true">
-          <span className="login-gate-record"><span /></span>
-          <span className="login-gate-orbit login-gate-orbit-one" />
-          <span className="login-gate-orbit login-gate-orbit-two" />
-        </div>
-        <div className="login-gate-copy">
-          <p className="eyebrow">ONGAKU / ARCHIVO ANALÓGICO</p>
-          <h1 id="login-gate-title">Este vinilo te está esperando.</h1>
-          <p>Iniciá sesión para descubrir todos los detalles, escuchar su adelanto y leer las reseñas de la comunidad.</p>
-          <button className="primary-button" type="button" onClick={onLogin}>Iniciar sesión</button>
-        </div>
-      </section>
-    </div>
-  )
-
   if (error) return (
     <div className="page detail-page">
       <button className="back-link link-button" type="button" onClick={onBack}>← VOLVER AL CATÁLOGO</button>
@@ -75,7 +56,7 @@ const VinylDetailPage = ({ vinylId, onBack, onReviews, onLogin }) => {
         <VinylDetailInfo vinyl={vinyl} />
       </div>
 
-      <AudioPreview audioPreviewId={vinyl.audioPreviewId} />
+      <AudioPreview audioPreviewId={vinyl.audioPreviewId} externalUrl={vinyl.albumUrl} />
 
       <section className="detail-reviews">
         <div className="section-heading-row">

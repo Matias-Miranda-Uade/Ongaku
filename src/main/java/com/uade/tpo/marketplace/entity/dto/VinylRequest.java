@@ -14,6 +14,13 @@ public class VinylRequest {
     private Long categoryId;
     private Long artistId;
     private Long genreId;
+    private java.util.List<Long> genreIds;
+    private boolean audioPreviewProvided;
+    private boolean categoryProvided;
+    public java.util.List<Long> getGenreIds() { return genreIds; }
+    public void setGenreIds(java.util.List<Long> genreIds) { this.genreIds = genreIds; }
+    public boolean hasAudioPreviewId() { return audioPreviewProvided; }
+    public boolean hasCategoryId() { return categoryProvided; }
     private Long audioPreviewId;
     private Integer year;
 
@@ -89,6 +96,7 @@ public class VinylRequest {
     }
 
     public void setCategoryId(Long categoryId) {
+        categoryProvided = true;
         this.categoryId = categoryId;
     }
 
@@ -101,6 +109,7 @@ public class VinylRequest {
     }
 
     public void setAudioPreviewId(Long audioPreviewId) {
+        audioPreviewProvided = true;
         this.audioPreviewId = audioPreviewId;
     }
 

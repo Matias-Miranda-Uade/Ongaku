@@ -1,150 +1,84 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { FieldError, fieldA11y } from './VinylFormFields'
+import { getMediaSource } from '../../audio/mediaSource'
+import MediaPlayer from '../../audio/MediaPlayer'
 
-const formatDuration = (seconds) => {
-  const total = Number(seconds) || 0
-  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`
-}
+const MODES = [{ id: 'none', label: 'Sin preview' }, { id: 'existing', label: 'Usar una existente' }, { id: 'new', label: 'Agregar enlace' }]
 
-const fileNameFromUrl = (url = '') => {
-  try {
-    return decodeURIComponent(new URL(url, window.location.origin).pathname.split('/').pop() || url)
-  } catch {
-    return url
-  }
-}
-
-const MODES = [
-  { id: 'none', label: 'Sin preview' },
-  { id: 'existing', label: 'Usar una existente' },
-  { id: 'new', label: 'Cargar nueva' },
-]
-
-const AudioUploader = ({ value, onChange, errors = {}, previews = [], usedPreviewIds = new Set(), currentPreviewId = '', locked = false }) => {
+const AudioUploader = ({ value, onChange, errors = {}, previews = [], usedPreviewIds = new Set(), currentPreviewId = '' }) => {
   const [detecting, setDetecting] = useState(false)
   const [detectError, setDetectError] = useState('')
-
+  const latest = useRef(value)
+  latest.current = value
   const update = (patch) => onChange('audio', { ...value, ...patch })
   const selected = previews.find((preview) => String(preview.id) === value.audioPreviewId)
   const playerUrl = value.mode === 'existing' ? selected?.url : value.mode === 'new' ? value.url.trim() : ''
+  const source = getMediaSource(playerUrl)
 
   useEffect(() => {
-    if (value.mode !== 'new' || !/^https?:\/\/|^\//.test(value.url.trim())) {
-      setDetectError('')
-      return undefined
-    }
+    setDetectError('')
+    setDetecting(false)
+    const media = getMediaSource(value.url)
+    if (value.mode !== 'new' || media?.type !== 'audio') return undefined
     const audio = new Audio()
     let active = true
     setDetecting(true)
-    setDetectError('')
+    const stop = () => { if (active) setDetecting(false) }
     const timeout = setTimeout(() => {
-      audio.preload = 'metadata'
-      audio.src = value.url.trim()
-    }, 400)
+      stop()
+      if (active) setDetectError('No se pudo leer la muestra. Verificá que el enlace apunte al archivo de audio; los links de plataformas usan su propio reproductor.')
+    }, 15000)
     audio.onloadedmetadata = () => {
       if (!active) return
-      setDetecting(false)
-      if (Number.isFinite(audio.duration) && audio.duration > 0) {
-        onChange('audio', { ...value, durationSeconds: String(Math.round(audio.duration)) })
-      }
+      clearTimeout(timeout)
+      stop()
+      if (Number.isFinite(audio.duration) && audio.duration > 0) onChange('audio', { ...latest.current, durationSeconds: String(Math.ceil(audio.duration)) })
     }
     audio.onerror = () => {
-      if (!active) return
-      setDetecting(false)
-      setDetectError('No pudimos leer ese audio. Revisá la URL o cargá la duración a mano.')
-    }
-    return () => {
-      active = false
       clearTimeout(timeout)
-      audio.removeAttribute('src')
+      stop()
+      if (active) setDetectError('No se pudo cargar el audio. Usá la URL directa del archivo o un enlace de Spotify, Apple Music o YouTube.')
     }
+    audio.preload = 'metadata'
+    audio.src = media.url
+    return () => { active = false; clearTimeout(timeout); audio.pause(); audio.removeAttribute('src'); audio.load() }
   }, [value.mode, value.url])
 
-  return (
-    <fieldset className="vf-section audio-uploader">
-      <legend><span className="vf-step">05</span> Preview de audio</legend>
-
-      <div className="segmented vf-span-2" role="radiogroup" aria-label="Origen de la preview">
-        {MODES.filter((mode) => !(locked && mode.id === 'none')).map((mode) => (
-          <button
-            key={mode.id}
-            type="button"
-            role="radio"
-            aria-checked={value.mode === mode.id}
-            className={value.mode === mode.id ? 'is-active' : ''}
-            onClick={() => update({ mode: mode.id })}
-          >
-            {mode.label}
-          </button>
-        ))}
+  return <fieldset className="vf-section audio-uploader">
+    <legend><span className="vf-step">05</span> Muestra de audio</legend>
+    <p className="vf-hint vf-span-2">Podés pegar un link de una canción de Spotify, Apple Music o YouTube, o la URL directa de un archivo MP3, M4A, OGG o WAV. La muestra se escucha desde el detalle del vinilo.</p>
+    <div className="segmented vf-span-2" role="radiogroup" aria-label="Origen de la muestra">
+      {MODES.map((mode) => <button key={mode.id} type="button" role="radio" aria-checked={value.mode === mode.id}
+        className={value.mode === mode.id ? 'is-active' : ''} onClick={() => update({ mode: mode.id })}>{mode.label}</button>)}
+    </div>
+    {value.mode === 'existing' && <div className="vf-field vf-span-2">
+      <label htmlFor="vf-audioPreviewId">Muestra guardada</label>
+      <select {...fieldA11y('audioPreviewId', errors.audioPreviewId)} value={value.audioPreviewId} onChange={(event) => update({ audioPreviewId: event.target.value })}>
+        <option value="">Elegí una muestra…</option>
+        {previews.map((preview) => {
+          const taken = usedPreviewIds.has(String(preview.id)) && String(preview.id) !== String(currentPreviewId)
+          return <option key={preview.id} value={preview.id} disabled={taken}>#{preview.id} · {preview.url}{taken ? ' (en uso)' : ''}</option>
+        })}
+      </select>
+      {!previews.length && <p className="vf-hint">No hay muestras guardadas. Elegí “Agregar enlace”.</p>}
+      <FieldError id="vf-audioPreviewId-error" message={errors.audioPreviewId} />
+    </div>}
+    {value.mode === 'new' && <>
+      <div className="vf-field vf-span-2">
+        <label htmlFor="vf-audioUrl">Link de la muestra o canción</label>
+        <input {...fieldA11y('audioUrl', errors.audioUrl)} type="url" maxLength={2048} value={value.url}
+          placeholder="https://open.spotify.com/track/… o https://…/muestra.mp3" onChange={(event) => update({ url: event.target.value, durationSeconds: '' })} />
+        <FieldError id="vf-audioUrl-error" message={errors.audioUrl} />
+        {detectError && <p className="vf-hint" role="status">{detectError}</p>}
       </div>
-      {locked && <p className="vf-hint vf-span-2">El back no permite desvincular una preview: podés reemplazarla por otra.</p>}
-
-      {value.mode === 'existing' && (
-        <div className="vf-field vf-span-2">
-          <label htmlFor="vf-audioPreviewId">Preview</label>
-          <select
-            {...fieldA11y('audioPreviewId', errors.audioPreviewId)}
-            value={value.audioPreviewId}
-            onChange={(event) => update({ audioPreviewId: event.target.value })}
-          >
-            <option value="">Elegí una preview…</option>
-            {previews.map((preview) => {
-              const id = String(preview.id)
-              const taken = usedPreviewIds.has(id) && id !== String(currentPreviewId)
-              return (
-                <option key={id} value={id} disabled={taken}>
-                  #{id} · {fileNameFromUrl(preview.url)} · {formatDuration(preview.durationSeconds)}{taken ? ' (en uso)' : ''}
-                </option>
-              )
-            })}
-          </select>
-          {previews.length === 0 && <p className="vf-hint">Todavía no hay previews cargadas: usá “Cargar nueva”.</p>}
-          <FieldError id="vf-audioPreviewId-error" message={errors.audioPreviewId} />
-        </div>
-      )}
-
-      {value.mode === 'new' && (
-        <>
-          <div className="vf-field">
-            <label htmlFor="vf-audioUrl">URL del audio</label>
-            <input
-              {...fieldA11y('audioUrl', errors.audioUrl)}
-              type="url"
-              inputMode="url"
-              maxLength={255}
-              placeholder="https://…/preview.mp3"
-              value={value.url}
-              onChange={(event) => update({ url: event.target.value })}
-            />
-            <FieldError id="vf-audioUrl-error" message={errors.audioUrl || detectError} />
-          </div>
-          <div className="vf-field">
-            <label htmlFor="vf-audioDuration">Duración (segundos)</label>
-            <input
-              {...fieldA11y('audioDuration', errors.audioDuration, 'vf-audioDuration-hint')}
-              type="number"
-              inputMode="numeric"
-              min="1"
-              step="1"
-              value={value.durationSeconds}
-              onChange={(event) => update({ durationSeconds: event.target.value })}
-            />
-            <p className="vf-hint" id="vf-audioDuration-hint">
-              {detecting ? 'Detectando duración…' : value.durationSeconds ? `≈ ${formatDuration(value.durationSeconds)}` : 'Se completa sola al leer el audio.'}
-            </p>
-            <FieldError id="vf-audioDuration-error" message={errors.audioDuration} />
-          </div>
-        </>
-      )}
-
-      {playerUrl && (
-        <div className="vf-span-2 audio-player-preview">
-          <audio controls preload="none" src={playerUrl}>Tu navegador no puede reproducir este audio.</audio>
-        </div>
-      )}
-    </fieldset>
-  )
+      {source?.type === 'audio' && <div className="vf-field vf-span-2">
+        <label htmlFor="vf-audioDuration">Duración en segundos (opcional)</label>
+        <input {...fieldA11y('audioDuration', errors.audioDuration)} type="number" min="1" max="600" value={value.durationSeconds} onChange={(event) => update({ durationSeconds: event.target.value })} />
+        <p className="vf-hint">{detecting ? 'Leyendo el archivo…' : 'Se detecta al cargar el audio. No es necesaria para los reproductores de plataformas.'}</p>
+        <FieldError id="vf-audioDuration-error" message={errors.audioDuration} />
+      </div>}
+    </>}
+    {source && <div className="vf-span-2 audio-player-preview"><MediaPlayer url={playerUrl} durationSeconds={selected?.durationSeconds || value.durationSeconds} /></div>}
+  </fieldset>
 }
-
 export default AudioUploader

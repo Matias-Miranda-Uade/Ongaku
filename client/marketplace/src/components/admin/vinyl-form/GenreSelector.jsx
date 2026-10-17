@@ -3,11 +3,13 @@ import { createGenre } from '../../../services/adminService'
 import { FieldError } from './VinylFormFields'
 import { normalizeText } from '../adminUtils'
 
-const GenreSelector = ({ value, onChange, genres = [], onGenreCreated, error, locked = false }) => {
+const GenreSelector = ({ value = [], onChange, genres = [], onGenreCreated, error }) => {
   const [adding, setAdding] = useState(false)
   const [newName, setNewName] = useState('')
   const [createError, setCreateError] = useState('')
   const [creating, setCreating] = useState(false)
+
+  const select = (id) => onChange(value.includes(id) ? value : [...value, id])
 
   const handleCreate = async () => {
     const name = newName.trim()
@@ -17,7 +19,7 @@ const GenreSelector = ({ value, onChange, genres = [], onGenreCreated, error, lo
     }
     const existing = genres.find((genre) => normalizeText(genre.name) === normalizeText(name))
     if (existing) {
-      onChange(String(existing.id))
+      select(String(existing.id))
       setAdding(false)
       setNewName('')
       setCreateError('')
@@ -28,7 +30,7 @@ const GenreSelector = ({ value, onChange, genres = [], onGenreCreated, error, lo
     try {
       const genre = await createGenre(name)
       onGenreCreated?.(genre)
-      onChange(String(genre.id))
+      select(String(genre.id))
       setAdding(false)
       setNewName('')
     } catch (genreError) {
@@ -40,29 +42,29 @@ const GenreSelector = ({ value, onChange, genres = [], onGenreCreated, error, lo
 
   return (
     <div className="vf-field vf-span-2 genre-selector">
-      <span className="vf-label" id="vf-genre-label">Género</span>
-      <div className="genre-chips" role="radiogroup" aria-labelledby="vf-genre-label" aria-describedby={error ? 'vf-genreId-error' : undefined}>
-        {!locked && (
+      <span className="vf-label" id="vf-genre-label">Géneros (podés elegir varios)</span>
+      <div className="genre-chips" role="group" aria-labelledby="vf-genre-label" aria-describedby={error ? 'vf-genreId-error' : undefined}>
+        {(
           <button
             type="button"
-            role="radio"
-            aria-checked={value === ''}
-            className={`genre-chip${value === '' ? ' is-selected' : ''}`}
-            onClick={() => onChange('')}
+            role="checkbox"
+            aria-checked={value.length === 0}
+            className={`genre-chip${value.length === 0 ? ' is-selected' : ''}`}
+            onClick={() => onChange([])}
           >
             Sin género
           </button>
         )}
         {genres.map((genre) => {
-          const selected = String(genre.id) === value
+          const selected = value.includes(String(genre.id))
           return (
             <button
               key={genre.id}
               type="button"
-              role="radio"
+              role="checkbox"
               aria-checked={selected}
               className={`genre-chip${selected ? ' is-selected' : ''}`}
-              onClick={() => onChange(String(genre.id))}
+              onClick={() => onChange(selected ? value.filter((id) => id !== String(genre.id)) : [...value, String(genre.id)])}
             >
               {genre.name}
             </button>

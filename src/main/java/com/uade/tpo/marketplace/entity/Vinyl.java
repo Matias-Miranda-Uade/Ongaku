@@ -54,6 +54,20 @@ public class Vinyl {
     @ManyToOne
     @JoinColumn(name = "genre_id")
     private Genre genre;
+    @jakarta.persistence.ManyToMany
+    @jakarta.persistence.JoinTable(name = "vinyl_genre", joinColumns = @JoinColumn(name = "vinyl_id"), inverseJoinColumns = @JoinColumn(name = "genre_id"))
+    @JsonIgnore
+    private List<Genre> additionalGenres = new java.util.ArrayList<>();
+
+    public List<Genre> getAdditionalGenres() { return additionalGenres; }
+    public void setAdditionalGenres(List<Genre> genres) { this.additionalGenres = genres; }
+    @JsonIgnore
+    public List<Genre> getAllGenres() {
+        var result = new java.util.LinkedHashMap<Long, Genre>();
+        if (genre != null) result.put(genre.getId(), genre);
+        if (additionalGenres != null) for (Genre item : additionalGenres) result.put(item.getId(), item);
+        return new java.util.ArrayList<>(result.values());
+    }
     @OneToOne
     @JoinColumn(name = "audio_preview_id")
     private AudioPreview audioPreview;

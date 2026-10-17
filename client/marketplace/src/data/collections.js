@@ -5,4 +5,4 @@ export const collections = [
   { id: 'national', name: 'Rock nacional', number: '04', subtitle: 'ARCHIVO / ARGENTINA', image: '/covers/real/cancion-animal.jpg', genres: ['Rock nacional'] },
 ]
 
-export const matchesCollection = (vinyl, collection) => !collection || collection.genres.includes(vinyl.genreName)
+export const matchesCollection = (vinyl, collection) => !collection || (vinyl.genreNames?.length ? vinyl.genreNames : [vinyl.genreName]).some((name) => collection.genres.includes(name))

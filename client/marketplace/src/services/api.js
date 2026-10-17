@@ -235,6 +235,7 @@ const normalizeVinyl = (vinyl, lookups) => ({
   ...vinyl,
   artistName: lookups.artists[vinyl.artistId]?.name ?? vinyl.artistName,
   genreName: lookups.genres[vinyl.genreId]?.name ?? vinyl.genreName,
+  genreNames: (vinyl.genreIds?.length ? vinyl.genreIds : vinyl.genreId ? [vinyl.genreId] : []).map((id) => lookups.genres[id]?.name).filter(Boolean),
   categoryDescription: lookups.categories[vinyl.categoryId]?.description ?? vinyl.categoryDescription,
 })
 

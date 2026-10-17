@@ -22,7 +22,7 @@ const ShowcasePage = () => {
   const genresById = useMemo(() => indexById(lookups.genres), [lookups.genres])
   useEffect(() => {
     let active = true
-    getCatalogLookups().then((data) => { if (active) setLookups(data) })
+    getCatalogLookups().then((data) => { if (active) setLookups(data) }).catch((error) => { if (active) setError(error.message) })
     return () => { active = false }
   }, [])
   const [vinyls, setVinyls] = useState([])
@@ -67,7 +67,7 @@ const ShowcasePage = () => {
   const rows = useMemo(() => vinyls.map((vinyl) => ({
     ...vinyl,
     artistName: artistsById[String(vinyl.artistId)]?.name ?? '',
-    genreName: genresById[String(vinyl.genreId)]?.name ?? '',
+    genreName: (vinyl.genreIds?.length ? vinyl.genreIds : [vinyl.genreId]).map((id) => genresById[String(id)]?.name).filter(Boolean).join(' / '),
   })), [vinyls, artistsById, genresById])
 
   const visibleRows = useMemo(() => {
@@ -80,7 +80,7 @@ const ShowcasePage = () => {
         if (filters.visibility === 'hidden' && enabled) return false
         if (filters.stock === 'in' && !(row.stock > 0)) return false
         if (filters.stock === 'out' && row.stock > 0) return false
-        if (filters.genreId && String(row.genreId) !== filters.genreId) return false
+        if (filters.genreId && !(row.genreIds?.length ? row.genreIds : [row.genreId]).map(String).includes(filters.genreId)) return false
         return true
       })
       .sort((a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }))

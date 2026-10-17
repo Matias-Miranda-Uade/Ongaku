@@ -1,5 +1,6 @@
 
 import { getAlbumUrl } from '../../vinyl-detail/albumUrl.js'
+import { getMediaSource } from '../../audio/mediaSource.js'
 
 export const MAX_TEXT_LENGTH = 255
 export const MAX_ALBUM_URL_LENGTH = 2048
@@ -16,6 +17,7 @@ export const EMPTY_VINYL = {
   artistId: '',
   categoryId: '',
   genreId: '',
+  genreIds: [],
   year: '',
   description: '',
   price: '',
@@ -37,6 +39,7 @@ export const toFormValues = (vinyl) => {
     artistId: idOrEmpty(vinyl.artistId),
     categoryId: idOrEmpty(vinyl.categoryId),
     genreId: idOrEmpty(vinyl.genreId),
+    genreIds: (vinyl.genreIds?.length ? vinyl.genreIds : vinyl.genreId ? [vinyl.genreId] : []).map(String),
     year: numberOrEmpty(vinyl.year || ''),
     description: vinyl.description ?? '',
     price: numberOrEmpty(vinyl.originalPrice || vinyl.price),
@@ -95,14 +98,13 @@ export const validateVinyl = (values) => {
   const { audio } = values
   const albumUrl = (values.albumUrl ?? '').trim()
   if (albumUrl.length > MAX_ALBUM_URL_LENGTH) errors.albumUrl = `Máximo ${MAX_ALBUM_URL_LENGTH} caracteres.`
-  else if (albumUrl && !getAlbumUrl(albumUrl)) errors.albumUrl = 'Pegá el enlace HTTPS de un álbum de Apple Music o Spotify.'
+  else if (albumUrl && !getAlbumUrl(albumUrl)) errors.albumUrl = 'Pegá el enlace de una canción o álbum de Spotify, Apple Music o un video de YouTube.'
   if (audio.mode === 'existing' && !audio.audioPreviewId) errors.audioPreviewId = 'Elegí una preview de la lista.'
   if (audio.mode === 'new') {
     const url = audio.url.trim()
     if (!url) errors.audioUrl = 'Ingresá la URL del audio.'
-    else if (url.length > MAX_TEXT_LENGTH) errors.audioUrl = `Máximo ${MAX_TEXT_LENGTH} caracteres.`
-    else if (!isValidUrl(url)) errors.audioUrl = 'Ingresá una URL válida (https://…).'
-    if (!isInteger(audio.durationSeconds) || Number(audio.durationSeconds) <= 0) errors.audioDuration = 'Indicá la duración en segundos.'
+    else if (!getMediaSource(url)) errors.audioUrl = 'Ingresá un enlace de audio, Spotify, Apple Music o YouTube de hasta 2048 caracteres.'
+    if (audio.durationSeconds && (!isInteger(audio.durationSeconds) || Number(audio.durationSeconds) <= 0)) errors.audioDuration = 'Indicá una duración positiva en segundos o dejala vacía para detectarla.'
     else if (Number(audio.durationSeconds) > MAX_AUDIO_SECONDS) errors.audioDuration = `La preview no puede durar más de ${MAX_AUDIO_SECONDS / 60} minutos.`
   }
 
@@ -123,6 +125,7 @@ export const toVinylPayload = (values, audioPreviewId) => ({
   artistId: toId(values.artistId),
   categoryId: toId(values.categoryId),
   genreId: toId(values.genreId),
+  genreIds: (values.genreIds ?? (values.genreId ? [values.genreId] : [])).map(Number),
   audioPreviewId: toId(audioPreviewId),
 })
 
@@ -138,6 +141,7 @@ const SERVER_FIELD_MAP = {
   artistId: 'artistId',
   categoryId: 'categoryId',
   genreId: 'genreId',
+  genreIds: 'genreIds',
   audioPreviewId: 'audioPreviewId',
   url: 'audioUrl',
   durationSeconds: 'audioDuration',
@@ -151,6 +155,6 @@ export const mapServerFieldErrors = (fieldErrors = {}) =>
   }, {})
 
 export const FIELD_ORDER = [
-  'name', 'artistId', 'year', 'categoryId', 'genreId', 'price', 'discountPercentage', 'stock',
+  'name', 'artistId', 'year', 'categoryId', 'genreIds', 'genreId', 'price', 'discountPercentage', 'stock',
   'description', 'image', 'albumUrl', 'audioPreviewId', 'audioUrl', 'audioDuration',
 ]

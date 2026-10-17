@@ -13,7 +13,7 @@ public class AudioPreview {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column
+    @Column(length = 2048)
     private String url;
     @Column
     private int durationSeconds;

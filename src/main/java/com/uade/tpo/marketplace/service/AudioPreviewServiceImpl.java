@@ -45,9 +45,9 @@ public class AudioPreviewServiceImpl implements AudioPreviewService {
         if (request.getUrl() == null || request.getUrl().isBlank()) {
             throw new InvalidFieldException("url", "no puede estar vacia");
         }
-        if (request.getDurationSeconds() <= 0) {
-            throw new InvalidFieldException("durationSeconds", "debe ser mayor a cero");
-        }
+        request.setUrl(com.uade.tpo.marketplace.common.MediaUrl.normalize(request.getUrl(), true));
+        if (request.getDurationSeconds() < 0 || request.getDurationSeconds() > 600) throw new InvalidFieldException("durationSeconds", "debe estar entre 0 y 600 segundos");
+        if (request.getDurationSeconds() == 0) request.setDurationSeconds(30);
 
         return audioPreviewRepository.save(AudioPreviewMapper.toEntity(request));
     }

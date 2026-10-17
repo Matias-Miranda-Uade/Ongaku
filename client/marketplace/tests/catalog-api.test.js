@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { after, beforeEach, test } from 'node:test'
-import { createArtist, uploadCover } from '../src/services/adminService.js'
+import { createArtist, createCategory, getCatalogLookups, uploadCover } from '../src/services/adminService.js'
 import {
   ApiError, createFavorite, createOrder, createPayment, createReview, deleteAddress, deleteCard, deleteFavorite, deleteReview, getAddresses, getAudioPreview, getFavorites, getOrder, getOrders, getSavedCards, saveAddress, saveCard,
   getReviewEligibility, getReviews, getReviewsByVinyl, getVinylById, getVinyls, request, updateReview,
@@ -40,6 +40,16 @@ test('crear artistas envía el nombre al backend y devuelve su identificador', a
   assert.equal((await createArtist('Lana Del Rey')).id, 80)
   assert.equal(calls[0].method, 'POST')
   assert.deepEqual(JSON.parse(calls[0].body), { name: 'Lana Del Rey' })
+})
+
+test('las categorías se cargan y se crean sin ocultar los errores del servidor', async () => {
+  routes['/categories'] = [{ id: 4, description: 'En vivo' }]
+  assert.deepEqual((await getCatalogLookups()).categories, routes['/categories'])
+  routes['/categories'] = { id: 5, description: 'EP' }
+  assert.equal((await createCategory('EP')).description, 'EP')
+  assert.deepEqual(JSON.parse(calls.at(-1).body), { description: 'EP' })
+  routes['/categories'] = new Error('offline')
+  await assert.rejects(getCatalogLookups(), (error) => error.status === 0)
 })
 
 test('subir una portada envía el archivo multipart con autenticación y sin forzar JSON', async () => {

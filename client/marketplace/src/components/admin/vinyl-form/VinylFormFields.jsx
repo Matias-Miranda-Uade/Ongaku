@@ -1,5 +1,6 @@
 import { MIN_YEAR, maxYear } from './vinylFormModel'
 import ArtistCreator from './ArtistCreator'
+import CategoryCreator from './CategoryCreator'
 
 export const FieldError = ({ id, message }) =>
   message ? <p className="field-error" id={id} role="alert">{message}</p> : null
@@ -11,7 +12,7 @@ export const fieldA11y = (name, error, hintId) => ({
   'aria-describedby': [error ? `vf-${name}-error` : null, hintId].filter(Boolean).join(' ') || undefined,
 })
 
-const VinylFormFields = ({ values, errors, onChange, onBlur, onArtistCreated, artists = [], categories = [], lockedRelations = {} }) => (
+const VinylFormFields = ({ values, errors, onChange, onBlur, onArtistCreated, onCategoryCreated, artists = [], categories = [], lockedRelations = {} }) => (
   <fieldset className="vf-section">
     <legend><span className="vf-step">01</span> Datos del disco</legend>
 
@@ -73,10 +74,12 @@ const VinylFormFields = ({ values, errors, onChange, onBlur, onArtistCreated, ar
         onChange={(event) => onChange('categoryId', event.target.value)}
         onBlur={() => onBlur('categoryId')}
       >
-        <option value="" disabled={lockedRelations.categoryId}>Sin categoría</option>
+        <option value="">Sin categoría</option>
         {categories.map((category) => <option key={category.id} value={category.id}>{category.description}</option>)}
       </select>
       <FieldError id="vf-categoryId-error" message={errors.categoryId} />
+      {categories.length === 0 && <p className="vf-hint">No hay categorías cargadas. Podés crear una abajo.</p>}
+      <CategoryCreator categories={categories} onCreated={onCategoryCreated} onSelect={(id) => onChange('categoryId', id)} />
     </div>
   </fieldset>
 )
