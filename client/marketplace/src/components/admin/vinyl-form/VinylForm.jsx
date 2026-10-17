@@ -29,6 +29,7 @@ import { getAlbumUrl } from '../../vinyl-detail/albumUrl'
 
 const FOCUS_TARGETS = {
   genreId: '#vf-genre-label + .genre-chips button',
+  genreIds: '#vf-genre-label + .genre-chips button',
   audioPreviewId: '#vf-audioPreviewId',
   audioUrl: '#vf-audioUrl',
   audioDuration: '#vf-audioDuration',
@@ -38,12 +39,15 @@ const VinylForm = ({ mode = 'create', initialData = null, onSuccess, onCancel })
   const isEdit = mode === 'edit'
   const initialValues = useMemo(() => toFormValues(initialData), [initialData])
   const [lookups, setLookups] = useState({ artists: [], genres: [], categories: [] })
+  const [lookupError, setLookupError] = useState('')
+  const [lookupReload, setLookupReload] = useState(0)
   const { artists, categories, genres } = lookups
   useEffect(() => {
     let active = true
-    getCatalogLookups().then((data) => { if (active) setLookups(data) })
+    setLookupError('')
+    getCatalogLookups().then((data) => { if (active) setLookups(data) }).catch((error) => { if (active) setLookupError(error.message) })
     return () => { active = false }
-  }, [])
+  }, [lookupReload])
   const addGenre = (genre) => {
     setLookups((current) => ({ ...current, genres: [...current.genres, genre] }))
   }
@@ -124,7 +128,7 @@ const VinylForm = ({ mode = 'create', initialData = null, onSuccess, onCancel })
     if (audio.mode !== 'new') return null
     const key = `${audio.url.trim()}|${audio.durationSeconds}`
     if (createdAudio.current?.key === key) return createdAudio.current.id
-    const preview = await createAudioPreview({ url: audio.url.trim(), durationSeconds: Number(audio.durationSeconds) })
+    const preview = await createAudioPreview({ url: audio.url.trim(), durationSeconds: Number(audio.durationSeconds) || 30 })
     createdAudio.current = { key, id: preview.id }
     setPreviews((current) => [...current, preview])
     return preview.id
@@ -205,6 +209,7 @@ const VinylForm = ({ mode = 'create', initialData = null, onSuccess, onCancel })
 
   return (
     <form ref={formRef} className="vinyl-form" onSubmit={handleSubmit} noValidate aria-busy={submitting}>
+      {lookupError && <div className="admin-alert" role="alert"><p>No se pudieron cargar artistas, categorías o géneros: {lookupError}</p><button type="button" onClick={() => setLookupReload((n) => n + 1)}>Reintentar</button></div>}
       {serverError && (
         <div className="admin-alert" role="alert">
           <p>{serverError}</p>
@@ -226,17 +231,18 @@ const VinylForm = ({ mode = 'create', initialData = null, onSuccess, onCancel })
             artists={artists}
             onArtistCreated={(artist) => setLookups((current) => ({ ...current, artists: [...current.artists, artist] }))}
             categories={categories}
+            onCategoryCreated={(category) => setLookups((current) => ({ ...current, categories: [...current.categories, category] }))}
             lockedRelations={lockedRelations}
           />
 
           <fieldset className="vf-section">
             <legend><span className="vf-step">02</span> Género y descripción</legend>
             <GenreSelector
-              value={values.genreId}
-              onChange={(genreId) => handleChange('genreId', genreId)}
+              value={values.genreIds}
+              onChange={(genreIds) => handleChange('genreIds', genreIds)}
               genres={genres}
               onGenreCreated={addGenre}
-              error={visibleErrors.genreId}
+              error={visibleErrors.genreIds || visibleErrors.genreId}
               locked={lockedRelations.genreId}
             />
             <VinylDescriptionInput
@@ -277,14 +283,14 @@ const VinylForm = ({ mode = 'create', initialData = null, onSuccess, onCancel })
             locked={lockedRelations.audio}
           />
           <fieldset className="vf-section">
-            <legend>Enlace para escuchar el álbum</legend>
+            <legend><span className="vf-step">06</span> Enlace para escuchar</legend>
             <div className="vf-field vf-span-2">
-              <label htmlFor="vf-albumUrl">Link del álbum (opcional)</label>
+              <label htmlFor="vf-albumUrl">Canción o álbum en una plataforma (opcional)</label>
               <input id="vf-albumUrl" type="url" inputMode="url" value={values.albumUrl}
                 maxLength={MAX_ALBUM_URL_LENGTH} placeholder="https://music.apple.com/… o https://open.spotify.com/album/…"
                 onChange={(event) => handleChange('albumUrl', event.target.value)} onBlur={() => handleBlur('albumUrl')}
                 aria-invalid={Boolean(visibleErrors.albumUrl)} aria-describedby={`vf-albumUrl-hint${visibleErrors.albumUrl ? ' vf-albumUrl-error' : ''}`} />
-              <p className="vf-hint" id="vf-albumUrl-hint">Pegá el enlace del álbum de Apple Music o Spotify. El cliente podrá abrirlo desde el detalle del vinilo. Dejalo vacío para quitarlo.</p>
+              <p className="vf-hint" id="vf-albumUrl-hint">Acepta canciones y álbumes de Spotify o Apple Music, y videos de YouTube. Se muestra un reproductor y un enlace en el detalle. Si ya cargaste una preview, se reproduce esa muestra.</p>
               {visibleErrors.albumUrl && <p className="field-error" id="vf-albumUrl-error" role="alert">{visibleErrors.albumUrl}</p>}
               {getAlbumUrl(values.albumUrl) && <a className="link-button" href={getAlbumUrl(values.albumUrl)} target="_blank" rel="noopener noreferrer">Abrir enlace para comprobarlo ↗</a>}
             </div>
@@ -297,7 +303,7 @@ const VinylForm = ({ mode = 'create', initialData = null, onSuccess, onCancel })
             <CoverUploader value={values.image} onChange={handleChange} onBlur={handleBlur} error={visibleErrors.image} onStatusChange={setCoverStatus} />
           </fieldset>
           <fieldset className="vf-section">
-            <legend><span className="vf-step">06</span> Publicación</legend>
+            <legend><span className="vf-step">07</span> Publicación</legend>
             <PublicationToggle checked={values.enabled} onChange={handleChange} stock={values.stock} />
           </fieldset>
         </aside>

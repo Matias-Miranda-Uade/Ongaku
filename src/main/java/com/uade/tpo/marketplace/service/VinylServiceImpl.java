@@ -177,6 +177,19 @@ public class VinylServiceImpl implements VinylService {
                 : null;
 
         VinylMapper.applyRelations(vinyl, category, artist, genre, audioPreview);
+        if (request.hasCategoryId() && request.getCategoryId() == null) vinyl.setCategory(null);
+        if (request.hasAudioPreviewId() && request.getAudioPreviewId() == null) vinyl.setAudioPreview(null);
+        if (request.getGenreIds() != null) {
+            var selected = new java.util.ArrayList<Genre>();
+            for (Long id : new java.util.LinkedHashSet<>(request.getGenreIds())) {
+                if (id == null || id <= 0) throw new InvalidFieldException("genreIds", "los géneros deben ser válidos");
+                selected.add(genreRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Genero", id)));
+            }
+            vinyl.setGenre(selected.isEmpty() ? null : selected.get(0));
+            vinyl.setAdditionalGenres(selected);
+        } else if (request.getGenreId() != null) {
+            vinyl.setAdditionalGenres(new java.util.ArrayList<>());
+        }
     }
 
     private void validateDiscount(Integer percentage) {

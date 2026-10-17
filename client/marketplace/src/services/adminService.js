@@ -43,6 +43,7 @@ export const getAudioPreviews = async () => asList(await request('/audio-preview
 
 export const createGenre = (name) => request('/genres', jsonRequest('POST', { name }))
 export const createArtist = (name) => request('/artists', jsonRequest('POST', { name }))
+export const createCategory = (description) => request('/categories', jsonRequest('POST', { description }))
 export const uploadCover = (file) => {
   const body = new FormData()
   body.append('file', file)
@@ -53,8 +54,7 @@ export const createAudioPreview = ({ url, durationSeconds }) =>
   request('/audio-previews', jsonRequest('POST', { url, durationSeconds }))
 
 export const getCatalogLookups = async () => {
-  const results = await Promise.allSettled([getArtists(), getGenres(), getCategories()])
-  const [artists, genres, categories] = results.map((result) => (result.status === 'fulfilled' ? result.value : []))
+  const [artists, genres, categories] = await Promise.all([getArtists(), getGenres(), getCategories()])
   return { artists, genres, categories }
 }
 
@@ -76,6 +76,7 @@ const adminService = {
   getAudioPreviews,
   createGenre,
   createArtist,
+  createCategory,
   uploadCover,
   createAudioPreview,
   getCatalogLookups,

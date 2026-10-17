@@ -146,7 +146,7 @@ class MarketplaceSecurityTests {
     }
 
     @Test
-    void publicListsAndAuthenticatedDetails() throws Exception {
+    void publicListsAndGuestDetails() throws Exception {
         for (String path : new String[]{"/vinyls", "/vinyls/search", "/vinyls/filter", "/vinyls/search/test",
                 "/vinyls/artist/1", "/vinyls/genre/1", "/vinyls/category/1", "/vinyls/year/2020",
                 "/vinyls/year/asc", "/vinyls/year/desc", "/vinyls/price/asc", "/vinyls/price/desc",
@@ -154,7 +154,8 @@ class MarketplaceSecurityTests {
                 "/audio-previews", "/average-scores"}) {
             mvc.perform(get(path)).andExpect(status().isOk());
         }
-        for (String path : new String[]{"/vinyls/" + vinyl.getId(), "/artists/1", "/genres/1", "/genres/1/vinyls",
+        mvc.perform(get("/vinyls/" + vinyl.getId())).andExpect(status().isOk());
+        for (String path : new String[]{"/artists/1", "/genres/1", "/genres/1/vinyls",
                 "/reviews/me"}) {
             mvc.perform(get(path)).andExpect(status().isUnauthorized());
         }
@@ -230,7 +231,7 @@ class MarketplaceSecurityTests {
         assertThat(vinyls.findById(id).orElseThrow().getAlbumUrl()).isEqualTo(spotify);
         mvc.perform(get("/vinyls/" + id).header("Authorization", ownerToken))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.data.albumUrl").value(spotify));
-        for (String invalid : new String[]{"javascript:alert(1)", "https://music.apple.com.evil.com/us/album/a/1", "https://open.spotify.com/track/0123456789ABCDEFGHIJKL", "https://user@music.apple.com/us/album/a/1", "a".repeat(2049)}) {
+        for (String invalid : new String[]{"javascript:alert(1)", "https://music.apple.com.evil.com/us/album/a/1", "https://open.spotify.com/playlist/0123456789ABCDEFGHIJKL", "https://user@music.apple.com/us/album/a/1", "a".repeat(2049)}) {
             mvc.perform(patch(path).header("Authorization", adminToken).contentType("application/json")
                     .content(json.writeValueAsString(java.util.Map.of("albumUrl", invalid))))
                     .andExpect(status().isBadRequest());
@@ -240,6 +241,54 @@ class MarketplaceSecurityTests {
         }
         mvc.perform(patch(path).header("Authorization", adminToken).contentType("application/json").content("{\"albumUrl\":\"\"}"))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.data.albumUrl").value(""));
+    }
+
+    @Test
+    void categoriesAndMultipleGenresPersistAndAreVisibleToGuests() throws Exception {
+        var categoryResult = mvc.perform(post("/categories").header("Authorization", adminToken).contentType("application/json")
+                .content("{\"description\":\"Formato " + UUID.randomUUID() + "\"}"))
+                .andExpect(status().isCreated()).andReturn();
+        long categoryId = dataId(categoryResult);
+        var genreIds = new java.util.ArrayList<Long>();
+        for (int i = 0; i < 2; i++) {
+            genreIds.add(dataId(mvc.perform(post("/genres").header("Authorization", adminToken).contentType("application/json")
+                    .content("{\"name\":\"Género " + UUID.randomUUID() + "\"}"))
+                    .andExpect(status().isCreated()).andReturn()));
+        }
+        var result = mvc.perform(post("/admin/vinyls").header("Authorization", adminToken).contentType("application/json")
+                .content(json.writeValueAsString(java.util.Map.of("name", "Multi género", "price", 100, "stock", 2, "year", 2020, "categoryId", categoryId, "genreIds", genreIds))))
+                .andExpect(status().isCreated()).andReturn();
+        long id = dataId(result);
+        em.flush(); em.clear();
+        mvc.perform(get("/vinyls/" + id)).andExpect(status().isOk()).andExpect(jsonPath("$.data.categoryId").value(categoryId))
+                .andExpect(jsonPath("$.data.genreIds.length()").value(2));
+        for (Long genreId : genreIds) {
+            mvc.perform(get("/vinyls/filter").param("genreId", genreId.toString()))
+                    .andExpect(status().isOk()).andExpect(jsonPath("$.data[?(@.id == " + id + ")]").isNotEmpty());
+        }
+        mvc.perform(get("/categories")).andExpect(status().isOk()).andExpect(jsonPath("$.data[?(@.id == " + categoryId + ")]").isNotEmpty());
+        mvc.perform(patch("/admin/vinyls/" + id).header("Authorization", adminToken).contentType("application/json")
+                .content("{\"genreIds\":[],\"categoryId\":null}"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.genreIds").isEmpty()).andExpect(jsonPath("$.data.categoryId").doesNotExist());
+    }
+
+    @Test
+    void streamingPreviewsAllowGuestAccessAndCanBeReplacedOrRemoved() throws Exception {
+        for (String url : new String[]{"https://open.spotify.com/track/0123456789ABCDEFGHIJKL", "https://music.apple.com/us/album/animals/1065974284?i=1065974291", "https://youtu.be/M7lc1UVf-VE", "https://audio.example.com/" + "a".repeat(300) + ".m4a"}) {
+            var previewResult = mvc.perform(post("/audio-previews").header("Authorization", adminToken).contentType("application/json")
+                    .content(json.writeValueAsString(java.util.Map.of("url", url))))
+                    .andExpect(status().isCreated()).andExpect(jsonPath("$.data.url").value(url)).andReturn();
+            long previewId = dataId(previewResult);
+            mvc.perform(patch("/admin/vinyls/" + vinyl.getId()).header("Authorization", adminToken).contentType("application/json")
+                    .content("{\"audioPreviewId\":" + previewId + "}"))
+                    .andExpect(status().isOk()).andExpect(jsonPath("$.data.audioPreviewId").value(previewId));
+            mvc.perform(get("/audio-previews/" + previewId)).andExpect(status().isOk()).andExpect(jsonPath("$.data.url").value(url));
+            mvc.perform(get("/vinyls/" + vinyl.getId())).andExpect(status().isOk());
+        }
+        mvc.perform(patch("/admin/vinyls/" + vinyl.getId()).header("Authorization", adminToken).contentType("application/json").content("{\"audioPreviewId\":null}"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.audioPreviewId").doesNotExist());
+        mvc.perform(post("/audio-previews").header("Authorization", adminToken).contentType("application/json").content("{\"url\":\"javascript:alert(1)\"}"))
+                .andExpect(status().isBadRequest());
     }
 
     @Test

@@ -7,12 +7,14 @@ const AudioPlayer = ({ preview }) => {
   const [playing, setPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [error, setError] = useState('')
+  const [duration, setDuration] = useState(Number(preview?.durationSeconds) || 0)
 
   useEffect(() => {
     setPlaying(false)
     setCurrentTime(0)
     setError('')
-  }, [preview?.id])
+    setDuration(Number(preview?.durationSeconds) || 0)
+  }, [preview?.id, preview?.url])
 
   const toggle = async () => {
     if (!preview?.url) return
@@ -34,6 +36,8 @@ const AudioPlayer = ({ preview }) => {
         <audio
           ref={audioRef}
           src={preview.url}
+          preload="metadata"
+          onLoadedMetadata={(event) => { const seconds = event.currentTarget.duration; if (Number.isFinite(seconds)) setDuration(seconds) }}
           onPlay={() => setPlaying(true)}
           onPause={() => setPlaying(false)}
           onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime)}
@@ -44,9 +48,9 @@ const AudioPlayer = ({ preview }) => {
       <button type="button" disabled={!preview?.url} aria-label={playing ? 'Pausar audio' : 'Reproducir audio'} onClick={toggle}>{playing ? 'Ⅱ' : '▶'}</button>
       <div className="audio-player-body">
         <AudioWaveform />
-        <AudioProgress value={currentTime} duration={preview?.durationSeconds || 30} />
+        <AudioProgress value={currentTime} duration={duration || 30} />
       </div>
-      <span>{preview?.durationSeconds || 30}s</span>
+      <span>{duration ? `${Math.ceil(duration)}s` : 'Audio'}</span>
       {error && <p role="alert">{error}</p>}
     </div>
   )

@@ -1,15 +1,16 @@
 import { getAlbumUrl } from './albumUrl'
+import { getMediaSource } from '../audio/mediaSource'
 
 const AlbumLink = ({ url }) => {
   const href = getAlbumUrl(url)
   if (!href) return null
-  const platform = new URL(href).hostname === 'open.spotify.com' ? 'Spotify' : 'Apple Music'
+  const platform = getMediaSource(href).platform
   return (
     <div className="album-listen">
       <a href={href} target="_blank" rel="noopener noreferrer" className="album-listen-link">
-        Ver canciones y escuchar en {platform} <span aria-hidden="true">↗</span>
+        Abrir en {platform} <span aria-hidden="true">↗</span>
       </a>
-      <p>Abre el álbum en una nueva pestaña. Las muestras y la reproducción completa dependen de la disponibilidad en tu región y de tu suscripción.</p>
+      <p>Abre la canción o el álbum en una nueva pestaña. La reproducción depende de la disponibilidad de la plataforma.</p>
     </div>
   )
 }

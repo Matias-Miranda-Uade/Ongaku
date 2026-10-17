@@ -21,7 +21,7 @@ const InventoryPage = () => {
   const genresById = useMemo(() => indexById(lookups.genres), [lookups.genres])
   useEffect(() => {
     let active = true
-    getCatalogLookups().then((data) => { if (active) setLookups(data) })
+    getCatalogLookups().then((data) => { if (active) setLookups(data) }).catch((error) => { if (active) setError(error.message) })
     return () => { active = false }
   }, [])
 
@@ -55,7 +55,7 @@ const InventoryPage = () => {
   const rows = useMemo(() => vinyls.map((vinyl) => ({
     ...vinyl,
     artistName: artistsById[String(vinyl.artistId)]?.name ?? '',
-    genreName: genresById[String(vinyl.genreId)]?.name ?? '',
+    genreName: (vinyl.genreIds?.length ? vinyl.genreIds : [vinyl.genreId]).map((id) => genresById[String(id)]?.name).filter(Boolean).join(' / '),
     finalPrice: vinyl.finalPrice ?? vinyl.price,
   })), [vinyls, artistsById, genresById])
 
@@ -63,7 +63,7 @@ const InventoryPage = () => {
     const term = normalizeText(filters.search)
     const filtered = rows.filter((row) => {
       if (term && ![row.name, row.artistName, String(row.id)].some((value) => normalizeText(value).includes(term))) return false
-      if (filters.genreId && String(row.genreId) !== filters.genreId) return false
+      if (filters.genreId && !(row.genreIds?.length ? row.genreIds : [row.genreId]).map(String).includes(filters.genreId)) return false
       if (filters.categoryId && String(row.categoryId) !== filters.categoryId) return false
       if (filters.stock !== 'all' && getStockStatus(row.stock) !== filters.stock) return false
       if (filters.visibility === 'visible' && !row.enabled) return false

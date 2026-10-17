@@ -46,6 +46,7 @@ public final class VinylMapper {
         response.setCategoryId(vinyl.getCategory() != null ? vinyl.getCategory().getId() : null);
         response.setArtistId(vinyl.getArtist() != null ? vinyl.getArtist().getId() : null);
         response.setGenreId(vinyl.getGenre() != null ? vinyl.getGenre().getId() : null);
+        response.setGenreIds(vinyl.getAllGenres().stream().map(Genre::getId).toList());
         response.setAudioPreviewId(vinyl.getAudioPreview() != null ? vinyl.getAudioPreview().getId() : null);
     }
 

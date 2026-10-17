@@ -37,6 +37,8 @@ public class CategoryServiceImpl implements CategoryService {
             throw new InvalidFieldException("description", "no puede estar vacia");
         }
 
+        description = description.trim();
+        if (description.length() > 255) throw new InvalidFieldException("description", "no puede superar 255 caracteres");
         List<Category> categories = categoryRepository.findByDescription(description);
 
         if (!categories.isEmpty()) {

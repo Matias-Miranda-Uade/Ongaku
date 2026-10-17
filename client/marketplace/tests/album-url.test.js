@@ -12,8 +12,9 @@ test('abre enlaces de álbumes reales y descarta destinos inválidos', () => {
   }
 })
 
-test('solo acepta enlaces a álbumes y no a canciones, playlists o puertos alternativos', () => {
-  for (const invalid of ['https://open.spotify.com/track/0123456789ABCDEFGHIJKL', 'https://open.spotify.com/playlist/0123456789ABCDEFGHIJKL', 'https://music.apple.com:8080/us/album/animals/1065974284', 'https://music.apple.com/us/album/no-es-un-id', 'https://open.spotify.com/album/incorrecto']) {
+test('acepta canciones y álbumes, pero rechaza playlists y puertos alternativos', () => {
+  assert.ok(getAlbumUrl('https://open.spotify.com/track/0123456789ABCDEFGHIJKL'))
+  for (const invalid of ['https://open.spotify.com/playlist/0123456789ABCDEFGHIJKL', 'https://music.apple.com:8080/us/album/animals/1065974284', 'https://music.apple.com/us/album/no-es-un-id', 'https://open.spotify.com/album/incorrecto']) {
     assert.equal(getAlbumUrl(invalid), null)
   }
 })

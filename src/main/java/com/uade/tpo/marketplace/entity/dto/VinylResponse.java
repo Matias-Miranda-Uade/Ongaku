@@ -18,6 +18,9 @@ public class VinylResponse {
     private Long categoryId;
     private Long artistId;
     private Long genreId;
+    private java.util.List<Long> genreIds;
+    public java.util.List<Long> getGenreIds() { return genreIds; }
+    public void setGenreIds(java.util.List<Long> genreIds) { this.genreIds = genreIds; }
     private Long audioPreviewId;
     private int year;
 

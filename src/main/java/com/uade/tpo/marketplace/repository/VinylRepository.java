@@ -31,7 +31,7 @@ public interface VinylRepository extends JpaRepository<Vinyl, Long> {
             "(?1 is null or v.category.id = ?1) and " +
             "(?2 is null or floor((v.price * 1.0 * (100 - v.discountPercentage) + 50) / 100.0) >= ?2) and " +
             "(?3 is null or floor((v.price * 1.0 * (100 - v.discountPercentage) + 50) / 100.0) <= ?3) and (?4 is null or v.artist.id = ?4) and " +
-            "(?5 is null or v.genre.id = ?5)")
+            "(?5 is null or (v.genre.id = ?5 or exists (select vg.id from Vinyl vg join vg.additionalGenres gg where vg.id = v.id and gg.id = ?5)))")
     List<Vinyl> filterPublic(Integer categoryId, Double minPrice, Double maxPrice,
             Integer artistId, Integer genreId);
 
@@ -40,7 +40,7 @@ public interface VinylRepository extends JpaRepository<Vinyl, Long> {
             "(?2 is null or v.price >= ?2) and " +
             "(?3 is null or v.price <= ?3) and " +
             "(?4 is null or (?4 = true and v.stock > 0) or (?4 = false and v.stock <= 0)) and " +
-            "(?5 is null or v.artist.id = ?5) and (?6 is null or v.genre.id = ?6) and " +
+            "(?5 is null or v.artist.id = ?5) and (?6 is null or (v.genre.id = ?6 or exists (select vg.id from Vinyl vg join vg.additionalGenres gg where vg.id = v.id and gg.id = ?6))) and " +
             "(?7 is null or coalesce(v.enabled, true) = ?7)")
     List<Vinyl> filterAll(
             Integer categoryId,
@@ -63,10 +63,10 @@ public interface VinylRepository extends JpaRepository<Vinyl, Long> {
         @Query("select v from Vinyl v where v.artist.id = ?1")
         List<Vinyl> findAllByArtistId(Long artistId);
 
-        @Query("select v from Vinyl v where (v.enabled is null or v.enabled = true) and v.genre.id = ?1")
+        @Query("select v from Vinyl v where (v.enabled is null or v.enabled = true) and (v.genre.id = ?1 or exists (select vg.id from Vinyl vg join vg.additionalGenres gg where vg.id = v.id and gg.id = ?1))")
         List<Vinyl> findPublicByGenreId(Long genreId);
 
-        @Query("select v from Vinyl v where v.genre.id = ?1")
+        @Query("select v from Vinyl v where (v.genre.id = ?1 or exists (select vg.id from Vinyl vg join vg.additionalGenres gg where vg.id = v.id and gg.id = ?1))")
         List<Vinyl> findAllByGenreId(Long genreId);
 
         @Query("select v from Vinyl v where (v.enabled is null or v.enabled = true) and v.category.id = ?1")
