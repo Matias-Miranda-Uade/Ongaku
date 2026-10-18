@@ -4,6 +4,7 @@ import { AuthContext } from '../../context/AuthContext'
 
 const sections = [
   { to: '/app/admin/dashboard', label: 'Dashboard', kana: '概要' },
+  { to: '/app/admin/orders', label: 'Órdenes', kana: 'ORD' },
   { to: '/app/admin/inventory', label: 'Inventario', kana: '在庫' },
   { to: '/app/admin/vinyls/new', label: 'Nuevo vinilo', kana: '追加' },
   { to: '/app/admin/showcase', label: 'Vitrina', kana: '展示' },

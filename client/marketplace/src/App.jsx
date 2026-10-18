@@ -76,7 +76,7 @@ const App = () => {
   }, [location.pathname])
 
   useEffect(() => {
-    if (!user) {
+    if (!user || isAdmin) {
       setOrders([])
       return
     }
@@ -93,9 +93,13 @@ const App = () => {
     return () => {
       active = false
     }
-  }, [user?.id, ordersReload])
+  }, [user?.id, isAdmin, ordersReload])
 
   const openPage = (nextPage) => {
+    if (nextPage === 'orders' && isAdmin) {
+      navigate('/app/admin/orders')
+      return
+    }
     navigate(pagePaths[nextPage] ?? '/')
   }
 
@@ -133,6 +137,7 @@ const App = () => {
   }
 
   if (!page) return <Navigate to="/" replace />
+  if (isAdmin && page === 'orders') return <Navigate to="/app/admin/orders" replace />
 
   return (
     <CartProvider user={isAdmin ? null : user}>
@@ -225,7 +230,7 @@ const AppContent = ({
           />
         )}
         {page === 'reviews' && <ReviewsPage />}
-        {page === 'favorites' && <div className="legacy-page"><FavoritesPage onNavigate={openPage} /></div>}
+        {page === 'favorites' && <div className="legacy-page"><FavoritesPage onNavigate={openPage} onOpenVinyl={openVinyl} /></div>}
         {page === 'cart' && (
           <div className="legacy-page">
             <CartPage onCheckout={handleCheckout} onNavigate={openPage} />
