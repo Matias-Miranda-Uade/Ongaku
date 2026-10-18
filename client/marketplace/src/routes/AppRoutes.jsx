@@ -6,6 +6,7 @@ import InventoryPage from '../pages/admin/InventoryPage'
 import CreateVinylPage from '../pages/admin/CreateVinylPage'
 import EditVinylPage from '../pages/admin/EditVinylPage'
 import ShowcasePage from '../pages/admin/ShowcasePage'
+import OrdersAdminPage from '../pages/admin/OrdersAdminPage'
 
 export const ADMIN_BASE_PATH = '/app/admin'
 
@@ -17,6 +18,7 @@ const AppRoutes = () => (
     <Route path={ADMIN_BASE_PATH} element={<AdminRoute><AdminLayout /></AdminRoute>}>
       <Route index element={<Navigate to="dashboard" replace />} />
       <Route path="dashboard" element={<DashboardPage />} />
+      <Route path="orders" element={<OrdersAdminPage />} />
       <Route path="inventory" element={<InventoryPage />} />
       <Route path="vinyls/new" element={<CreateVinylPage />} />
       <Route path="vinyls/:vinylId/edit" element={<EditVinylPage />} />

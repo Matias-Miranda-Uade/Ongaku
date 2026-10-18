@@ -1,6 +1,7 @@
 import OrderStatus from "./OrderStatus"
 
 const OrderCard = ({ order, onSelect }) => {
+    const delivered = order.status === 'ENTREGADA'
     return (
         <article className="order-card">
             <div className="order-card-heading">
@@ -24,6 +25,7 @@ const OrderCard = ({ order, onSelect }) => {
                 <span>{order.items.length} {order.items.length === 1 ? 'título' : 'títulos'}</span>
                 <strong>${order.total.toLocaleString('es-AR')}</strong>
                 <button className="secondary-button" onClick={() => onSelect(order.id)}>Ver detalle <span aria-hidden="true">→</span></button>
+                <button className="primary-button" type="button" disabled={!delivered} onClick={() => onSelect(order.id)}>Dejar reseña</button>
             </div>
         </article>
     )

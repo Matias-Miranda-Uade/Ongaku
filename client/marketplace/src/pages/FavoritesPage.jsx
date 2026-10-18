@@ -3,7 +3,7 @@ import { FavoritesContext } from '../context/FavoritesContext'
 import { CartContext } from '../context/CartContext'
 import { AuthContext } from '../context/AuthContext'
 
-const FavoritesPage = ({ onNavigate }) => {
+const FavoritesPage = ({ onNavigate, onOpenVinyl }) => {
 
     const { favorites, removeFavorite } = useContext(FavoritesContext)
     const { items, addItem } = useContext(CartContext)
@@ -49,14 +49,14 @@ const FavoritesPage = ({ onNavigate }) => {
                 {
                     favorites.map((product) => (
                         <li className="favorite-card" key={product.id}>
-                            <div className={`favorite-card-image ${product.stock <= 0 ? 'is-out-of-stock' : ''}`}>
+                            <button className={`favorite-card-image favorite-card-detail-link ${product.stock <= 0 ? 'is-out-of-stock' : ''}`} type="button" onClick={() => onOpenVinyl?.(product.id)} aria-label={`Ver detalle de ${product.name}`}>
                                 <img src={product.image} alt={`Portada de ${product.name}`} />
                                 {product.stock <= 0 && <span className="stock-out-overlay">SIN STOCK</span>}
-                                <button className="favorite-remove" aria-label={`Quitar ${product.name} de favoritos`} onClick={() => removeFavorite(product.id)}>♥</button>
-                            </div>
+                            </button>
+                            <button className="favorite-remove" aria-label={`Quitar ${product.name} de favoritos`} onClick={() => removeFavorite(product.id)}>♥</button>
                             <div className="favorite-card-copy">
                                 <p className="eyebrow">{product.artist}</p>
-                                <h2>{product.name}</h2>
+                                <h2><button className="text-link link-button" type="button" onClick={() => onOpenVinyl?.(product.id)}>{product.name}</button></h2>
                                 <div className="favorite-card-footer">
                                     <strong>${product.price.toLocaleString('es-AR')}</strong>
                                     {product.stock > 0

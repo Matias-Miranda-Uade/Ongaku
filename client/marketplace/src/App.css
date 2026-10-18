@@ -1128,6 +1128,7 @@ select:focus-visible {
 }
 
 .favorite-card {
+  position: relative;
   min-width: 0;
   overflow: hidden;
   border: 1px solid #292a2c;
@@ -1136,9 +1137,17 @@ select:focus-visible {
 
 .favorite-card-image {
   position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
   aspect-ratio: 1;
   overflow: hidden;
   background: var(--surface);
+}
+
+.favorite-card-detail-link {
+  cursor: pointer;
 }
 
 .favorite-card-image img {
