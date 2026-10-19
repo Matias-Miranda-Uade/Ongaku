@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
-const OrderRating = ({ item, onRate, submitting = false }) => {
+const OrderRating = ({ item, onRate, submitting = false, autoFocus = false }) => {
   const [score, setScore] = useState(0)
   const [comment, setComment] = useState('')
   const [error, setError] = useState('')
+  const commentRef = useRef(null)
+  useEffect(() => { if (autoFocus && !item.review) commentRef.current?.focus() }, [autoFocus, item.review])
 
   if (item.review) {
     return (
@@ -50,6 +52,7 @@ const OrderRating = ({ item, onRate, submitting = false }) => {
       </div>
       <label className="order-review-label" htmlFor={`review-${item.vinylId}`}>Tu comentario</label>
       <textarea
+        ref={commentRef}
         id={`review-${item.vinylId}`}
         name="comment"
         value={comment}

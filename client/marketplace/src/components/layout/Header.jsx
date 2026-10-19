@@ -95,7 +95,9 @@ const Header = ({ page, onNavigate, onSearch, user, isAdmin = false, onLogout })
           <ProfileIcon />
           <span>{user ? 'Mi gabinete' : 'Mi cuenta'}</span>
         </Button>
-        {user && <Button className="logout-action" onClick={onLogout}>Salir</Button>}
+        {user && <Button className="logout-action" onClick={() => {
+          if (window.confirm('¿Querés cerrar sesión?')) onLogout()
+        }}>Salir</Button>}
       </div>
     </header>
   )
