@@ -27,15 +27,15 @@ La navegación usa React Router, con rutas de páginas bajo `/app` y detalle de 
 
 El cliente usa las rutas del backend para autenticación, carrito, órdenes y perfil. El servidor debe estar disponible en `http://localhost:8080`; Vite reenvía las rutas de API durante el desarrollo. Si el backend escucha en otra dirección, definí `VITE_BACKEND_URL` antes de iniciar Vite. Para un despliegue sin proxy, configurá `VITE_API_BASE_URL` con la URL base de la API.
 
-El registro e inicio de sesión guardan el token de acceso y recuperan el perfil desde el backend. El carrito de una sesión autenticada, los favoritos y las órdenes se cargan y actualizan usando la API. Las sugerencias del carrito usan el catálogo real. El checkout crea una orden desde el carrito del servidor y la dirección elegida. Desde su detalle, “Pagar orden de prueba” usa `POST /payments` con el total de la orden; el backend la marca como pagada y habilita las reseñas. Este flujo registra un pago simulado: no cobra dinero real ni solicita tarjetas. Los pagos se recuperan desde `/payments` al recargar. El perfil permite actualizar nombre, apellido, correo y contraseña.
+El registro e inicio de sesión guardan el token de acceso y recuperan el perfil desde el backend. El carrito de una sesión autenticada, los favoritos y las órdenes se cargan y actualizan usando la API. Las sugerencias del carrito usan el catálogo real. El carrito solo muestra productos y resumen: al continuar se crea una orden PENDIENTE con `POST /orders`, sin elegir dirección ni tarjeta. Esos datos se completan en el checkout de la orden pendiente. El perfil permite actualizar nombre, apellido, correo y contraseña.
 
-Las direcciones se gestionan en Perfil → Direcciones, mediante GET/POST/PATCH/DELETE `/users/me/addresses`. Incluyen destinatario, calle y número, localidad, provincia, código postal, país, teléfono e indicaciones. El checkout envía `{ addressId }` en `POST /orders`; el servidor verifica que pertenezca a la cuenta y guarda una copia de sus datos en la orden. Editar o eliminar una dirección del perfil no cambia las órdenes existentes. Las órdenes históricas sin dirección siguen funcionando y pueden mostrar el aviso de envío a coordinar.
+Las direcciones se gestionan en Perfil → Direcciones y se eligen en el checkout pendiente. Al pagar, `POST /payments` envía el `addressId`, el total y, si corresponde, el `savedCardId`. El backend comprueba que la orden esté pendiente, que los datos pertenezcan a la cuenta y que exista una dirección de envío. Guarda una copia de la dirección y registra el pago en la misma transacción. Después de pagar o cancelar desaparecen los formularios del checkout y queda el resumen de la orden. Editar o eliminar una dirección del perfil no cambia las órdenes pagadas.
 
 Las cuentas registradas guardan sus favoritos en `/favorites`. El carrito y los favoritos de visitantes sin sesión son temporales en memoria.
 
 Perfil → Tarjetas permite guardar, editar y eliminar tarjetas de prueba mediante `/users/me/cards`. Se persisten solo titular, marca, últimos cuatro dígitos y vencimiento; no hay campos de base de datos para el número completo ni el código de seguridad. Las tarjetas son privadas de cada comprador y el servidor rechaza tarjetas vencidas o ajenas.
 
-En el carrito se puede elegir una tarjeta guardada y su identificador viaja en `POST /orders` como `savedCardId`. El detalle preselecciona esa tarjeta y `POST /payments` recibe únicamente su identificador. El recibo conserva marca y últimos cuatro dígitos aunque luego se elimine la tarjeta del perfil. Sigue siendo un pago simulado, sin cargos ni conexión con una entidad financiera.
+La tarjeta se elige únicamente en el checkout de una orden PENDIENTE. Los controles quedan bloqueados mientras se procesa el pago. El recibo conserva marca y últimos cuatro dígitos aunque luego se elimine la tarjeta del perfil. Sigue siendo un pago simulado, sin cargos ni conexión con una entidad financiera.
 
 Las tarjetas de curaduría de inicio llevan a `/app/catalog?collection=:id`. Las colecciones Rock y alternativo, Jazz, Electrónica y Rock nacional filtran los géneros reales del catálogo y permiten volver a ver todos los vinilos.
 
@@ -48,6 +48,8 @@ El detalle permite publicar una reseña cuando `/reviews/vinyl/:id/eligibility` 
 Las tarjetas del catálogo y el detalle muestran las unidades disponibles y el estado sin stock. Los discos agotados permanecen visibles y no pueden agregarse al carrito.
 
 `npm test` verifica las llamadas HTTP, el envío del token y el manejo de errores con respuestas simuladas de la API. No modifica la base de datos.
+
+Los filtros de `CatalogPage` y `ReviewsPage` se calculan con variables, `if`, `filter` y `sort`. Estas páginas y los componentes de `components/vinyl` y `components/review` no utilizan `useMemo`, `useRef`, `useSearchParams`, encadenamiento opcional ni coalescencia nula. `App` les pasa los datos de navegación como props; se mantienen los enlaces de colecciones y reseñas por vinilo.
 
 En administración, el formulario de vinilos permite crear un artista con «+ Nuevo artista» y selecciona el registro devuelto por `POST /artists`. Los nombres repetidos se seleccionan desde la lista existente.
 

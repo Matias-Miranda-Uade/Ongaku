@@ -151,6 +151,9 @@ const App = () => {
           storageError={sessionError || storageError}
           selectedVinylId={selectedVinylId}
           selectedOrderId={selectedOrderId}
+          queryString={location.search}
+          focusCatalogSearch={Boolean(location.state && location.state.focusCatalogSearch)}
+          searchRequest={location.key}
           openPage={openPage}
           openVinyl={openVinyl}
           handleLogin={handleLogin}
@@ -173,6 +176,9 @@ const AppContent = ({
   storageError,
   selectedVinylId,
   selectedOrderId,
+  queryString,
+  focusCatalogSearch,
+  searchRequest,
   openPage,
   openVinyl,
   handleLogin,
@@ -183,8 +189,9 @@ const AppContent = ({
 }) => {
   const navigate = useNavigate()
   const { refreshCart } = useContext(CartContext)
+  const query = new URLSearchParams(queryString)
 
-  const handleCheckout = async ({ addressId, savedCardId } = {}) => {
+  const handleCheckout = async () => {
     if (isAdmin) return { error: 'Las cuentas de administración no pueden crear compras.' }
     if (!user) {
       openPage('login')
@@ -192,8 +199,7 @@ const AppContent = ({
     }
 
     try {
-      if (!addressId) return { error: 'Elegí una dirección de envío antes de crear la orden.' }
-      const order = await createOrder(addressId, savedCardId)
+      const order = await createOrder()
       handleOrdersChange([order, ...orders])
       await refreshCart()
       reloadOrders()
@@ -220,7 +226,7 @@ const AppContent = ({
         {page === 'home' && <HomePage user={user} onNavigate={openPage} />}
         {page === 'login' && <LoginPage onNavigate={openPage} onLogin={handleLogin} />}
         {page === 'register' && <RegisterPage onNavigate={openPage} onRegister={handleRegister} />}
-        {page === 'catalog' && <CatalogPage onOpenVinyl={openVinyl} />}
+        {page === 'catalog' && <CatalogPage onOpenVinyl={openVinyl} collectionId={query.get('collection')} onClearCollection={() => navigate('/app/catalog')} focusSearch={focusCatalogSearch} searchRequest={searchRequest} />}
         {page === 'vinyl-detail' && selectedVinylId && (
           <VinylDetailPage
             vinylId={selectedVinylId}
@@ -229,7 +235,7 @@ const AppContent = ({
             onLogin={() => openPage('login')}
           />
         )}
-        {page === 'reviews' && <ReviewsPage />}
+        {page === 'reviews' && <ReviewsPage vinylId={query.get('vinylId')} onClearVinyl={() => navigate('/app/reviews')} />}
         {page === 'favorites' && <div className="legacy-page"><FavoritesPage onNavigate={openPage} onOpenVinyl={openVinyl} /></div>}
         {page === 'cart' && (
           <div className="legacy-page">

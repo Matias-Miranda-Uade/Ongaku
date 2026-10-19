@@ -1,6 +1,9 @@
 package com.uade.tpo.marketplace.entity.dto;
 
 public class PaymentRequest {
+    private Long addressId;
+    public Long getAddressId() { return addressId; }
+    public void setAddressId(Long addressId) { this.addressId = addressId; }
     private Long savedCardId;
     public Long getSavedCardId() { return savedCardId; }
     public void setSavedCardId(Long savedCardId) { this.savedCardId=savedCardId; }

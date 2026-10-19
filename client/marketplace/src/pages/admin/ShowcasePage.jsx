@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import ShowcaseHeader from '../../components/admin/showcase/ShowcaseHeader'
 import ShowcaseFilters, { DEFAULT_SHOWCASE_FILTERS } from '../../components/admin/showcase/ShowcaseFilters'
 import ShowcaseTable from '../../components/admin/showcase/ShowcaseTable'
@@ -18,8 +18,8 @@ const readStoredMode = () => {
 const ShowcasePage = () => {
   const [lookups, setLookups] = useState({ artists: [], genres: [], categories: [] })
   const { genres } = lookups
-  const artistsById = useMemo(() => indexById(lookups.artists), [lookups.artists])
-  const genresById = useMemo(() => indexById(lookups.genres), [lookups.genres])
+  const artistsById = indexById(lookups.artists)
+  const genresById = indexById(lookups.genres)
   useEffect(() => {
     let active = true
     getCatalogLookups().then((data) => { if (active) setLookups(data) }).catch((error) => { if (active) setError(error.message) })
@@ -64,13 +64,13 @@ const ShowcasePage = () => {
   const isEnabled = useCallback((vinyl) => (pending.has(vinyl.id) ? pending.get(vinyl.id) : Boolean(vinyl.enabled)), [pending])
   const isPending = useCallback((id) => pending.has(id), [pending])
 
-  const rows = useMemo(() => vinyls.map((vinyl) => ({
+  const rows = vinyls.map((vinyl) => ({
     ...vinyl,
     artistName: artistsById[String(vinyl.artistId)]?.name ?? '',
     genreName: (vinyl.genreIds?.length ? vinyl.genreIds : [vinyl.genreId]).map((id) => genresById[String(id)]?.name).filter(Boolean).join(' / '),
-  })), [vinyls, artistsById, genresById])
+  }))
 
-  const visibleRows = useMemo(() => {
+  function calculateVisibleRows() {
     const term = normalizeText(filters.search)
     return rows
       .filter((row) => {
@@ -84,15 +84,17 @@ const ShowcasePage = () => {
         return true
       })
       .sort((a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }))
-  }, [rows, filters, isEnabled])
+  }
 
-  const counts = useMemo(() => rows.reduce((acc, row) => {
+  const visibleRows = calculateVisibleRows()
+
+  const counts = rows.reduce((acc, row) => {
     const enabled = isEnabled(row)
     if (enabled) acc.published += 1
     else acc.hidden += 1
     if (enabled && !(row.stock > 0)) acc.soldOut.push(row.id)
     return acc
-  }, { published: 0, hidden: 0, soldOut: [] }), [rows, isEnabled])
+  }, { published: 0, hidden: 0, soldOut: [] })
 
   const markSaving = (ids, saving) => setSavingIds((current) => {
     const next = new Set(current)

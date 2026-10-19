@@ -1,8 +1,8 @@
-import { useMemo } from 'react'
+
 import { formatMoney, formatNumber, getStockStatus } from '../adminUtils'
 
 const InventoryStats = ({ vinyls = [] }) => {
-  const stats = useMemo(() => vinyls.reduce((acc, vinyl) => {
+  const stats = vinyls.reduce((acc, vinyl) => {
     const stock = Number(vinyl.stock) || 0
     const status = getStockStatus(stock)
     acc.units += stock
@@ -11,7 +11,7 @@ const InventoryStats = ({ vinyls = [] }) => {
     if (status === 'low') acc.low += 1
     if (!vinyl.enabled) acc.hidden += 1
     return acc
-  }, { units: 0, value: 0, out: 0, low: 0, hidden: 0 }), [vinyls])
+  }, { units: 0, value: 0, out: 0, low: 0, hidden: 0 })
 
   const items = [
     { label: 'Títulos', value: formatNumber(vinyls.length) },

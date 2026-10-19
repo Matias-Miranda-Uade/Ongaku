@@ -9,9 +9,12 @@ const VinylCard = ({ vinyl, onOpen }) => (
       className="vinyl-card-link"
       role="button"
       tabIndex={0}
-      onClick={() => onOpen?.(vinyl.id)}
+      onClick={() => { if (onOpen) onOpen(vinyl.id) }}
       onKeyDown={(event) => {
-        if (event.key === 'Enter' || event.key === ' ') onOpen?.(vinyl.id)
+        if ((event.key === 'Enter' || event.key === ' ') && onOpen) {
+          event.preventDefault()
+          onOpen(vinyl.id)
+        }
       }}
     >
       <div className={`vinyl-card-media ${vinyl.stock <= 0 ? 'is-out-of-stock' : ''}`}>

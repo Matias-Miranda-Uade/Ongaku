@@ -1,6 +1,7 @@
 import { useContext } from 'react'
 import { FavoritesContext } from '../../context/FavoritesContext'
 import { AuthContext } from '../../context/AuthContext'
+import { getVinylPrice } from './vinylUtils'
 
 const FavoriteButton = ({ vinyl }) => {
   const { isFavorite, toggleFavorite } = useContext(FavoritesContext)
@@ -19,8 +20,8 @@ const FavoriteButton = ({ vinyl }) => {
         if (!vinyl) return
         toggleFavorite({
           ...vinyl,
-          artist: vinyl.artist || vinyl.artistName || `Artista #${vinyl.artistId ?? '—'}`,
-          price: vinyl.finalPrice ?? vinyl.price,
+          artist: vinyl.artist || vinyl.artistName || `Artista #${vinyl.artistId != null ? vinyl.artistId : '—'}`,
+          price: getVinylPrice(vinyl),
         })
       }}
       aria-label={favorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}

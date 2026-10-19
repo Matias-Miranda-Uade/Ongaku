@@ -1,17 +1,21 @@
-import { useContext, useEffect, useRef, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
+import { getVinylPrice } from './vinylUtils'
 import { CartContext } from '../../context/CartContext'
 import { AuthContext } from '../../context/AuthContext'
 
 const AddToCartButton = ({ vinyl, compact = false }) => {
   const { addItem } = useContext(CartContext)
   const { isAdmin } = useContext(AuthContext)
-  const [added, setAdded] = useState(false)
+  const [added, setAdded] = useState(0)
   const [pending, setPending] = useState(false)
-  const timer = useRef(null)
   const outOfStock = !vinyl || vinyl.stock <= 0
   const disabled = outOfStock || pending
 
-  useEffect(() => () => window.clearTimeout(timer.current), [])
+  useEffect(() => {
+    if (added === 0) return
+    const timer = window.setTimeout(() => setAdded(0), 1200)
+    return () => window.clearTimeout(timer)
+  }, [added])
 
   if (isAdmin) return null
 
@@ -22,16 +26,14 @@ const AddToCartButton = ({ vinyl, compact = false }) => {
 
     const product = {
       ...vinyl,
-      artist: vinyl.artist || vinyl.artistName || `Artista #${vinyl.artistId ?? '—'}`,
-      price: vinyl.finalPrice ?? vinyl.price,
+      artist: vinyl.artist || vinyl.artistName || `Artista #${vinyl.artistId != null ? vinyl.artistId : '—'}`,
+      price: getVinylPrice(vinyl),
     }
 
     setPending(true)
     try {
       if (await addItem(product)) {
-        setAdded(true)
-        window.clearTimeout(timer.current)
-        timer.current = window.setTimeout(() => setAdded(false), 1200)
+        setAdded((count) => count + 1)
       }
     } finally {
       setPending(false)

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import VinylFormFields from './VinylFormFields'
 import CoverUploader from './CoverUploader'
 import AudioUploader from './AudioUploader'
@@ -37,7 +37,7 @@ const FOCUS_TARGETS = {
 
 const VinylForm = ({ mode = 'create', initialData = null, onSuccess, onCancel }) => {
   const isEdit = mode === 'edit'
-  const initialValues = useMemo(() => toFormValues(initialData), [initialData])
+  const initialValues = toFormValues(initialData)
   const [lookups, setLookups] = useState({ artists: [], genres: [], categories: [] })
   const [lookupError, setLookupError] = useState('')
   const [lookupReload, setLookupReload] = useState(0)
@@ -64,7 +64,7 @@ const VinylForm = ({ mode = 'create', initialData = null, onSuccess, onCancel })
   const createdAudio = useRef(null)
   const formRef = useRef(null)
 
-  useEffect(() => { setValues(initialValues) }, [initialValues])
+  useEffect(() => { setValues(toFormValues(initialData)) }, [initialData])
 
   useEffect(() => {
     let active = true
@@ -78,7 +78,7 @@ const VinylForm = ({ mode = 'create', initialData = null, onSuccess, onCancel })
     return () => { active = false }
   }, [])
 
-  const dirty = useMemo(() => JSON.stringify(values) !== JSON.stringify(initialValues), [values, initialValues])
+  const dirty = JSON.stringify(values) !== JSON.stringify(initialValues)
 
   useEffect(() => {
     if (!dirty || submitting) return undefined
@@ -87,16 +87,18 @@ const VinylForm = ({ mode = 'create', initialData = null, onSuccess, onCancel })
     return () => window.removeEventListener('beforeunload', handler)
   }, [dirty, submitting])
 
-  const clientErrors = useMemo(() => validateVinyl(values), [values])
+  const clientErrors = validateVinyl(values)
 
-  const visibleErrors = useMemo(() => {
+  function calculateVisibleErrors() {
     const result = { ...errors }
     Object.entries(clientErrors).forEach(([field, message]) => {
       const touchKey = field.startsWith('audio') ? 'audio' : field
       if (submitted || touched[touchKey]) result[field] = message
     })
     return result
-  }, [errors, clientErrors, touched, submitted])
+  }
+
+  const visibleErrors = calculateVisibleErrors()
 
   const handleChange = (field, value) => {
     setValues((current) => ({ ...current, [field]: value }))

@@ -1,14 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 import ReviewCard from '../components/review/ReviewCard'
 import ReviewFilters from '../components/review/ReviewFilters'
 import ReviewMetrics from '../components/review/ReviewMetrics'
 import ReviewSummary from '../components/review/ReviewSummary'
 import { getReviews } from '../services/reviewService'
 
-const ReviewsPage = () => {
-  const [searchParams, setSearchParams] = useSearchParams()
-  const vinylId = searchParams.get('vinylId')
+const ReviewsPage = ({ vinylId = null, onClearVinyl }) => {
   const [reviews, setReviews] = useState([])
   const [score, setScore] = useState('all')
   const [loading, setLoading] = useState(true)
@@ -27,10 +24,10 @@ const ReviewsPage = () => {
     return () => { active = false }
   }, [vinylId, reload])
 
-  const filtered = useMemo(
-    () => score === 'all' ? reviews : reviews.filter((review) => String(Math.round(review.score)) === score),
-    [reviews, score]
-  )
+  let filtered = reviews
+  if (score !== 'all') {
+    filtered = reviews.filter((review) => String(Math.round(review.score)) === score)
+  }
 
   return (
     <div className="page reviews-page">
@@ -46,7 +43,7 @@ const ReviewsPage = () => {
       </div>
 
       <ReviewFilters score={score} onChange={setScore} />
-      {vinylId && <button type="button" className="text-link link-button" onClick={() => setSearchParams({})}>Ver reseñas de todos los vinilos</button>}
+      {vinylId && <button type="button" className="text-link link-button" onClick={onClearVinyl}>Ver reseñas de todos los vinilos</button>}
       {error && <div role="alert"><p>{error}</p><button type="button" onClick={() => setReload((value) => value + 1)}>Reintentar</button></div>}
 
       {loading ? (

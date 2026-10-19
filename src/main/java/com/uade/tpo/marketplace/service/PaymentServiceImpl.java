@@ -26,6 +26,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final OrderService orderService;
     private final OwnershipGuard ownershipGuard;
     private final SavedCardService savedCardService;
+    private final AddressService addressService;
 
     @Override
     @Transactional(readOnly = true)
@@ -77,11 +78,18 @@ public class PaymentServiceImpl implements PaymentService {
         if (request.getAmount() != order.getTotal()) {
             throw new InvalidPaymentAmountException("El importe (" + request.getAmount() + ") no coincide con el total de la orden (" + order.getTotal() + ")");
         }
+        if (request.getAddressId() != null) {
+            order.setShippingAddress(addressService.owned(request.getAddressId(), requesterEmail).details.copy());
+        }
+        if (order.getShippingAddress() == null) {
+            throw new InvalidFieldException("addressId", "elegí una dirección de envío en el checkout antes de pagar");
+        }
         Payment payment = new Payment();
         if (request.getSavedCardId()!=null) {
             var card=savedCardService.usable(request.getSavedCardId(),requesterEmail);
             payment.setCardBrand(card.brand); payment.setCardLastFour(card.lastFour);
         }
+        order.setSavedCardId(request.getSavedCardId());
         payment.setOrder(order);
         payment.setAmount(request.getAmount());
         payment.setMethod(request.getMethod().trim().toUpperCase());
@@ -93,11 +101,12 @@ public class PaymentServiceImpl implements PaymentService {
         return saved;
     }
 
-    public PaymentServiceImpl(PaymentRepository paymentRepository, OrderRepository orderRepository, OrderService orderService, OwnershipGuard ownershipGuard, SavedCardService savedCardService) {
+    public PaymentServiceImpl(PaymentRepository paymentRepository, OrderRepository orderRepository, OrderService orderService, OwnershipGuard ownershipGuard, SavedCardService savedCardService, AddressService addressService) {
         this.paymentRepository = paymentRepository;
         this.orderRepository = orderRepository;
         this.orderService = orderService;
         this.ownershipGuard = ownershipGuard;
         this.savedCardService = savedCardService;
+        this.addressService = addressService;
     }
 }

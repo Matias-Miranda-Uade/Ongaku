@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import InventoryStats from '../../components/admin/inventory/InventoryStats'
 import InventoryActions from '../../components/admin/inventory/InventoryActions'
@@ -17,8 +17,8 @@ const InventoryPage = () => {
   const location = useLocation()
   const [lookups, setLookups] = useState({ artists: [], genres: [], categories: [] })
   const { genres, categories } = lookups
-  const artistsById = useMemo(() => indexById(lookups.artists), [lookups.artists])
-  const genresById = useMemo(() => indexById(lookups.genres), [lookups.genres])
+  const artistsById = indexById(lookups.artists)
+  const genresById = indexById(lookups.genres)
   useEffect(() => {
     let active = true
     getCatalogLookups().then((data) => { if (active) setLookups(data) }).catch((error) => { if (active) setError(error.message) })
@@ -52,14 +52,14 @@ const InventoryPage = () => {
 
   useEffect(() => { load() }, [load])
 
-  const rows = useMemo(() => vinyls.map((vinyl) => ({
+  const rows = vinyls.map((vinyl) => ({
     ...vinyl,
     artistName: artistsById[String(vinyl.artistId)]?.name ?? '',
     genreName: (vinyl.genreIds?.length ? vinyl.genreIds : [vinyl.genreId]).map((id) => genresById[String(id)]?.name).filter(Boolean).join(' / '),
     finalPrice: vinyl.finalPrice ?? vinyl.price,
-  })), [vinyls, artistsById, genresById])
+  }))
 
-  const visibleRows = useMemo(() => {
+  function calculateVisibleRows() {
     const term = normalizeText(filters.search)
     const filtered = rows.filter((row) => {
       if (term && ![row.name, row.artistName, String(row.id)].some((value) => normalizeText(value).includes(term))) return false
@@ -72,7 +72,9 @@ const InventoryPage = () => {
     })
     const direction = sort.direction === 'asc' ? 1 : -1
     return filtered.sort((a, b) => compare(a[sort.key], b[sort.key]) * direction)
-  }, [rows, filters, sort])
+  }
+
+  const visibleRows = calculateVisibleRows()
 
   const handleSort = (key) => {
     setSort((current) => ({ key, direction: current.key === key && current.direction === 'asc' ? 'desc' : 'asc' }))
