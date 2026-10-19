@@ -7,8 +7,13 @@ import PaymentInfo from '../components/order/PaymentInfo'
 import DemoPaymentForm from '../components/order/DemoPaymentForm'
 import OrderTotals from '../components/order/OrderTotals'
 import TrackingButton from '../components/order/TrackingButton'
+import { useState } from 'react'
+import AddressBook from '../components/profile/AddressBook'
 
-const OrderDetailPage = ({ order, onBack, onCancel, onRate, onPay, isAdmin = false, paying = false, cancelling = false, submittingReview = false }) => (
+const OrderDetailPage = ({ order, onBack, onCancel, onRate, onPay, isAdmin = false, paying = false, cancelling = false, submittingReview = false }) => {
+  const [addressId, setAddressId] = useState(null)
+  const pendingCheckout = order.status === 'PENDIENTE' && !isAdmin
+  return (
   <article className="order-detail">
     <button className="back-link-button" type="button" onClick={onBack}>← Volver a mis órdenes</button>
     <header className="order-detail-heading">
@@ -45,14 +50,17 @@ const OrderDetailPage = ({ order, onBack, onCancel, onRate, onPay, isAdmin = fal
           <OrderTotals order={order} />
         </section>
         <section className="order-info-card">
-          <ShippingAddress address={order.shippingAddress} />
+          {pendingCheckout
+            ? <AddressBook key={order.id} selectable selectedId={addressId} onSelect={setAddressId} disabled={paying || cancelling} />
+            : <ShippingAddress address={order.shippingAddress} />}
         </section>
         <section className="order-info-card">
           <PaymentInfo payment={order.payment} />
-          {order.status === 'PENDIENTE' && !isAdmin && (
+          {pendingCheckout && (
             <div className="order-payment-actions">
               <h3>Completar pago de prueba</h3>
-              <DemoPaymentForm key={order.id} order={order} onPay={onPay} paying={paying} disabled={cancelling} />
+              {!addressId && <p>Elegí una dirección de envío para continuar con el pago.</p>}
+              <DemoPaymentForm key={order.id} order={order} onPay={(selectedOrder, options = {}) => onPay(selectedOrder, { ...options, addressId })} paying={paying} disabled={cancelling || !addressId} />
             </div>
           )}
         </section>
@@ -76,5 +84,6 @@ const OrderDetailPage = ({ order, onBack, onCancel, onRate, onPay, isAdmin = fal
     </div>
   </article>
 )
+}
 
 export default OrderDetailPage

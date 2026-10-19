@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { REVENUE_STATUSES, formatCompactMoney, formatDay, formatMoney, orderStatusName } from '../adminUtils'
 
 const RANGES = [
@@ -51,7 +51,7 @@ const RevenueChart = ({ orders = [], loading = false }) => {
   const [hovered, setHovered] = useState(null)
   const [showTable, setShowTable] = useState(false)
 
-  const series = useMemo(() => buildSeries(orders, days), [orders, days])
+  const series = buildSeries(orders, days)
   const total = series.reduce((sum, bucket) => sum + bucket.revenue, 0)
   const max = niceMax(Math.max(...series.map((bucket) => bucket.revenue)))
   const ticks = [0, 0.25, 0.5, 0.75, 1].map((ratio) => ratio * max)

@@ -10,12 +10,13 @@ const fields = [
   ['phone', 'Teléfono de contacto', 'tel', 40], ['instructions', 'Indicaciones adicionales (opcional)', 'off', 500],
 ]
 
-const AddressBook = ({ selectable = false, selectedId, onSelect, showHeading = true }) => {
+const AddressBook = ({ selectable = false, selectedId, onSelect, showHeading = true, disabled = false }) => {
   const [addresses, setAddresses] = useState([])
   const [form, setForm] = useState(null)
   const [editingId, setEditingId] = useState(null)
   const [loading, setLoading] = useState(true)
   const [pending, setPending] = useState(false)
+  const blocked = pending || disabled
   const [error, setError] = useState('')
   const [fieldErrors, setFieldErrors] = useState({})
   const beginForm = (details, id = null) => {
@@ -35,7 +36,7 @@ const AddressBook = ({ selectable = false, selectedId, onSelect, showHeading = t
 
   const submit = async (event) => {
     event.preventDefault()
-    if (pending) return
+    if (blocked) return
     const validation = validateAddress(form)
     setFieldErrors(validation)
     if (Object.keys(validation).length) { setError('Revisá los campos marcados antes de guardar.'); return }
@@ -83,31 +84,31 @@ const AddressBook = ({ selectable = false, selectedId, onSelect, showHeading = t
   return (
     <section className="address-book">
       {showHeading && <h2>{selectable ? '¿Dónde querés recibir tu compra?' : 'Direcciones de envío'}</h2>}
-      {error && <div role="alert"><p>{error}</p><button type="button" onClick={refresh} disabled={pending}>Reintentar</button></div>}
+      {error && <div role="alert"><p>{error}</p><button type="button" onClick={refresh} disabled={blocked}>Reintentar</button></div>}
       {loading && <p role="status">Cargando direcciones…</p>}
       {!loading && !addresses.length && <p>Agregá una dirección para recibir tus vinilos.</p>}
       {addresses.map(({ id, details }) => (
         <article className={`shipment-card${selectable && String(selectedId) === String(id) ? ' is-selected' : ''}`} key={id}>
           {selectable && <label className="shipment-select">
-            <input type="radio" name="shipping-address" checked={String(selectedId) === String(id)} disabled={pending || loading} onChange={() => onSelect(id)} />
+            <input type="radio" name="shipping-address" checked={String(selectedId) === String(id)} disabled={blocked || loading} onChange={() => onSelect(id)} />
             <span>{String(selectedId) === String(id) ? 'Dirección seleccionada para el envío' : 'Enviar a esta dirección'}</span>
           </label>}
           <h3>{details.recipient}</h3><p>{details.street}</p>
           <p>{details.city}, {details.province}, {details.zipCode}, {details.country}</p>
           <p>{details.phone}</p>{details.instructions && <p>{details.instructions}</p>}
-          <button className="secondary-button" type="button" disabled={pending} onClick={() => beginForm(details, id)}>Editar</button>
-          <button className="secondary-button" type="button" disabled={pending} onClick={() => remove(id)}>Eliminar</button>
+          <button className="secondary-button" type="button" disabled={blocked} onClick={() => beginForm(details, id)}>Editar</button>
+          <button className="secondary-button" type="button" disabled={blocked} onClick={() => remove(id)}>Eliminar</button>
         </article>
       ))}
-      {!form && <button className="secondary-button" type="button" disabled={pending || loading} onClick={() => beginForm(empty)}>Agregar dirección</button>}
+      {!form && <button className="secondary-button" type="button" disabled={blocked || loading} onClick={() => beginForm(empty)}>Agregar dirección</button>}
       {form && <form className="address-form" onSubmit={submit} noValidate>
         {fields.map(([name, label, autocomplete, maxLength]) => <label key={name} htmlFor={`address-${name}`}>
-          {label}<input id={`address-${name}`} name={name} type={name === 'phone' ? 'tel' : 'text'} inputMode={name === 'phone' ? 'tel' : 'text'} autoComplete={autocomplete} required={name !== 'instructions'} maxLength={maxLength} disabled={pending} aria-invalid={Boolean(fieldErrors[name])} aria-describedby={fieldErrors[name] ? `address-${name}-error` : undefined} value={form[name] ?? ''} onChange={(event) => { setForm((current) => ({ ...current, [name]: event.target.value })); setFieldErrors((current) => ({ ...current, [name]: undefined })) }} />
+          {label}<input id={`address-${name}`} name={name} type={name === 'phone' ? 'tel' : 'text'} inputMode={name === 'phone' ? 'tel' : 'text'} autoComplete={autocomplete} required={name !== 'instructions'} maxLength={maxLength} disabled={blocked} aria-invalid={Boolean(fieldErrors[name])} aria-describedby={fieldErrors[name] ? `address-${name}-error` : undefined} value={form[name] ?? ''} onChange={(event) => { setForm((current) => ({ ...current, [name]: event.target.value })); setFieldErrors((current) => ({ ...current, [name]: undefined })) }} />
           {fieldErrors[name] && <span className="address-field-error" id={`address-${name}-error`}>{fieldErrors[name]}</span>}
           {name === 'zipCode' && <span className="address-field-hint">Argentina: 1000 o C1000ABC. Se guarda en mayúsculas. <a href="https://www.correoargentino.com.ar/formularios/cpa" target="_blank" rel="noreferrer">Consultar CPA</a></span>}
         </label>)}
-        <button className="primary-button" type="submit" disabled={pending}>{pending ? 'Guardando…' : 'Guardar dirección'}</button>
-        <button className="secondary-button" type="button" disabled={pending} onClick={() => setForm(null)}>Cancelar</button>
+        <button className="primary-button" type="submit" disabled={blocked}>{pending ? 'Guardando…' : 'Guardar dirección'}</button>
+        <button className="secondary-button" type="button" disabled={blocked} onClick={() => setForm(null)}>Cancelar</button>
       </form>}
     </section>
   )

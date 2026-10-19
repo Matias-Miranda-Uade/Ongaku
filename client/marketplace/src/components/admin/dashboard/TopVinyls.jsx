@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+
 import { REVENUE_STATUSES, formatMoney, orderStatusName } from '../adminUtils'
 
 const rankVinyls = (orders, limit) => {
@@ -26,7 +26,7 @@ const rankVinyls = (orders, limit) => {
 }
 
 const TopVinyls = ({ orders = [], limit = 5, loading = false }) => {
-  const ranking = useMemo(() => rankVinyls(orders, limit), [orders, limit])
+  const ranking = rankVinyls(orders, limit)
   const maxUnits = ranking[0]?.units || 1
 
   return (

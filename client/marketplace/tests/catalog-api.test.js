@@ -189,9 +189,9 @@ test('las direcciones se guardan, editan y seleccionan en el checkout', async ()
   assert.equal(calls[1].method, 'PATCH')
   routes['/users/me/addresses'] = [{ id: 5, details: address }]
   assert.equal((await getAddresses())[0].id, 5)
-  routes['/orders'] = { id: 9, items: [], shippingAddress: address }
-  assert.equal((await createOrder(5)).shippingAddress.street, 'Calle 123')
-  assert.deepEqual(JSON.parse(calls[3].body), { addressId: 5 })
+  routes['/orders'] = { id: 9, items: [], status: 'PENDIENTE' }
+  assert.equal((await createOrder()).shippingAddress, undefined)
+  assert.equal(calls[3].body, undefined)
   routes['/users/me/addresses/5'] = new Response(null, { status: 204 })
   await deleteAddress(5)
   assert.equal(calls[4].method, 'DELETE')
@@ -218,19 +218,19 @@ test('crear un favorito solo necesita el id del vinilo autenticado', async () =>
   assert.deepEqual(JSON.parse(calls[0].body), { vinylId: 7 })
 })
 
-test('las tarjetas se guardan en el backend y se envía solo su id al comprar y pagar', async () => {
+test('el carrito crea la orden sin datos de checkout y el pago envía dirección y tarjeta', async () => {
   const card = { holder: 'Test User', brand: 'VISA', lastFour: '4242', expiryMonth: 12, expiryYear: 2030 }
   routes['/users/me/cards'] = { id: 6, ...card }
   assert.equal((await saveCard(card)).id, 6)
   assert.deepEqual(JSON.parse(calls.at(-1).body), card)
   routes['/users/me/cards'] = [{ id: 6, ...card }]
   assert.equal((await getSavedCards())[0].id, 6)
-  routes['/orders'] = { id: 9, items: [], savedCardId: 6 }
-  await createOrder(5, 6)
-  assert.deepEqual(JSON.parse(calls.at(-1).body), { addressId: 5, savedCardId: 6 })
+  routes['/orders'] = { id: 9, items: [], status: 'PENDIENTE' }
+  await createOrder()
+  assert.equal(calls.at(-1).body, undefined)
   routes['/payments'] = { id: 10, cardBrand: 'VISA', cardLastFour: '4242' }
-  await createPayment({ orderId: 9, amount: 100, savedCardId: 6 })
-  assert.deepEqual(JSON.parse(calls.at(-1).body), { orderId: 9, amount: 100, method: 'SIMULADO', savedCardId: 6 })
+  await createPayment({ orderId: 9, amount: 100, savedCardId: 6, addressId: 5 })
+  assert.deepEqual(JSON.parse(calls.at(-1).body), { orderId: 9, amount: 100, method: 'SIMULADO', savedCardId: 6, addressId: 5 })
   routes['/users/me/cards/6'] = new Response(null, { status: 204 })
   await deleteCard(6)
   assert.equal(calls.at(-1).method, 'DELETE')

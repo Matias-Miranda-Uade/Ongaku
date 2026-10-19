@@ -8,7 +8,7 @@ const CartSummary = ({ totalProducts, totalUnits, total, onCheckout, disabled = 
             <div><span>Envío</span><strong>A coordinar</strong></div>
             <div className="cart-summary-total"><span>Total de selección</span><strong>${total.toLocaleString('es-AR')}</strong></div>
             <button className="primary-button" disabled={disabled} onClick={onCheckout}>{pending ? 'Creando orden…' : 'Proceder al checkout'} <span aria-hidden="true">→</span></button>
-            <p className="cart-summary-note">Primero confirmás tu orden; después vas a poder completar el pago simulado con tarjeta.</p>
+            <p className="cart-summary-note">En el checkout vas a elegir la dirección de envío y la tarjeta para completar el pago simulado.</p>
         </section>
     )
 }

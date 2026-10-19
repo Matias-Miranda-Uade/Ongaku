@@ -5,6 +5,7 @@ import ReviewCard from './ReviewCard'
 
 const ReviewComposer = ({ vinylId, revision, onChanged, onLogin }) => {
   const { user, isAdmin } = useContext(AuthContext)
+  const userId = user ? user.id : null
   const [eligibility, setEligibility] = useState(null)
   const [loading, setLoading] = useState(true)
   const [score, setScore] = useState(5)
@@ -24,11 +25,11 @@ const ReviewComposer = ({ vinylId, revision, onChanged, onLogin }) => {
       .catch((requestError) => { if (active) setError(requestError.message) })
       .finally(() => { if (active) setLoading(false) })
     return () => { active = false }
-  }, [vinylId, user?.id, isAdmin, revision, reload])
+  }, [vinylId, userId, isAdmin, revision, reload])
 
   const submit = async (event) => {
     event.preventDefault()
-    if (pending || !eligibility?.canReview) return
+    if (pending || !eligibility || !eligibility.canReview) return
     if (!comment.trim()) { setError('Escribí un comentario antes de publicar.'); return }
     setPending(true)
     setError('')
@@ -51,11 +52,11 @@ const ReviewComposer = ({ vinylId, revision, onChanged, onLogin }) => {
       <h3>Tu reseña</h3>
       {error && <p role="alert">{error}</p>}
       {!eligibility && <button type="button" onClick={() => setReload((value) => value + 1)}>Reintentar</button>}
-      {eligibility?.review && <ReviewCard review={eligibility.review} onChanged={onChanged} />}
+      {eligibility && eligibility.review && <ReviewCard review={eligibility.review} onChanged={onChanged} />}
       {eligibility && !eligibility.purchased && !eligibility.review && (
         <p>Podés reseñar este vinilo cuando una orden tuya que lo incluya figure como entregada.</p>
       )}
-      {eligibility?.canReview && (
+      {eligibility && eligibility.canReview && (
         <form className="review-edit-form" onSubmit={submit}>
           <label htmlFor={`new-review-score-${vinylId}`}>Puntaje</label>
           <select id={`new-review-score-${vinylId}`} value={score} disabled={pending} onChange={(event) => setScore(event.target.value)}>

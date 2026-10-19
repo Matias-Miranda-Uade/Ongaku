@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import DashboardMetricCard from '../../components/admin/dashboard/DashboardMetricCard'
 import RevenueChart from '../../components/admin/dashboard/RevenueChart'
@@ -36,14 +36,14 @@ const DashboardPage = () => {
 
   useEffect(() => { load() }, [load])
 
-  const inventory = useMemo(() => vinyls.reduce((acc, vinyl) => {
+  const inventory = vinyls.reduce((acc, vinyl) => {
     const status = getStockStatus(vinyl.stock)
     acc.units += Number(vinyl.stock) || 0
     if (status === 'out') acc.out += 1
     if (status === 'low') acc.low += 1
     if (vinyl.enabled) acc.published += 1
     return acc
-  }, { units: 0, out: 0, low: 0, published: 0 }), [vinyls])
+  }, { units: 0, out: 0, low: 0, published: 0 })
 
   const handleStatusChange = async (order, nextStatus) => {
     setUpdatingId(order.id)

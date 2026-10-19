@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import OrderFilters from '../components/order/OrderFilters'
 import OrderCard from '../components/order/OrderCard'
 import OrderDetailPage from './OrderDetailPage'
@@ -50,13 +50,13 @@ const OrdersPage = ({
     }
   }, [authenticated])
 
-  const orders = useMemo(() => accountOrders.map((order) => ({
+  const orders = accountOrders.map((order) => ({
     ...order,
     items: order.items.map((item) => ({
       ...item,
       review: myReviews.find((review) => String(review.vinylId) === String(item.vinylId)) ?? item.review ?? null,
     })),
-  })), [accountOrders, myReviews])
+  }))
 
   useEffect(() => {
     if (!selectedOrderId || !authenticated) {
@@ -64,7 +64,7 @@ const OrdersPage = ({
       return
     }
 
-    const existingOrder = orders.find((order) => String(order.id) === String(selectedOrderId))
+    const existingOrder = accountOrders.find((order) => String(order.id) === String(selectedOrderId))
     if (existingOrder) {
       setDetailOrder(existingOrder)
       setError('')
@@ -88,7 +88,7 @@ const OrdersPage = ({
     return () => {
       active = false
     }
-  }, [selectedOrderId, authenticated, orders])
+  }, [selectedOrderId, authenticated, accountOrders])
 
   const cancelOrder = async (id) => {
     if (paying || cancelling) return
@@ -105,22 +105,24 @@ const OrdersPage = ({
     }
   }
 
-  const payOrder = async (order, { savedCardId } = {}) => {
+  const payOrder = async (order, { savedCardId, addressId } = {}) => {
     if (isAdmin || paying || cancelling || order.status !== 'PENDIENTE') return
     setError('')
     setNotice('')
     setPaying(true)
     try {
-      const payment = await createPayment({ orderId: order.id, amount: order.total, savedCardId })
-      const updatedOrder = {
-        ...order,
-        payment,
-        status: 'PAGADA',
-        orderStatus: { ...order.orderStatus, name: 'PAGADA' },
+      if (!addressId) { setError('Elegí una dirección de envío antes de pagar.'); return }
+      const payment = await createPayment({ orderId: order.id, amount: order.total, savedCardId, addressId })
+      let updatedOrder = { ...order, payment, status: 'PAGADA', orderStatus: { ...order.orderStatus, name: 'PAGADA' } }
+      let message = 'Pago de prueba registrado.'
+      try {
+        updatedOrder = await getOrder(order.id)
+      } catch {
+        message = 'El pago se registró. Recargá la orden para ver los datos de envío actualizados.'
       }
       onOrdersChange?.(accountOrders.map((item) => item.id === order.id ? updatedOrder : item))
       setDetailOrder(updatedOrder)
-      setNotice('Pago de prueba registrado. Vas a poder reseñar los vinilos cuando la orden sea entregada.')
+      setNotice(message)
     } catch (requestError) {
       setError(`No se pudo pagar la orden: ${requestError.message}`)
     } finally { setPaying(false) }

@@ -6,8 +6,8 @@ const ReviewActions = ({ review, onChanged }) => {
   const { user, isAdmin } = useContext(AuthContext)
   const [editing, setEditing] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
-  const [score, setScore] = useState(review.score ?? 5)
-  const [comment, setComment] = useState(review.comment ?? '')
+  const [score, setScore] = useState(review.score != null ? review.score : 5)
+  const [comment, setComment] = useState(review.comment != null ? review.comment : '')
   const [pending, setPending] = useState(false)
   const [error, setError] = useState('')
   const isAuthor = Boolean(user) && String(user.id) === String(review.userId)
@@ -65,8 +65,8 @@ const ReviewActions = ({ review, onChanged }) => {
       ) : (
         <div className="review-actions">
           {isAuthor && !isAdmin && !confirmDelete && <button type="button" disabled={pending} onClick={() => {
-            setScore(review.score ?? 5)
-            setComment(review.comment ?? '')
+            setScore(review.score != null ? review.score : 5)
+            setComment(review.comment != null ? review.comment : '')
             setError('')
             setEditing(true)
           }}>EDITAR</button>}
