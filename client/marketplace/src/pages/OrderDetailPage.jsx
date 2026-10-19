@@ -10,7 +10,7 @@ import TrackingButton from '../components/order/TrackingButton'
 import { useState } from 'react'
 import AddressBook from '../components/profile/AddressBook'
 
-const OrderDetailPage = ({ order, onBack, onCancel, onRate, onPay, isAdmin = false, paying = false, cancelling = false, submittingReview = false }) => {
+const OrderDetailPage = ({ order, onBack, onCancel, onRate, onPay, isAdmin = false, paying = false, cancelling = false, submittingReview = false, focusReview = false }) => {
   const [addressId, setAddressId] = useState(null)
   const pendingCheckout = order.status === 'PENDIENTE' && !isAdmin
   return (
@@ -38,7 +38,7 @@ const OrderDetailPage = ({ order, onBack, onCancel, onRate, onPay, isAdmin = fal
           <article className="order-detail-item" key={item.vinylId ?? `historical-${index}`}>
             <OrderItem item={item} />
             {item.vinylId != null && order.status === 'ENTREGADA' && (
-              <OrderRating item={item} onRate={onRate} submitting={submittingReview} />
+              <OrderRating item={item} onRate={onRate} submitting={submittingReview} autoFocus={focusReview && !order.items.slice(0, index).some((previous) => !previous.review && previous.vinylId != null)} />
             )}
           </article>
         ))}
@@ -60,6 +60,7 @@ const OrderDetailPage = ({ order, onBack, onCancel, onRate, onPay, isAdmin = fal
             <div className="order-payment-actions">
               <h3>Completar pago de prueba</h3>
               {!addressId && <p>Elegí una dirección de envío para continuar con el pago.</p>}
+              <p>El stock de esta orden está reservado mientras siga pendiente. Si cancelás la orden, las unidades vuelven al catálogo.</p>
               <DemoPaymentForm key={order.id} order={order} onPay={(selectedOrder, options = {}) => onPay(selectedOrder, { ...options, addressId })} paying={paying} disabled={cancelling || !addressId} />
             </div>
           )}
@@ -75,7 +76,9 @@ const OrderDetailPage = ({ order, onBack, onCancel, onRate, onPay, isAdmin = fal
             className="order-cancel-button"
             type="button"
             disabled={cancelling || paying}
-            onClick={() => onCancel(order.id)}
+            onClick={() => {
+              if (window.confirm('¿Querés cancelar esta orden? El stock reservado volverá al catálogo.')) onCancel(order.id)
+            }}
           >
             {cancelling ? 'Cancelando…' : 'Cancelar orden'}
           </button>

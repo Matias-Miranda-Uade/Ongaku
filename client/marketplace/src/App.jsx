@@ -111,7 +111,9 @@ const App = () => {
     const profile = await login(credentials)
     setStorageError('')
     setOrders([])
-    openPage(profile.role === 'ADMIN' ? 'admin' : 'home')
+    const returnTo = location.state?.returnTo
+    if (profile.role !== 'ADMIN' && typeof returnTo === 'string' && returnTo.startsWith('/app/')) navigate(returnTo, { replace: true })
+    else openPage(profile.role === 'ADMIN' ? 'admin' : 'home')
   }
 
   const handleRegister = async (account) => {
@@ -194,7 +196,7 @@ const AppContent = ({
   const handleCheckout = async () => {
     if (isAdmin) return { error: 'Las cuentas de administración no pueden crear compras.' }
     if (!user) {
-      openPage('login')
+      navigate('/app/login', { state: { returnTo: '/app/cart' } })
       return false
     }
 
@@ -249,7 +251,8 @@ const AppContent = ({
               authenticated={Boolean(user)}
               selectedOrderId={selectedOrderId}
               onNavigate={openPage}
-              onSelectOrder={(orderId) => navigate(`/app/orders/${orderId}`)}
+              onSelectOrder={(orderId, focusReview = false) => navigate(`/app/orders/${orderId}${focusReview ? '?focusReview=1' : ''}`)}
+              focusReview={query.get('focusReview') === '1'}
               onOrdersChange={handleOrdersChange}
             />
           </div>

@@ -18,6 +18,7 @@ const OrdersPage = ({
   onNavigate,
   onSelectOrder,
   onOrdersChange,
+  focusReview = false,
 }) => {
   const { isAdmin } = useContext(AuthContext)
   const [status, setStatus] = useState('TODAS')
@@ -180,6 +181,7 @@ const OrdersPage = ({
                 paying={paying}
                 cancelling={cancelling}
                 submittingReview={submittingReview}
+                focusReview={focusReview}
               />
             : <section className="empty-state-card">
                 <p className="eyebrow">TU ACTIVIDAD</p>

@@ -55,8 +55,8 @@ const ManualDemoPaymentForm = ({ order, onPay, paying, disabled }) => {
     setErrors(nextErrors)
     if (Object.keys(nextErrors).length) return
 
-    setCard(initialCard)
     await onPay(order)
+    setCard(initialCard)
   }
 
   return (

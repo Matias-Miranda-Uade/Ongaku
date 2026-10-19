@@ -7,8 +7,8 @@ const CartSummary = ({ totalProducts, totalUnits, total, onCheckout, disabled = 
             <div><span>Tratamiento de embalaje</span><strong>Incluido</strong></div>
             <div><span>Envío</span><strong>A coordinar</strong></div>
             <div className="cart-summary-total"><span>Total de selección</span><strong>${total.toLocaleString('es-AR')}</strong></div>
-            <button className="primary-button" disabled={disabled} onClick={onCheckout}>{pending ? 'Creando orden…' : 'Proceder al checkout'} <span aria-hidden="true">→</span></button>
-            <p className="cart-summary-note">En el checkout vas a elegir la dirección de envío y la tarjeta para completar el pago simulado.</p>
+            <button className="primary-button" disabled={disabled} onClick={onCheckout}>{pending ? 'Creando orden…' : 'Crear orden'} <span aria-hidden="true">→</span></button>
+            <p className="cart-summary-note">La orden quedará pendiente y el carrito se vaciará. Después podrás elegir dirección y tarjeta en el detalle. El stock se reserva hasta que pagues o canceles la orden.</p>
         </section>
     )
 }
