@@ -1,54 +1,50 @@
-import { useState } from 'react'
-import AuthInput from './AuthInput'
-import PasswordInput from './PasswordInput'
-import Button from '../ui/Button'
-import SectionTitle from '../ui/SectionTitle'
-
-const RegisterForm = ({ onRegister }) => {
-  const [firstName, setFirstName] = useState('')
-  const [lastName, setLastName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirmation, setConfirmation] = useState('')
-  const [error, setError] = useState('')
-  const [submitting, setSubmitting] = useState(false)
-
-  const handleSubmit = async (event) => {
-    event.preventDefault()
+import { useState } from 'react';
+import AuthInput from './AuthInput';
+import PasswordInput from './PasswordInput';
+import Button from '../ui/Button';
+import SectionTitle from '../ui/SectionTitle';
+const RegisterForm = ({
+  onRegister
+}) => {
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmation, setConfirmation] = useState('');
+  const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const handleSubmit = event => {
+    event.preventDefault();
     if (!firstName.trim() || !lastName.trim() || !email.trim() || !password.trim()) {
-      setError('Completá todos los campos.')
-      return
+      setError('Completá todos los campos.');
+      return Promise.resolve();
     }
     if (password.length < 8) {
-      setError('La contraseña debe tener al menos 8 caracteres.')
-      return
+      setError('La contraseña debe tener al menos 8 caracteres.');
+      return Promise.resolve();
     }
     if (new TextEncoder().encode(password).length > 72) {
-      setError('La contraseña es demasiado larga.')
-      return
+      setError('La contraseña es demasiado larga.');
+      return Promise.resolve();
     }
     if (password !== confirmation) {
-      setError('Las contraseñas no coinciden.')
-      return
+      setError('Las contraseñas no coinciden.');
+      return Promise.resolve();
     }
-    setError('')
-    setSubmitting(true)
-    try {
-      await onRegister({
-        firstName: firstName.trim(),
-        lastName: lastName.trim(),
-        email: email.trim().toLowerCase(),
-        password,
-      })
-    } catch (registerError) {
-      setError(registerError.message)
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  return (
-    <form onSubmit={handleSubmit}>
+    setError('');
+    setSubmitting(true);
+    return Promise.resolve(onRegister({
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      email: email.trim().toLowerCase(),
+      password
+    })).then(() => {}).catch(registerError => {
+      setError(registerError.message);
+    }).finally(() => {
+      setSubmitting(false);
+    });
+  };
+  return <form onSubmit={handleSubmit}>
       <SectionTitle>Crear tu cuenta</SectionTitle>
       <div className="register-name-grid">
         <AuthInput label="Nombre" name="register-first-name" autoComplete="given-name" required value={firstName} onChange={event => setFirstName(event.target.value)} />
@@ -64,7 +60,6 @@ const RegisterForm = ({ onRegister }) => {
       <Button className="primary-button" type="submit" disabled={submitting}>
         {submitting ? 'Creando cuenta…' : 'Crear cuenta'}
       </Button>
-    </form>
-  )
-}
-export default RegisterForm
+    </form>;
+};
+export default RegisterForm;

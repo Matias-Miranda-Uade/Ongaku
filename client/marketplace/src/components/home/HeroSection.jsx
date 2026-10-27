@@ -9,7 +9,6 @@ const HeroSection = ({ onExplore }) => (
       <p className="home-hero-subtitle">Prensados de época</p>
       <Button className="hero-button" onClick={onExplore}>Explorar catálogo <span aria-hidden="true">→</span></Button>
     </div>
-    <span className="home-scroll-cue">DESPLAZAR <i /></span>
   </section>
 )
 export default HeroSection

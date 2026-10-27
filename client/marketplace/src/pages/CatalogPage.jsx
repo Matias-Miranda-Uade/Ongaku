@@ -19,7 +19,10 @@ const CatalogPage = ({ onOpenVinyl, collectionId, onClearCollection, focusSearch
   useEffect(() => {
     if (focusSearch) {
       const input = document.getElementById('catalog-search')
-      if (input) input.focus()
+      if (input) {
+        input.focus({ preventScroll: true })
+        input.scrollIntoView({ behavior: 'auto', block: 'center' })
+      }
     }
   }, [focusSearch, searchRequest])
 
@@ -62,7 +65,7 @@ const CatalogPage = ({ onOpenVinyl, collectionId, onClearCollection, focusSearch
     <div className={`page catalog-page ${motionPaused ? 'disc-animation-paused' : ''}`}>
       <section className="page-hero catalog-hero">
         <p className="eyebrow">ARCHIVO / 2026</p>
-        <h1>Catálogo<br />Analógico</h1>
+        <h1>Catálogo analógico</h1>
         <p>Una selección de discos para escuchar, coleccionar y volver a descubrir.</p>
       </section>
 

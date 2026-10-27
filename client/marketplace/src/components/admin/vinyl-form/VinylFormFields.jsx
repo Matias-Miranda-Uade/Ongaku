@@ -12,7 +12,7 @@ export const fieldA11y = (name, error, hintId) => ({
   'aria-describedby': [error ? `vf-${name}-error` : null, hintId].filter(Boolean).join(' ') || undefined,
 })
 
-const VinylFormFields = ({ values, errors, onChange, onBlur, onArtistCreated, onCategoryCreated, artists = [], categories = [], lockedRelations = {} }) => (
+const VinylFormFields = ({ values, errors, onChange, onBlur, onArtistCreated, onArtistDeleted, onCategoryCreated, artists = [], categories = [], lockedRelations = {} }) => (
   <fieldset className="vf-section">
     <legend><span className="vf-step">01</span> Datos del disco</legend>
 
@@ -40,12 +40,12 @@ const VinylFormFields = ({ values, errors, onChange, onBlur, onArtistCreated, on
         onChange={(event) => onChange('artistId', event.target.value)}
         onBlur={() => onBlur('artistId')}
       >
-        <option value="" disabled={lockedRelations.artistId}>Sin artista</option>
+        <option value="">Sin artista</option>
         {artists.map((artist) => <option key={artist.id} value={artist.id}>{artist.name}</option>)}
       </select>
       {artists.length === 0 && <p className="vf-hint">No hay artistas cargados en el catálogo.</p>}
       <FieldError id="vf-artistId-error" message={errors.artistId} />
-      <ArtistCreator artists={artists} onCreated={onArtistCreated} onSelect={(id) => onChange('artistId', id)} />
+      <ArtistCreator artists={artists} selectedId={values.artistId} onCreated={onArtistCreated} onDeleted={onArtistDeleted} onSelect={(id) => onChange('artistId', id)} />
     </div>
 
     <div className="vf-field">

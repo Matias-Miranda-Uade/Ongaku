@@ -3,7 +3,7 @@ export const getMediaSource = (value) => {
   const text = String(value ?? '').trim()
   if (!text || text.length > 2048) return null
   if (text.startsWith('/') && !text.startsWith('//') && !text.includes('\\')) return { type: 'audio', url: text }
-  try {
+  if (!URL.canParse(text)) return null
     const url = new URL(text)
     if (!['https:', 'http:'].includes(url.protocol) || url.username || url.password) return null
     const secure = url.protocol === 'https:' && (!url.port || url.port === '443')
@@ -22,5 +22,4 @@ export const getMediaSource = (value) => {
     }
     if (host.endsWith('spotify.com') || host.endsWith('apple.com') || host.endsWith('youtube.com')) return null
     return { type: 'audio', url: url.href }
-  } catch { return null }
 }

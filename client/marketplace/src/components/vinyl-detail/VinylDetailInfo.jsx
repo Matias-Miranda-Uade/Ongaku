@@ -4,7 +4,6 @@ import VinylPrice from '../vinyl/VinylPrice'
 import VinylFeatures from './VinylFeatures'
 import VinylMetadata from './VinylMetadata'
 import StockIndicator from './StockIndicator'
-import AlbumLink from './AlbumLink'
 
 const VinylDetailInfo = ({ vinyl }) => (
   <section className="detail-info">
@@ -14,7 +13,6 @@ const VinylDetailInfo = ({ vinyl }) => (
     <VinylPrice vinyl={vinyl} />
     <StockIndicator stock={vinyl.stock} />
     <VinylMetadata vinyl={vinyl} />
-    <AlbumLink url={vinyl.albumUrl} />
     <VinylFeatures />
     <div className="detail-actions">
       <AddToCartButton vinyl={vinyl} />
