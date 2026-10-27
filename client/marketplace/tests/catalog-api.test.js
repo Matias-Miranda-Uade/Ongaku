@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict'
 import { after, beforeEach, test } from 'node:test'
-import { createArtist, createCategory, getCatalogLookups, uploadCover } from '../src/services/adminService.js'
+import { createArtist, deleteArtist, createCategory, getCatalogLookups, uploadCover } from '../src/services/adminService.js'
 import {
   ApiError, createFavorite, createOrder, createPayment, createReview, deleteAddress, deleteCard, deleteFavorite, deleteReview, getAddresses, getAudioPreview, getFavorites, getOrder, getOrders, getSavedCards, saveAddress, saveCard,
-  getReviewEligibility, getReviews, getReviewsByVinyl, getVinylById, getVinyls, request, updateReview,
+  getReviewEligibility, getReviews, getReviewsByVinyl, getVinylById, getVinyls, request, updateReview, login, logout, getAccessToken,
 } from '../src/services/api.js'
 
 const originalFetch = globalThis.fetch
@@ -18,7 +18,12 @@ beforeEach(() => {
     '/genres': [{ id: 3, name: 'Jazz' }],
     '/categories': [{ id: 4, description: 'Clásicos' }],
   }
-  globalThis.window = { localStorage: { getItem: () => 'session-token' } }
+  let token = 'session-token'
+  globalThis.window = { localStorage: {
+    getItem: () => token,
+    setItem: (key, value) => { token = value },
+    removeItem: () => { token = null },
+  } }
   globalThis.fetch = async (url, options) => {
     calls.push({ url, ...options })
     assert.ok(Object.hasOwn(routes, url), `Solicitud inesperada: ${url}`)
@@ -35,11 +40,46 @@ after(() => {
   else globalThis.window = originalWindow
 })
 
+test('iniciar sesión guarda el token y lo utiliza al recuperar el perfil', () => {
+  routes['/api/v1/auth/authenticate'] = { accessToken: 'new-session-token' }
+  routes['/users/me'] = { id: 1, firstName: 'Test' }
+  return login({ email: 'test@example.com', password: 'test-password' }).then((profile) => {
+    assert.equal(profile.id, 1)
+    assert.equal(getAccessToken(), 'new-session-token')
+    assert.equal(calls[1].headers.Authorization, 'Bearer new-session-token')
+  })
+})
+
+test('si falla la recuperación del perfil se elimina el token recién recibido', () => {
+  routes['/api/v1/auth/authenticate'] = { accessToken: 'new-session-token' }
+  routes['/users/me'] = Response.json({ message: 'Sesión inválida' }, { status: 401 })
+  return assert.rejects(login({ email: 'test@example.com', password: 'test-password' }), (error) => error.status === 401)
+    .then(() => assert.equal(getAccessToken(), null))
+})
+
+test('cerrar sesión elimina el token aunque el servidor no responda', () => {
+  routes['/api/v1/auth/logout'] = new Error('offline')
+  return assert.rejects(logout(), (error) => error.status === 0)
+    .then(() => assert.equal(getAccessToken(), null))
+})
+
 test('crear artistas envía el nombre al backend y devuelve su identificador', async () => {
   routes['/artists'] = { id: 80, name: 'Lana Del Rey' }
   assert.equal((await createArtist('Lana Del Rey')).id, 80)
   assert.equal(calls[0].method, 'POST')
   assert.deepEqual(JSON.parse(calls[0].body), { name: 'Lana Del Rey' })
+})
+
+test('eliminar un artista envía DELETE con la sesión y conserva los errores de permisos', () => {
+  routes['/artists/80'] = new Response(null, { status: 204 })
+  return deleteArtist(80).then((result) => {
+    assert.equal(result, null)
+    assert.equal(calls[0].method, 'DELETE')
+    assert.equal(calls[0].url, '/artists/80')
+    assert.equal(calls[0].headers.Authorization, 'Bearer session-token')
+    routes['/artists/80'] = Response.json({ message: 'Sin permisos' }, { status: 403 })
+    return assert.rejects(deleteArtist(80), (error) => error.isForbidden)
+  })
 })
 
 test('las categorías se cargan y se crean sin ocultar los errores del servidor', async () => {

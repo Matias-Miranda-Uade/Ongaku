@@ -58,12 +58,9 @@ const isInteger = (value) => /^-?\d+$/.test(String(value).trim())
 
 const isValidUrl = (value) => {
   if (value.startsWith('/')) return true
-  try {
-    const url = new URL(value)
-    return url.protocol === 'http:' || url.protocol === 'https:'
-  } catch {
-    return false
-  }
+  if (!URL.canParse(value)) return false
+  const url = new URL(value)
+  return url.protocol === 'http:' || url.protocol === 'https:'
 }
 
 export const validateVinyl = (values) => {

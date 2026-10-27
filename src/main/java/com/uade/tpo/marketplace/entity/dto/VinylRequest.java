@@ -13,6 +13,8 @@ public class VinylRequest {
     public void setAlbumUrl(String albumUrl) { this.albumUrl = albumUrl; }
     private Long categoryId;
     private Long artistId;
+    private boolean artistProvided;
+    public boolean hasArtistId() { return artistProvided; }
     private Long genreId;
     private java.util.List<Long> genreIds;
     private boolean audioPreviewProvided;
@@ -101,6 +103,7 @@ public class VinylRequest {
     }
 
     public void setArtistId(Long artistId) {
+        artistProvided = true;
         this.artistId = artistId;
     }
 

@@ -49,9 +49,15 @@ Las tarjetas del catálogo y el detalle muestran las unidades disponibles y el e
 
 `npm test` verifica las llamadas HTTP, el envío del token y el manejo de errores con respuestas simuladas de la API. No modifica la base de datos.
 
+El frontend utiliza `fetch` y cadenas `.then()`, `.catch()` y `.finally()` para las solicitudes y los formularios. El código de la aplicación en `src` no utiliza funciones `async`, expresiones `await` ni bloques `try/catch`. Las validaciones de enlaces comprueban primero la URL antes de crearla. El checkout sigue funcionando en un entorno de prueba, sin cargos reales, con esa aclaración presentada en una sola nota breve.
+
 Los filtros de `CatalogPage` y `ReviewsPage` se calculan con variables, `if`, `filter` y `sort`. Estas páginas y los componentes de `components/vinyl` y `components/review` no utilizan `useMemo`, `useRef`, `useSearchParams`, encadenamiento opcional ni coalescencia nula. `App` les pasa los datos de navegación como props; se mantienen los enlaces de colecciones y reseñas por vinilo.
 
 En administración, el formulario de vinilos permite crear un artista con «+ Nuevo artista» y selecciona el registro devuelto por `POST /artists`. Los nombres repetidos se seleccionan desde la lista existente.
+
+«Eliminar artista seleccionado» utiliza `DELETE /artists/:id`, reservado a administradores. La confirmación indica qué artista se eliminará; sus vinilos se conservan sin ese artista y las compras mantienen sus datos históricos. La lista y el formulario se actualizan al terminar. También se puede guardar un vinilo como «Sin artista».
+
+En el checkout pendiente se pueden cargar tarjetas antes o después de elegir la dirección. La dirección solo bloquea el botón de confirmar el pago; durante el pago o la cancelación se bloquean todos los controles. Los enlaces a plataformas se muestran dentro de la muestra de audio, sin repetir botones de escucha en la ficha del vinilo ni debajo del reproductor integrado.
 
 «Subir imagen» envía un JPG o PNG de hasta 5 MB y 4096 × 4096 píxeles a `POST /admin/vinyls/covers`. El servidor verifica y vuelve a codificar la imagen; guarda el archivo en `uploads/covers` y el vinilo conserva una URL pública `/media/covers/:archivo`. La ruta de almacenamiento puede configurarse con `app.covers.directory`. Los archivos persisten al reiniciar y deben conservarse junto con la base de datos. Vite redirige `/media` al backend.
 

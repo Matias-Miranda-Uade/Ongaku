@@ -58,10 +58,10 @@ const OrderDetailPage = ({ order, onBack, onCancel, onRate, onPay, isAdmin = fal
           <PaymentInfo payment={order.payment} />
           {pendingCheckout && (
             <div className="order-payment-actions">
-              <h3>Completar pago de prueba</h3>
-              {!addressId && <p>Elegí una dirección de envío para continuar con el pago.</p>}
+              <h3>Completar pago</h3>
+              {!addressId && <p>Podés cargar la tarjeta ahora. Elegí una dirección de envío antes de confirmar el pago.</p>}
               <p>El stock de esta orden está reservado mientras siga pendiente. Si cancelás la orden, las unidades vuelven al catálogo.</p>
-              <DemoPaymentForm key={order.id} order={order} onPay={(selectedOrder, options = {}) => onPay(selectedOrder, { ...options, addressId })} paying={paying} disabled={cancelling || !addressId} />
+              <DemoPaymentForm key={order.id} order={order} onPay={(selectedOrder, options = {}) => onPay(selectedOrder, { ...options, addressId })} paying={paying} disabled={cancelling} paymentDisabled={!addressId} />
             </div>
           )}
         </section>

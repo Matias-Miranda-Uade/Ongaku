@@ -33,7 +33,7 @@ const ReviewsPage = ({ vinylId = null, onClearVinyl }) => {
     <div className="page reviews-page">
       <section className="page-hero reviews-hero">
         <p className="eyebrow">VOCES / COMUNIDAD</p>
-        <h1>Reseñas de<br />la comunidad</h1>
+        <h1>Reseñas de la comunidad</h1>
         <p>Opiniones de quienes escuchan, coleccionan y vuelven a poner el lado A.</p>
       </section>
 

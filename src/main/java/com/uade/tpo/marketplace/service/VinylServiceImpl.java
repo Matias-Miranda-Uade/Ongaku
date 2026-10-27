@@ -177,6 +177,7 @@ public class VinylServiceImpl implements VinylService {
                 : null;
 
         VinylMapper.applyRelations(vinyl, category, artist, genre, audioPreview);
+        if (request.hasArtistId() && request.getArtistId() == null) vinyl.setArtist(null);
         if (request.hasCategoryId() && request.getCategoryId() == null) vinyl.setCategory(null);
         if (request.hasAudioPreviewId() && request.getAudioPreviewId() == null) vinyl.setAudioPreview(null);
         if (request.getGenreIds() != null) {

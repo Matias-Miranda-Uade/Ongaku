@@ -76,6 +76,7 @@ public class ArtistServiceImpl implements ArtistService {
         if (artist.getVinyls() != null) {
             artist.getVinyls().forEach(v -> v.setArtist(null));
             vinylRepository.saveAll(artist.getVinyls());
+            vinylRepository.flush();
         }
         artistRepository.delete(artist);
     }
