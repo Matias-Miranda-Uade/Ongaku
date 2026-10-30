@@ -7,11 +7,14 @@ import PaymentInfo from '../components/order/PaymentInfo'
 import DemoPaymentForm from '../components/order/DemoPaymentForm'
 import OrderTotals from '../components/order/OrderTotals'
 import TrackingButton from '../components/order/TrackingButton'
-import { useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { selectCheckoutForm, setCheckoutAddress } from '../Redux/slices/ordersSlice'
 import AddressBook from '../components/profile/AddressBook'
 
-const OrderDetailPage = ({ order, onBack, onCancel, onRate, onPay, isAdmin = false, paying = false, cancelling = false, submittingReview = false, focusReview = false }) => {
-  const [addressId, setAddressId] = useState(null)
+const OrderDetailPage = ({ order, onBack, onCancel, onRate, onPay, isAdmin = false, paying = false, cancelling = false, submittingVinylId = null, focusReview = false }) => {
+  const dispatch = useDispatch()
+  const checkoutForm = useSelector(selectCheckoutForm)
+  const addressId = checkoutForm.addressId
   const pendingCheckout = order.status === 'PENDIENTE' && !isAdmin
   return (
   <article className="order-detail">
@@ -38,7 +41,7 @@ const OrderDetailPage = ({ order, onBack, onCancel, onRate, onPay, isAdmin = fal
           <article className="order-detail-item" key={item.vinylId ?? `historical-${index}`}>
             <OrderItem item={item} />
             {item.vinylId != null && order.status === 'ENTREGADA' && (
-              <OrderRating item={item} onRate={onRate} submitting={submittingReview} autoFocus={focusReview && !order.items.slice(0, index).some((previous) => !previous.review && previous.vinylId != null)} />
+              <OrderRating item={item} onRate={onRate} submitting={String(submittingVinylId) === String(item.vinylId)} autoFocus={focusReview && !order.items.slice(0, index).some((previous) => !previous.review && previous.vinylId != null)} />
             )}
           </article>
         ))}
@@ -51,7 +54,7 @@ const OrderDetailPage = ({ order, onBack, onCancel, onRate, onPay, isAdmin = fal
         </section>
         <section className="order-info-card">
           {pendingCheckout
-            ? <AddressBook key={order.id} selectable selectedId={addressId} onSelect={setAddressId} disabled={paying || cancelling} />
+            ? <AddressBook key={order.id} selectable selectedId={addressId} onSelect={value => dispatch(setCheckoutAddress(value))} disabled={paying || cancelling} />
             : <ShippingAddress address={order.shippingAddress} />}
         </section>
         <section className="order-info-card">
@@ -61,14 +64,14 @@ const OrderDetailPage = ({ order, onBack, onCancel, onRate, onPay, isAdmin = fal
               <h3>Completar pago</h3>
               {!addressId && <p>Podés cargar la tarjeta ahora. Elegí una dirección de envío antes de confirmar el pago.</p>}
               <p>El stock de esta orden está reservado mientras siga pendiente. Si cancelás la orden, las unidades vuelven al catálogo.</p>
-              <DemoPaymentForm key={order.id} order={order} onPay={(selectedOrder, options = {}) => onPay(selectedOrder, { ...options, addressId })} paying={paying} disabled={cancelling} paymentDisabled={!addressId} />
+              <DemoPaymentForm key={order.id} order={order} onPay={(selectedOrder, options = {}) => onPay(selectedOrder, { ...options, addressId: checkoutForm.addressId })} paying={paying} disabled={cancelling} paymentDisabled={!addressId} />
             </div>
           )}
         </section>
         {order.status === 'ENVIADA' && order.trackingCode && (
           <section className="order-info-card">
             <p className="eyebrow">SEGUIMIENTO</p>
-            <TrackingButton trackingCode={order.trackingCode} />
+            <TrackingButton orderId={order.id} trackingCode={order.trackingCode} />
           </section>
         )}
         {order.status === 'PENDIENTE' && (

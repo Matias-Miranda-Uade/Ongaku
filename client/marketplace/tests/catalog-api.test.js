@@ -1,12 +1,13 @@
 import assert from 'node:assert/strict'
 import { after, beforeEach, test } from 'node:test'
+import { http } from '../src/services/api.js'
 import { createArtist, deleteArtist, createCategory, getCatalogLookups, uploadCover } from '../src/services/adminService.js'
 import {
   ApiError, createFavorite, createOrder, createPayment, createReview, deleteAddress, deleteCard, deleteFavorite, deleteReview, getAddresses, getAudioPreview, getFavorites, getOrder, getOrders, getSavedCards, saveAddress, saveCard,
   getReviewEligibility, getReviews, getReviewsByVinyl, getVinylById, getVinyls, request, updateReview, login, logout, getAccessToken,
 } from '../src/services/api.js'
 
-const originalFetch = globalThis.fetch
+const originalAdapter = http.defaults.adapter
 const originalWindow = globalThis.window
 let calls
 let routes
@@ -24,18 +25,34 @@ beforeEach(() => {
     setItem: (key, value) => { token = value },
     removeItem: () => { token = null },
   } }
-  globalThis.fetch = async (url, options) => {
-    calls.push({ url, ...options })
-    assert.ok(Object.hasOwn(routes, url), `Solicitud inesperada: ${url}`)
-    const route = routes[url]
+  http.defaults.adapter = async config => {
+    const call = {
+      url: config.url,
+      method: config.method.toUpperCase(),
+      headers: config.headers.toJSON(),
+      body: config.data
+    }
+    calls.push(call)
+    assert.ok(Object.hasOwn(routes, config.url), `Solicitud inesperada: ${config.url}`)
+    const route = routes[config.url]
     if (route instanceof Error) throw route
-    if (route instanceof Response) return route
-    return Response.json({ success: true, data: route })
+    let status = 200
+    let data = { success: true, data: route }
+    if (route instanceof Response) {
+      status = route.status
+      const text = status === 204 ? '' : await route.text()
+      try {
+        data = text ? JSON.parse(text) : null
+      } catch {
+        data = text
+      }
+    }
+    return { data, status, statusText: '', headers: {}, config, request: {} }
   }
 })
 
 after(() => {
-  globalThis.fetch = originalFetch
+  http.defaults.adapter = originalAdapter
   if (originalWindow === undefined) delete globalThis.window
   else globalThis.window = originalWindow
 })
