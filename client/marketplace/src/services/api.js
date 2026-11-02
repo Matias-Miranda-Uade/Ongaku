@@ -1,3 +1,5 @@
+import axios from 'axios';
+
 const TOKEN_STORAGE_KEY = 'ongaku-access-token';
 const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL ?? '';
 export const getAccessToken = () => window.localStorage.getItem(TOKEN_STORAGE_KEY);
@@ -8,6 +10,20 @@ export const clearAccessToken = () => {
   window.localStorage.removeItem(TOKEN_STORAGE_KEY);
 };
 const readData = payload => payload && Object.hasOwn(payload, 'data') ? payload.data : payload;
+export const http = axios.create({
+  baseURL: API_BASE_URL
+});
+
+http.interceptors.request.use(config => {
+  // El token se consulta en cada request porque login/logout lo cambian en runtime.
+  const token = getAccessToken();
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  if (config.data instanceof FormData) {
+    config.headers.set('Content-Type', false);
+  }
+  return config;
+});
+
 export class ApiError extends Error {
   constructor(message, status = 0, errors = []) {
     super(message);
@@ -35,35 +51,56 @@ export class ApiError extends Error {
   }
 }
 export const request = (url, options = {}) => {
-  const token = getAccessToken();
-  return fetch(`${API_BASE_URL}${url}`, {
-    ...options,
-    headers: {
-      ...(options.body && !(options.body instanceof FormData) ? {
-        'Content-Type': 'application/json'
-      } : {}),
-      ...(token ? {
-        Authorization: `Bearer ${token}`
-      } : {}),
-      ...options.headers
-    }
-  }).catch(() => {
-    throw new ApiError('No se pudo conectar con el servidor. Verificá que el backend esté disponible.');
+  const headers = { ...options.headers };
+  if (options.body && !(options.body instanceof FormData) && !headers['Content-Type'] && !headers['content-type']) {
+    headers['Content-Type'] = 'application/json';
+  }
+  const { body, ...config } = options;
+  return http.request({
+    ...config,
+    url,
+    headers,
+    ...(body === undefined ? {} : { data: body })
   }).then(response => {
-    const body = response.status === 204 ? Promise.resolve(null) : response.json().catch(() => null);
-    return body.then(payload => {
-      if (!response.ok) {
-        const errors = payload && Array.isArray(payload.errors) ? payload.errors : [];
-        const details = errors.length ? ` ${errors.join(' ')}` : '';
-        const fallback = response.status >= 500 ? 'El servidor no pudo procesar la solicitud. Verificá que el backend esté iniciado y volvé a intentar.' : `Error HTTP ${response.status}`;
-        const message = payload && payload.message ? payload.message : fallback;
-        throw new ApiError(`${message}${details}`, response.status, errors);
+    if (response.status === 204) return null;
+    let payload = response.data;
+    if (typeof payload === 'string') {
+      try {
+        payload = JSON.parse(payload);
+      } catch {
+        payload = null;
       }
-      if (response.status !== 204 && payload === null) {
-        throw new ApiError('El servidor devolvió una respuesta inválida. Verificá la dirección de la API.', 502);
+    }
+    if (response.status < 200 || response.status >= 300) {
+      const errors = payload && Array.isArray(payload.errors) ? payload.errors : [];
+      const details = errors.length ? ` ${errors.join(' ')}` : '';
+      const fallback = response.status >= 500 ? 'El servidor no pudo procesar la solicitud. Verificá que el backend esté iniciado y volvé a intentar.' : `Error HTTP ${response.status}`;
+      const message = payload && payload.message ? payload.message : fallback;
+      throw new ApiError(`${message}${details}`, response.status, errors);
+    }
+    if (payload === null) {
+      throw new ApiError('El servidor devolvió una respuesta inválida. Verificá la dirección de la API.', 502);
+    }
+    return readData(payload);
+  }).catch(error => {
+    if (error instanceof ApiError) throw error;
+    const response = error.response;
+    if (response) {
+      let payload = response.data;
+      if (typeof payload === 'string') {
+        try {
+          payload = JSON.parse(payload);
+        } catch {
+          payload = null;
+        }
       }
-      return readData(payload);
-    });
+      const errors = payload && Array.isArray(payload.errors) ? payload.errors : [];
+      const details = errors.length ? ` ${errors.join(' ')}` : '';
+      const fallback = response.status >= 500 ? 'El servidor no pudo procesar la solicitud. Verificá que el backend esté iniciado y volvé a intentar.' : `Error HTTP ${response.status}`;
+      const message = payload && payload.message ? payload.message : fallback;
+      throw new ApiError(`${message}${details}`, response.status, errors);
+    }
+    throw new ApiError('No se pudo conectar con el servidor. Verificá que el backend esté disponible.');
   });
 };
 export const jsonRequest = (method, body) => ({

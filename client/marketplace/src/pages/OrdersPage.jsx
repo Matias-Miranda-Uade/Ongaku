@@ -1,149 +1,80 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import OrderFilters from '../components/order/OrderFilters';
 import OrderCard from '../components/order/OrderCard';
 import OrderDetailPage from './OrderDetailPage';
 import { AuthContext } from '../context/AuthContext';
-import { cancelOrder as cancelOrderRequest, createReview, createPayment, getMyReviews, getOrder } from '../services/api';
+import { cancelOrder, fetchOrderById, payOrder } from '../Redux/actions/ordersActions';
+import { createReview } from '../Redux/actions/reviewsActions';
+import {
+  resetCheckoutForm,
+  selectFilteredOrders,
+  selectOrderById,
+  selectOrders,
+  selectOrdersActionError,
+  selectOrdersStatus,
+  selectOrdersNotice,
+  selectPendingAction,
+  selectStatusFilter,
+  setStatusFilter
+} from '../Redux/slices/ordersSlice';
+import { selectMyReviews, selectReviewsError, selectSubmittingVinylId } from '../Redux/slices/reviewsSlice';
+
+const sameId = (left, right) => String(left) === String(right);
+const attachReviews = (order, reviews) => order && ({
+  ...order,
+  items: order.items.map(item => ({
+    ...item,
+    review: reviews.find(review => sameId(review.vinylId, item.vinylId)) ?? item.review ?? null
+  }))
+});
+
 const OrdersPage = ({
-  orders: accountOrders = [],
   authenticated,
   selectedOrderId,
   onNavigate,
   onSelectOrder,
-  onOrdersChange,
   focusReview = false
 }) => {
-  const {
-    isAdmin
-  } = useContext(AuthContext);
-  const [status, setStatus] = useState('TODAS');
-  const [error, setError] = useState('');
-  const [myReviews, setMyReviews] = useState([]);
-  const [detailOrder, setDetailOrder] = useState(null);
-  const [loadingDetail, setLoadingDetail] = useState(false);
-  const [cancelling, setCancelling] = useState(false);
-  const [paying, setPaying] = useState(false);
-  const [notice, setNotice] = useState('');
-  const [submittingReview, setSubmittingReview] = useState(false);
+  const { isAdmin } = useContext(AuthContext);
+  const dispatch = useDispatch();
+  const orders = useSelector(selectOrders);
+  const reviews = useSelector(selectMyReviews);
+  const selectedOrder = useSelector(selectOrderById(selectedOrderId));
+  const ordersStatus = useSelector(selectOrdersStatus);
+  const detailStatus = useSelector(state => state.orders.detailStatus);
+  const detailId = useSelector(state => state.orders.detailId);
+  const detailError = useSelector(state => state.orders.detailError);
+  const actionError = useSelector(selectOrdersActionError);
+  const reviewError = useSelector(selectReviewsError);
+  const notice = useSelector(selectOrdersNotice);
+  const pendingAction = useSelector(selectPendingAction);
+  const status = useSelector(selectStatusFilter);
+  const filtered = useSelector(selectFilteredOrders);
+  const submittingVinylId = useSelector(selectSubmittingVinylId);
+
   useEffect(() => {
-    if (!authenticated) {
-      setMyReviews([]);
-      return;
-    }
-    let active = true;
-    getMyReviews().then(reviews => {
-      if (active) setMyReviews(reviews);
-    }).catch(requestError => {
-      if (active) setError(`No se pudieron cargar tus reseñas: ${requestError.message}`);
-    });
-    return () => {
-      active = false;
-    };
-  }, [authenticated]);
-  const orders = accountOrders.map(order => ({
-    ...order,
-    items: order.items.map(item => ({
-      ...item,
-      review: myReviews.find(review => String(review.vinylId) === String(item.vinylId)) ?? item.review ?? null
-    }))
-  }));
+    if (!selectedOrderId || !authenticated || ordersStatus !== 'succeeded' || selectedOrder) return;
+    dispatch(fetchOrderById(selectedOrderId));
+  }, [dispatch, selectedOrderId, authenticated, ordersStatus, selectedOrder]);
+
   useEffect(() => {
-    if (!selectedOrderId || !authenticated) {
-      setDetailOrder(null);
-      return;
-    }
-    const existingOrder = accountOrders.find(order => String(order.id) === String(selectedOrderId));
-    if (existingOrder) {
-      setDetailOrder(existingOrder);
-      setError('');
-      return;
-    }
-    let active = true;
-    setLoadingDetail(true);
-    setError('');
-    getOrder(selectedOrderId).then(order => {
-      if (active) setDetailOrder(order);
-    }).catch(requestError => {
-      if (active) setError(`No se pudo cargar la orden: ${requestError.message}`);
-    }).finally(() => {
-      if (active) setLoadingDetail(false);
-    });
-    return () => {
-      active = false;
-    };
-  }, [selectedOrderId, authenticated, accountOrders]);
-  const cancelOrder = id => {
-    if (paying || cancelling) return Promise.resolve();
-    setError('');
-    setCancelling(true);
-    return Promise.resolve(cancelOrderRequest(id)).then(updatedOrder => {
-      onOrdersChange?.(accountOrders.map(order => order.id === id ? updatedOrder : order));
-      setDetailOrder(updatedOrder);
-    }).catch(requestError => {
-      setError(requestError.message);
-    }).finally(() => {
-      setCancelling(false);
-    });
+    if (selectedOrderId) dispatch(resetCheckoutForm());
+  }, [dispatch, selectedOrderId]);
+
+  const handleCancelOrder = id => {
+    if (pendingAction) return Promise.resolve();
+    return dispatch(cancelOrder(id)).unwrap().catch(() => undefined);
   };
-  const payOrder = (order, {
-    savedCardId,
-    addressId
-  } = {}) => {
-    if (isAdmin || paying || cancelling || order.status !== 'PENDIENTE') return Promise.resolve();
-    setError('');
-    setNotice('');
-    setPaying(true);
-    return Promise.resolve().then(() => {
-      if (!addressId) {
-        setError('Elegí una dirección de envío antes de pagar.');
-        return;
-      }
-      return Promise.resolve(createPayment({
-        orderId: order.id,
-        amount: order.total,
-        savedCardId,
-        addressId
-      })).then(payment => {
-        let updatedOrder = {
-          ...order,
-          payment,
-          status: 'PAGADA',
-          orderStatus: {
-            ...order.orderStatus,
-            name: 'PAGADA'
-          }
-        };
-        let message = 'Pago registrado.';
-        return getOrder(order.id).then(_result => {
-          updatedOrder = _result;
-        }).catch(() => {
-          message = 'El pago se registró. Recargá la orden para ver los datos de envío actualizados.';
-        }).then(() => {
-          onOrdersChange?.(accountOrders.map(item => item.id === order.id ? updatedOrder : item));
-          setDetailOrder(updatedOrder);
-          setNotice(message);
-        });
-      });
-    }).catch(requestError => {
-      setError(`No se pudo pagar la orden: ${requestError.message}`);
-    }).finally(() => {
-      setPaying(false);
-    });
+  const handlePayOrder = (order, { savedCardId, addressId } = {}) => {
+    if (isAdmin || pendingAction || order.status !== 'PENDIENTE') return Promise.resolve();
+    return dispatch(payOrder({ order, savedCardId, addressId, isAdmin })).unwrap().catch(() => undefined);
   };
-  const rateItem = (vinylId, review) => {
-    setError('');
-    setSubmittingReview(true);
-    return createReview({
-      ...review,
-      vinylId
-    }).then(savedReview => {
-      setMyReviews(current => [...current.filter(item => String(item.vinylId) !== String(vinylId)), savedReview]);
-    }).catch(requestError => {
-      setError(`No se pudo guardar la reseña: ${requestError.message}`);
-    }).finally(() => {
-      setSubmittingReview(false);
-    });
-  };
+  const rateItem = (vinylId, review) => dispatch(createReview({
+    ...review,
+    vinylId
+  })).unwrap().catch(() => undefined);
+
   if (!authenticated) {
     return <section className="empty-state-card">
         <p className="eyebrow">TU ACTIVIDAD</p>
@@ -153,41 +84,36 @@ const OrdersPage = ({
       </section>;
   }
   if (selectedOrderId) {
-    const selectedOrder = orders.find(order => String(order.id) === String(selectedOrderId)) ?? (detailOrder && {
-      ...detailOrder,
-      items: detailOrder.items.map(item => ({
-        ...item,
-        review: myReviews.find(review => String(review.vinylId) === String(item.vinylId)) ?? item.review ?? null
-      }))
-    });
+    const detailOrder = attachReviews(selectedOrder, reviews);
+    const loadingDetail = ordersStatus === 'succeeded' && detailStatus === 'loading' && String(detailId) === String(selectedOrderId);
+    const visibleError = actionError || reviewError || (detailError ? `No se pudo cargar la orden: ${detailError}` : '');
     return <section className="orders-page">
-        {error && <p className="form-error" role="alert">{error}</p>}
+        {visibleError && <p className="form-error" role="alert">{visibleError}</p>}
         {notice && <p className="storage-notice" role="status">{notice}</p>}
-        {loadingDetail && !selectedOrder ? <p className="orders-loading" role="status">Cargando orden…</p> : selectedOrder ? <OrderDetailPage order={selectedOrder} onBack={() => onNavigate?.('orders')} onCancel={cancelOrder} onRate={rateItem} onPay={payOrder} isAdmin={isAdmin} paying={paying} cancelling={cancelling} submittingReview={submittingReview} focusReview={focusReview} /> : <section className="empty-state-card">
+        {loadingDetail && !detailOrder ? <p className="orders-loading" role="status">Cargando orden…</p> : detailOrder ? <OrderDetailPage order={detailOrder} onBack={() => onNavigate?.('orders')} onCancel={handleCancelOrder} onRate={rateItem} onPay={handlePayOrder} isAdmin={isAdmin} paying={pendingAction === 'paying'} cancelling={pendingAction === 'cancelling'} submittingReview={submittingVinylId != null} submittingVinylId={submittingVinylId} focusReview={focusReview} /> : <section className="empty-state-card">
                 <p className="eyebrow">TU ACTIVIDAD</p>
                 <h2>No encontramos esa orden</h2>
                 <button className="secondary-button" onClick={() => onNavigate?.('orders')}>Volver a mis órdenes</button>
               </section>}
       </section>;
   }
-  const filtered = status === 'TODAS' ? orders : orders.filter(order => order.status === status);
   return <section className="orders-page">
       <div className="orders-heading">
         <p className="eyebrow">TU ACTIVIDAD</p>
         <h1>Mis órdenes</h1>
         <p className="legacy-description">El recorrido de cada edición que elegiste.</p>
       </div>
-      {error && <p className="form-error" role="alert">{error}</p>}
+      {(actionError || reviewError) && <p className="form-error" role="alert">{actionError || reviewError}</p>}
       <div className="orders-toolbar">
         <span className="orders-count">{orders.length} {orders.length === 1 ? 'ORDEN' : 'ÓRDENES'}</span>
-        <OrderFilters status={status} onChange={setStatus} />
+        <OrderFilters status={status} onChange={value => dispatch(setStatusFilter(value))} />
       </div>
       {filtered.length === 0 ? <section className="empty-state-card">
             <p className="eyebrow">TU ACTIVIDAD</p>
             <h2>{orders.length ? 'No hay órdenes con este estado' : 'Todavía no hay órdenes'}</h2>
             <p>{orders.length ? 'Probá con otro filtro.' : 'Cuando hagas una compra, vas a poder seguirla desde acá.'}</p>
             {!orders.length && <button className="primary-button" onClick={() => onNavigate?.('catalog')}>Explorar catálogo</button>}
-          </section> : <div className="orders-list">{filtered.map(order => <OrderCard key={order.id} order={order} onSelect={onSelectOrder} />)}</div>}
+          </section> : <div className="orders-list">{filtered.map(order => <OrderCard key={order.id} order={attachReviews(order, reviews)} onSelect={onSelectOrder} />)}</div>}
     </section>;
 };
 export default OrdersPage;

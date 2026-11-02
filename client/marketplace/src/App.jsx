@@ -1,13 +1,18 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import './App.css';
 import './persona2.css';
 import './admin.css';
 import './controls.css';
-import { CartContext, CartProvider } from './context/CartContext';
 import { FavoritesProvider } from './context/FavoritesContext';
 import { AuthContext } from './context/AuthContext';
-import { createOrder, getOrders } from './services/api';
+import { createOrder, fetchOrders } from './Redux/actions/ordersActions';
+import { fetchMyReviews } from './Redux/actions/reviewsActions';
+import { resetCart, selectCartError } from './Redux/slices/cartSlice';
+import { resetOrders, selectOrdersError } from './Redux/slices/ordersSlice';
+import { resetReviews } from './Redux/slices/reviewsSlice';
+import { syncCart } from './Redux/actions/cartActions';
 import AppRoutes, { ADMIN_BASE_PATH, isAdminPath } from './routes/AppRoutes';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
@@ -79,9 +84,10 @@ const App = () => {
     register,
     logout
   } = useContext(AuthContext);
-  const [orders, setOrders] = useState([]);
-  const [storageError, setStorageError] = useState('');
-  const [ordersReload, setOrdersReload] = useState(0);
+  const dispatch = useDispatch();
+  const ordersError = useSelector(selectOrdersError);
+  const storageError = sessionError || (ordersError ? `No se pudieron cargar tus órdenes: ${ordersError}` : '');
+  const shopper = user && !isAdmin ? user : null;
   useEffect(() => {
     if (location.state && location.state.focusCatalogSearch) return;
     window.scrollTo({
@@ -90,20 +96,16 @@ const App = () => {
     });
   }, [location.pathname, location.state]);
   useEffect(() => {
-    if (!user || isAdmin) {
-      setOrders([]);
-      return;
+    if (shopper) {
+      dispatch(syncCart(shopper.id));
+      dispatch(fetchOrders());
+      dispatch(fetchMyReviews());
+    } else {
+      dispatch(resetCart());
+      dispatch(resetOrders());
+      dispatch(resetReviews());
     }
-    let active = true;
-    getOrders().then(data => {
-      if (active) setOrders(data);
-    }).catch(error => {
-      if (active) setStorageError(`No se pudieron cargar tus órdenes: ${error.message}`);
-    });
-    return () => {
-      active = false;
-    };
-  }, [user?.id, isAdmin, ordersReload]);
+  }, [dispatch, shopper?.id]);
   const openPage = nextPage => {
     if (nextPage === 'orders' && isAdmin) {
       navigate('/app/admin/orders');
@@ -116,8 +118,6 @@ const App = () => {
   };
   const handleLogin = credentials => {
     return login(credentials).then(profile => {
-      setStorageError('');
-      setOrders([]);
       const returnTo = location.state?.returnTo;
       if (profile.role !== 'ADMIN' && typeof returnTo === 'string' && returnTo.startsWith('/app/')) navigate(returnTo, {
         replace: true
@@ -126,38 +126,28 @@ const App = () => {
   };
   const handleRegister = account => {
     return register(account).then(() => {
-      setStorageError('');
-      setOrders([]);
       openPage('profile');
     });
   };
   const handleLogout = () => {
     return logout().then(() => {
-      setStorageError('');
-      setOrders([]);
       openPage('home');
     });
-  };
-  const handleOrdersChange = nextOrders => {
-    setOrders(nextOrders);
   };
   if (isRestoringSession) {
     return <main className="app-shell"><p role="status">Recuperando tu sesión…</p></main>;
   }
   if (!page) return <Navigate to="/" replace />;
   if (isAdmin && page === 'orders') return <Navigate to="/app/admin/orders" replace />;
-  return <CartProvider user={isAdmin ? null : user}>
-      <FavoritesProvider>
-        <AppContent page={page} user={user} onUserChange={setUser} orders={orders} isAdmin={isAdmin} storageError={sessionError || storageError} selectedVinylId={selectedVinylId} selectedOrderId={selectedOrderId} queryString={location.search} focusCatalogSearch={Boolean(location.state && location.state.focusCatalogSearch)} searchRequest={location.key} openPage={openPage} openVinyl={openVinyl} handleLogin={handleLogin} handleRegister={handleRegister} handleLogout={handleLogout} handleOrdersChange={handleOrdersChange} reloadOrders={() => setOrdersReload(value => value + 1)} />
+  return <FavoritesProvider>
+        <AppContent page={page} user={user} onUserChange={setUser} isAdmin={isAdmin} storageError={storageError} selectedVinylId={selectedVinylId} selectedOrderId={selectedOrderId} queryString={location.search} focusCatalogSearch={Boolean(location.state && location.state.focusCatalogSearch)} searchRequest={location.key} openPage={openPage} openVinyl={openVinyl} handleLogin={handleLogin} handleRegister={handleRegister} handleLogout={handleLogout} />
       </FavoritesProvider>
-    </CartProvider>;
 };
 const AppContent = ({
   page,
   user,
   isAdmin,
   onUserChange,
-  orders,
   storageError,
   selectedVinylId,
   selectedOrderId,
@@ -168,14 +158,11 @@ const AppContent = ({
   openVinyl,
   handleLogin,
   handleRegister,
-  handleLogout,
-  handleOrdersChange,
-  reloadOrders
+  handleLogout
 }) => {
   const navigate = useNavigate();
-  const {
-    refreshCart
-  } = useContext(CartContext);
+  const dispatch = useDispatch();
+  const cartError = useSelector(selectCartError);
   const query = new URLSearchParams(queryString);
   const handleCheckout = () => {
     if (isAdmin) return Promise.resolve({
@@ -189,20 +176,18 @@ const AppContent = ({
       });
       return Promise.resolve(false);
     }
-    return createOrder().then(order => {
-      handleOrdersChange([order, ...orders]);
-      return refreshCart().then(() => {
-        reloadOrders();
-        navigate(`/app/orders/${order.id}`);
-        return true;
-      });
+    return dispatch(createOrder()).unwrap().then(order => {
+      navigate(`/app/orders/${order.id}`);
+      return true;
     }).catch(error => {
       return {
-        error: error.message
+        error: typeof error === 'string' ? error : error.message
       };
     });
   };
-  return <div className="app-shell">
+  return <>
+    {cartError && <p className="storage-notice" role="alert">{cartError}</p>}
+    <div className="app-shell">
       <Header page={page} onNavigate={openPage} onSearch={() => navigate(pagePaths.catalog, {
       state: {
         focusCatalogSearch: true
@@ -222,16 +207,14 @@ const AppContent = ({
             <CartPage onCheckout={handleCheckout} onNavigate={openPage} />
           </div>}
         {page === 'orders' && <div className="legacy-page">
-            <OrdersPage orders={orders} authenticated={Boolean(user)} selectedOrderId={selectedOrderId} onNavigate={openPage} onSelectOrder={(orderId, focusReview = false) => navigate(`/app/orders/${orderId}${focusReview ? '?focusReview=1' : ''}`)} focusReview={query.get('focusReview') === '1'} onOrdersChange={handleOrdersChange} />
+            <OrdersPage authenticated={Boolean(user)} selectedOrderId={selectedOrderId} onNavigate={openPage} onSelectOrder={(orderId, focusReview = false) => navigate(`/app/orders/${orderId}${focusReview ? '?focusReview=1' : ''}`)} focusReview={query.get('focusReview') === '1'} />
           </div>}
         {page === 'profile' && <div className="legacy-page">
-            <ProfilePage user={user ? {
-          ...user,
-          orders
-        } : null} onUserChange={onUserChange} onNavigate={openPage} />
+            <ProfilePage user={user} onUserChange={onUserChange} onNavigate={openPage} />
           </div>}
       </PageContainer>
       <Footer onNavigate={openPage} />
-    </div>;
+    </div>
+  </>;
 };
 export default App;

@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { setCheckoutCardErrors, setCheckoutCardField, setCheckoutSelectedCard } from '../../Redux/slices/ordersSlice';
 import CardBook from '../profile/CardBook';
 const isValidCardNumber = value => {
   const digits = value.replace(/\D/g, '');
@@ -39,12 +40,6 @@ const validateCard = ({
   if (!/^\d{3,4}$/.test(securityCode)) errors.securityCode = 'Ingresá un código de 3 o 4 dígitos.';
   return errors;
 };
-const initialCard = {
-  holder: '',
-  number: '',
-  expiry: '',
-  securityCode: ''
-};
 const ManualDemoPaymentForm = ({
   order,
   onPay,
@@ -52,27 +47,18 @@ const ManualDemoPaymentForm = ({
   disabled,
   paymentDisabled = false
 }) => {
-  const [card, setCard] = useState(initialCard);
-  const [errors, setErrors] = useState({});
+  const dispatch = useDispatch();
+  const { card, cardErrors: errors } = useSelector(state => state.orders.checkoutForm);
   const updateField = (field, value) => {
-    setCard(current => ({
-      ...current,
-      [field]: value
-    }));
-    setErrors(current => ({
-      ...current,
-      [field]: undefined
-    }));
+    dispatch(setCheckoutCardField({ field, value }));
   };
   const handleSubmit = event => {
     event.preventDefault();
     if (paying || disabled || paymentDisabled) return;
     const nextErrors = validateCard(card);
-    setErrors(nextErrors);
+    dispatch(setCheckoutCardErrors(nextErrors));
     if (Object.keys(nextErrors).length) return Promise.resolve();
-    return Promise.resolve(onPay(order)).then(() => {
-      setCard(initialCard);
-    });
+    return Promise.resolve(onPay(order));
   };
   return <form className="demo-payment-form" onSubmit={handleSubmit} autoComplete="off">
       <label>
@@ -109,9 +95,10 @@ const DemoPaymentForm = ({
   disabled,
   paymentDisabled = false
 }) => {
-  const [selectedId, setSelectedId] = useState(null);
+  const dispatch = useDispatch();
+  const selectedId = useSelector(state => state.orders.checkoutForm.selectedCardId);
   return <section>
-      <CardBook selectable selectedId={selectedId} preferredId={order.savedCardId} onSelect={setSelectedId} disabled={paying || disabled} />
+      <CardBook selectable selectedId={selectedId} preferredId={order.savedCardId} onSelect={value => dispatch(setCheckoutSelectedCard(value))} disabled={paying || disabled} />
       {selectedId != null ? <button className="primary-button" type="button" disabled={paying || disabled || paymentDisabled || order.total <= 0} onClick={() => onPay(order, {
       savedCardId: selectedId
     })}>{paying ? 'Procesando…' : 'Confirmar pago'}</button> : <ManualDemoPaymentForm order={order} onPay={onPay} paying={paying} disabled={disabled} paymentDisabled={paymentDisabled} />}

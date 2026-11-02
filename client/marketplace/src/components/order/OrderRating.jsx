@@ -1,13 +1,14 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { selectReviewDraft, setDraftComment, setDraftError, setDraftScore } from '../../Redux/slices/reviewsSlice';
 const OrderRating = ({
   item,
   onRate,
   submitting = false,
   autoFocus = false
 }) => {
-  const [score, setScore] = useState(0);
-  const [comment, setComment] = useState('');
-  const [error, setError] = useState('');
+  const dispatch = useDispatch();
+  const { score, comment, error } = useSelector(selectReviewDraft(item.vinylId));
   const commentRef = useRef(null);
   useEffect(() => {
     if (autoFocus && !item.review) commentRef.current?.focus();
@@ -24,14 +25,14 @@ const OrderRating = ({
   const handleSubmit = event => {
     event.preventDefault();
     if (score < 1) {
-      setError('Elegí un puntaje entre 1 y 5.');
+      dispatch(setDraftError({ vinylId: item.vinylId, error: 'Elegí un puntaje entre 1 y 5.' }));
       return Promise.resolve();
     }
     if (!comment.trim()) {
-      setError('El comentario no puede estar vacío.');
+      dispatch(setDraftError({ vinylId: item.vinylId, error: 'El comentario no puede estar vacío.' }));
       return Promise.resolve();
     }
-    setError('');
+    dispatch(setDraftError({ vinylId: item.vinylId, error: '' }));
     return Promise.resolve(onRate(item.vinylId, {
       score,
       comment: comment.trim()
@@ -40,12 +41,12 @@ const OrderRating = ({
   return <form className="order-review-form" onSubmit={handleSubmit}>
       <p className="eyebrow">CONTANOS QUÉ TE PARECIÓ</p>
       <div className="order-rating-stars" role="group" aria-label="Puntaje">
-        {[1, 2, 3, 4, 5].map(value => <button className={value <= score ? 'is-selected' : ''} type="button" key={value} aria-label={`${value} estrella${value === 1 ? '' : 's'}`} aria-pressed={score === value} onClick={() => setScore(value)}>
+        {[1, 2, 3, 4, 5].map(value => <button className={value <= score ? 'is-selected' : ''} type="button" key={value} aria-label={`${value} estrella${value === 1 ? '' : 's'}`} aria-pressed={score === value} onClick={() => dispatch(setDraftScore({ vinylId: item.vinylId, score: value }))}>
             {value <= score ? '★' : '☆'}
           </button>)}
       </div>
       <label className="order-review-label" htmlFor={`review-${item.vinylId}`}>Tu comentario</label>
-      <textarea ref={commentRef} id={`review-${item.vinylId}`} name="comment" value={comment} maxLength={1000} onChange={event => setComment(event.target.value)} />
+      <textarea ref={commentRef} id={`review-${item.vinylId}`} name="comment" value={comment} maxLength={1000} onChange={event => dispatch(setDraftComment({ vinylId: item.vinylId, comment: event.target.value }))} />
       {error && <p className="form-error" role="alert">{error}</p>}
       <button className="secondary-button" type="submit" disabled={submitting}>
         {submitting ? 'Guardando…' : 'Publicar reseña'}

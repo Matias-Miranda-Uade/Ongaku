@@ -1,26 +1,27 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { getVinylPrice } from './vinylUtils';
-import { CartContext } from '../../context/CartContext';
 import { AuthContext } from '../../context/AuthContext';
+import { addItem } from '../../Redux/actions/cartActions';
+import { clearLastAdded as clearLastAddedAction } from '../../Redux/slices/cartSlice';
 const AddToCartButton = ({
   vinyl,
   compact = false
 }) => {
   const {
-    addItem
-  } = useContext(CartContext);
-  const {
     isAdmin
   } = useContext(AuthContext);
-  const [added, setAdded] = useState(0);
-  const [pending, setPending] = useState(false);
+  const dispatch = useDispatch();
+  const pending = useSelector(state => state.cart.pendingIds.some(id => String(id) === String(vinyl?.id)));
+  const syncing = useSelector(state => state.cart.status === 'loading');
+  const added = useSelector(state => String(state.cart.lastAddedId) === String(vinyl?.id) && state.cart.lastAddedId !== null);
   const outOfStock = !vinyl || vinyl.stock <= 0;
-  const disabled = outOfStock || pending;
+  const disabled = outOfStock || pending || syncing;
   useEffect(() => {
-    if (added === 0) return;
-    const timer = window.setTimeout(() => setAdded(0), 1200);
+    if (!added) return undefined;
+    const timer = window.setTimeout(() => dispatch(clearLastAddedAction()), 1200);
     return () => window.clearTimeout(timer);
-  }, [added]);
+  }, [added, dispatch]);
   if (isAdmin) return null;
   const handleClick = event => {
     event.preventDefault();
@@ -31,14 +32,7 @@ const AddToCartButton = ({
       artist: vinyl.artist || vinyl.artistName || `Artista #${vinyl.artistId != null ? vinyl.artistId : '—'}`,
       price: getVinylPrice(vinyl)
     };
-    setPending(true);
-    return addItem(product).then(_result => {
-      if (_result) {
-        setAdded(count => count + 1);
-      }
-    }).finally(() => {
-      setPending(false);
-    });
+    return dispatch(addItem({ product })).then(result => addItem.fulfilled.match(result));
   };
   return <button className={`cart-button ${compact ? 'compact' : ''}`} type="button" disabled={disabled} onClick={handleClick}>
       {outOfStock ? 'SIN STOCK' : pending ? 'AGREGANDO…' : added ? 'AGREGADO ✓' : 'AGREGAR AL CARRITO'}

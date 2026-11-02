@@ -1,6 +1,6 @@
 import CartItem from "./CartItem"
 
-const CartItemsList = ({ items, onQuantityChange, onRemove }) => {
+const CartItemsList = ({ items, onQuantityChange, onRemove, disabled = false }) => {
     return (
         <ul className="cart-item-list">
             {
@@ -10,6 +10,7 @@ const CartItemsList = ({ items, onQuantityChange, onRemove }) => {
                             item={item}
                             onQuantityChange={onQuantityChange}
                             onRemove={onRemove}
+                            disabled={disabled}
                         />
                     </li>
                 ))

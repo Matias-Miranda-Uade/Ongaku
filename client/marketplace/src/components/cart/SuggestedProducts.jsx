@@ -1,4 +1,4 @@
-const SuggestedProducts = ({ products, onAdd }) => {
+const SuggestedProducts = ({ products, onAdd, disabled = false }) => {
     if (products.length === 0) return null
 
     return (
@@ -11,7 +11,7 @@ const SuggestedProducts = ({ products, onAdd }) => {
                         <h3>{product.name}</h3>
                         <p>{product.artist}</p>
                         <p>${product.price.toLocaleString('es-AR')}</p>
-                        <button onClick={() => onAdd(product)} disabled={product.stock <= 0}>
+                        <button onClick={() => onAdd(product)} disabled={disabled || product.stock <= 0}>
                             {product.stock <= 0 ? 'Sin stock' : 'Agregar al carrito'}
                         </button>
                     </li>

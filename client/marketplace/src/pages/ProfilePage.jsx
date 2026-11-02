@@ -1,6 +1,8 @@
 import { useContext, useEffect, useState } from 'react';
-import { CartContext } from '../context/CartContext';
+import { useSelector } from 'react-redux';
 import { FavoritesContext } from '../context/FavoritesContext';
+import { selectTotalProducts } from '../Redux/slices/cartSlice';
+import { selectOrdersCount } from '../Redux/slices/ordersSlice';
 import ProfileHeader from '../components/profile/ProfileHeader';
 import ProfileStats from '../components/profile/ProfileStats';
 import ProfileTabs from '../components/profile/ProfileTabs';
@@ -26,9 +28,8 @@ const ProfilePage = ({
   onNavigate,
   onUserChange
 }) => {
-  const {
-    totalProducts
-  } = useContext(CartContext);
+  const totalProducts = useSelector(selectTotalProducts);
+  const ordersCount = useSelector(selectOrdersCount);
   const {
     favorites
   } = useContext(FavoritesContext);
@@ -43,7 +44,6 @@ const ProfilePage = ({
     setFirstName(user?.firstName ?? '');
     setLastName(user?.lastName ?? '');
   }, [user?.id]);
-  const orders = user?.orders ?? [];
   const handleProfileSubmit = event => {
     event.preventDefault();
     setError('');
@@ -76,7 +76,7 @@ const ProfilePage = ({
   return <section className="profile-page">
       <p className="eyebrow">TU ESPACIO ONGAKU</p>
       <ProfileHeader user={user} />
-      <ProfileStats orders={orders.length} favorites={favorites.length} cartProducts={totalProducts} />
+      <ProfileStats orders={ordersCount} favorites={favorites.length} cartProducts={totalProducts} />
       <ProfileTabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
 
       <div className="profile-panel">

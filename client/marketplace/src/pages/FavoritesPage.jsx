@@ -1,12 +1,16 @@
 import { useContext, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { FavoritesContext } from '../context/FavoritesContext'
-import { CartContext } from '../context/CartContext'
 import { AuthContext } from '../context/AuthContext'
+import { addItem } from '../Redux/actions/cartActions'
+import { selectCartItems } from '../Redux/slices/cartSlice'
 
 const FavoritesPage = ({ onNavigate, onOpenVinyl }) => {
 
     const { favorites, removeFavorite } = useContext(FavoritesContext)
-    const { items, addItem } = useContext(CartContext)
+    const items = useSelector(selectCartItems)
+    const syncing = useSelector(state => state.cart.status === 'loading')
+    const dispatch = useDispatch()
     const { isAdmin } = useContext(AuthContext)
     const [message, setMessage] = useState('')
 
@@ -22,12 +26,13 @@ const FavoritesPage = ({ onNavigate, onOpenVinyl }) => {
     }
 
     const handleAdd = (product) => {
+        if (syncing) return
         const inCart = items.find((item) => item.id === product.id)
         if (inCart && inCart.quantity >= product.stock) {
             setMessage(`Ya tenés el máximo disponible de "${product.name}" en el carrito`)
             return
         }
-        addItem(product)
+        dispatch(addItem({ product }))
         setMessage(`"${product.name}" agregado al carrito`)
     }
 
@@ -60,7 +65,7 @@ const FavoritesPage = ({ onNavigate, onOpenVinyl }) => {
                                 <div className="favorite-card-footer">
                                     <strong>${product.price.toLocaleString('es-AR')}</strong>
                                     {product.stock > 0
-                                        ? <button className="primary-button" onClick={() => handleAdd(product)}>Agregar a la bolsa</button>
+                                        ? <button className="primary-button" disabled={syncing} onClick={() => handleAdd(product)}>Agregar a la bolsa</button>
                                         : <button className="secondary-button" disabled>Sin stock</button>
                                     }
                                 </div>
