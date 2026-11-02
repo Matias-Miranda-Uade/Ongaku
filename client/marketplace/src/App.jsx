@@ -11,7 +11,7 @@ import { createOrder, fetchOrders } from './Redux/actions/ordersActions';
 import { fetchMyReviews } from './Redux/actions/reviewsActions';
 import { resetCart, selectCartError } from './Redux/slices/cartSlice';
 import { resetOrders, selectOrdersError } from './Redux/slices/ordersSlice';
-import { resetReviews } from './Redux/slices/reviewsSlice';
+import { resetReviews, setReviewOwner } from './Redux/slices/reviewsSlice';
 import { syncCart } from './Redux/actions/cartActions';
 import AppRoutes, { ADMIN_BASE_PATH, isAdminPath } from './routes/AppRoutes';
 import Header from './components/layout/Header';
@@ -96,6 +96,7 @@ const App = () => {
     });
   }, [location.pathname, location.state]);
   useEffect(() => {
+    dispatch(setReviewOwner(shopper?.id ?? null));
     if (shopper) {
       dispatch(syncCart(shopper.id));
       dispatch(fetchOrders());

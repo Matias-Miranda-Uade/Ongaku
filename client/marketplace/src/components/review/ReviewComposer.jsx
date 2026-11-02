@@ -1,10 +1,12 @@
 import { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../../context/AuthContext';
-import { createReview, getReviewEligibility } from '../../services/reviewService';
+import { useDispatch, useSelector } from 'react-redux';
+import { createReview, fetchReviewEligibility } from '../../Redux/actions/reviewsActions.js';
+import { selectEligibility, selectSubmittingVinylId } from '../../Redux/slices/reviewsSlice.js';
+import { getMessage } from '../../Redux/requestState.js';
 import ReviewCard from './ReviewCard';
 const ReviewComposer = ({
   vinylId,
-  revision,
   onChanged,
   onLogin
 }) => {
@@ -13,33 +15,21 @@ const ReviewComposer = ({
     isAdmin
   } = useContext(AuthContext);
   const userId = user ? user.id : null;
-  const [eligibility, setEligibility] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch();
+  const request = useSelector(state => selectEligibility(state, userId, vinylId));
+  const ownerId = useSelector(state => state.reviews.ownerId);
+  const eligibility = request.data;
+  const loading = request.status === 'idle' || request.status === 'loading';
+  const submittingVinylId = useSelector(selectSubmittingVinylId);
+  const pending = submittingVinylId != null;
   const [score, setScore] = useState(5);
   const [comment, setComment] = useState('');
   const [error, setError] = useState('');
-  const [pending, setPending] = useState(false);
-  const [reload, setReload] = useState(0);
   useEffect(() => {
-    let active = true;
-    setEligibility(null);
-    setError('');
-    setLoading(true);
-    if (!user || isAdmin) {
-      setLoading(false);
-      return;
+    if (userId != null && !isAdmin && String(ownerId) === String(userId)) {
+      dispatch(fetchReviewEligibility({ userId, vinylId }));
     }
-    getReviewEligibility(vinylId).then(data => {
-      if (active) setEligibility(data);
-    }).catch(requestError => {
-      if (active) setError(requestError.message);
-    }).finally(() => {
-      if (active) setLoading(false);
-    });
-    return () => {
-      active = false;
-    };
-  }, [vinylId, userId, isAdmin, revision, reload]);
+  }, [dispatch, vinylId, userId, isAdmin, ownerId]);
   const submit = event => {
     event.preventDefault();
     if (pending || !eligibility || !eligibility.canReview) return Promise.resolve();
@@ -47,24 +37,16 @@ const ReviewComposer = ({
       setError('Escribí un comentario antes de publicar.');
       return Promise.resolve();
     }
-    setPending(true);
     setError('');
-    return createReview({
+    return dispatch(createReview({
       vinylId: Number(vinylId),
       score: Number(score),
       comment: comment.trim()
-    }).then(review => {
-      setEligibility(current => ({
-        ...current,
-        canReview: false,
-        review
-      }));
+    })).unwrap().then(() => {
       setComment('');
-      onChanged();
+      if (onChanged) onChanged();
     }).catch(requestError => {
-      setError(requestError.message);
-    }).finally(() => {
-      setPending(false);
+      setError(getMessage(requestError));
     });
   };
   if (!user) return <button type="button" onClick={onLogin}>Iniciá sesión para escribir una reseña</button>;
@@ -72,8 +54,8 @@ const ReviewComposer = ({
   if (loading) return <p role="status">Comprobando tu compra…</p>;
   return <section className="review-composer">
       <h3>Tu reseña</h3>
-      {error && <p role="alert">{error}</p>}
-      {!eligibility && <button type="button" onClick={() => setReload(value => value + 1)}>Reintentar</button>}
+      {(error || request.error) && <p role="alert">{error || request.error}</p>}
+      {!eligibility && <button type="button" onClick={() => dispatch(fetchReviewEligibility({ userId, vinylId, force: true }))}>Reintentar</button>}
       {eligibility && eligibility.review && <ReviewCard review={eligibility.review} onChanged={onChanged} />}
       {eligibility && !eligibility.purchased && !eligibility.review && <p>Podés reseñar este vinilo cuando una orden tuya que lo incluya figure como entregada.</p>}
       {eligibility && eligibility.canReview && <form className="review-edit-form" onSubmit={submit}>

@@ -1,48 +1,34 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import AudioPreview from '../components/audio/AudioPreview'
 import ReviewCard from '../components/review/ReviewCard'
 import ReviewComposer from '../components/review/ReviewComposer'
 import RatingStars from '../components/ui/RatingStars'
 import VinylDetailInfo from '../components/vinyl-detail/VinylDetailInfo'
 import VinylGallery from '../components/vinyl-detail/VinylGallery'
-import { getVinylById } from '../services/vinylService'
-import { getReviewsByVinyl } from '../services/reviewService'
+import { fetchVinylById } from '../Redux/actions/catalogActions.js'
+import { fetchReviews } from '../Redux/actions/reviewsActions.js'
+import { selectReviewData } from '../Redux/slices/reviewsSlice.js'
+import { emptyRequest } from '../Redux/requestState.js'
 
 const VinylDetailPage = ({ vinylId, onBack, onReviews, onLogin }) => {
-  const [vinyl, setVinyl] = useState(null)
-  const [reviewData, setReviewData] = useState({ reviews: [], averageScore: 0, totalReviews: 0 })
-  const [error, setError] = useState(null)
-  const [reviewError, setReviewError] = useState('')
-  const [reviewsLoading, setReviewsLoading] = useState(true)
-  const [reload, setReload] = useState(0)
-  const [reviewReload, setReviewReload] = useState(0)
+  const dispatch = useDispatch()
+  const vinyl = useSelector(state => state.catalog.entities[vinylId])
+  const detailRequest = useSelector(state => state.catalog.details[vinylId] || emptyRequest)
+  const reviewData = useSelector(state => selectReviewData(state, vinylId))
+  const error = detailRequest.error
+  const reviewError = reviewData.error
+  const reviewsLoading = reviewData.status === 'idle' || reviewData.status === 'loading'
 
   useEffect(() => {
-    setVinyl(null)
-    setError(null)
-    let active = true
-    getVinylById(vinylId)
-      .then((data) => { if (active) setVinyl(data) })
-      .catch((requestError) => { if (active) setError(requestError) })
-    return () => { active = false }
-  }, [vinylId, reload])
-
-  useEffect(() => {
-    let active = true
-    setReviewsLoading(true)
-    setReviewError('')
-    setReviewData({ reviews: [], averageScore: 0, totalReviews: 0 })
-    getReviewsByVinyl(vinylId)
-      .then((data) => { if (active) setReviewData(data) })
-      .catch((requestError) => { if (active) setReviewError(requestError.message) })
-      .finally(() => { if (active) setReviewsLoading(false) })
-    return () => { active = false }
-  }, [vinylId, reload, reviewReload])
+    dispatch(fetchVinylById({ vinylId }))
+    dispatch(fetchReviews({ vinylId }))
+  }, [dispatch, vinylId])
 
   if (error) return (
     <div className="page detail-page">
       <button className="back-link link-button" type="button" onClick={onBack}>← VOLVER AL CATÁLOGO</button>
-      <div role="alert"><p>{error.message}</p><button type="button" onClick={() => setReload((value) => value + 1)}>Reintentar</button></div>
+      <div role="alert"><p>{error}</p><button type="button" onClick={() => dispatch(fetchVinylById({ vinylId, force: true }))}>Reintentar</button></div>
     </div>
   )
 
@@ -71,14 +57,14 @@ const VinylDetailPage = ({ vinylId, onBack, onReviews, onLogin }) => {
         </div>
         <div className="review-list compact-list">
           {reviewsLoading && <p role="status">Cargando reseñas…</p>}
-          {reviewError && <div role="alert"><p>{reviewError}</p><button type="button" onClick={() => setReviewReload((value) => value + 1)}>Reintentar</button></div>}
+          {reviewError && <div role="alert"><p>{reviewError}</p><button type="button" onClick={() => dispatch(fetchReviews({ vinylId, force: true }))}>Reintentar</button></div>}
           {!reviewsLoading && !reviewError && reviewData.reviews.slice(0, 2).map((review) => (
-            <ReviewCard key={review.id} review={review} onChanged={() => setReviewReload((value) => value + 1)} />
+            <ReviewCard key={review.id} review={review} />
           ))}
           {!reviewsLoading && !reviewError && !reviewData.reviews.length && <p className="empty-state">Todavía no hay reseñas para este vinilo.</p>}
         </div>
         <button className="text-link link-button" type="button" onClick={onReviews}>VER TODAS LAS RESEÑAS →</button>
-        <ReviewComposer key={vinylId} vinylId={vinylId} revision={reviewReload} onChanged={() => setReviewReload((value) => value + 1)} onLogin={onLogin} />
+        <ReviewComposer key={vinylId} vinylId={vinylId} onLogin={onLogin} />
       </section>
     </div>
   )

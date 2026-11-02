@@ -3,26 +3,17 @@ import ReviewCard from '../components/review/ReviewCard'
 import ReviewFilters from '../components/review/ReviewFilters'
 import ReviewMetrics from '../components/review/ReviewMetrics'
 import ReviewSummary from '../components/review/ReviewSummary'
-import { getReviews } from '../services/reviewService'
+import { useDispatch, useSelector } from 'react-redux'
+import { fetchReviews } from '../Redux/actions/reviewsActions.js'
+import { selectReviewData } from '../Redux/slices/reviewsSlice.js'
 
 const ReviewsPage = ({ vinylId = null, onClearVinyl }) => {
-  const [reviews, setReviews] = useState([])
+  const dispatch = useDispatch()
+  const { reviews, status, error } = useSelector(state => selectReviewData(state, vinylId))
+  const loading = status === 'idle' || status === 'loading'
   const [score, setScore] = useState('all')
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-  const [reload, setReload] = useState(0)
 
-  useEffect(() => {
-    let active = true
-    setLoading(true)
-    setError('')
-    setReviews([])
-    getReviews(vinylId)
-      .then((data) => { if (active) setReviews(data) })
-      .catch((requestError) => { if (active) setError(requestError.message) })
-      .finally(() => { if (active) setLoading(false) })
-    return () => { active = false }
-  }, [vinylId, reload])
+  useEffect(() => { dispatch(fetchReviews({ vinylId })) }, [dispatch, vinylId])
 
   let filtered = reviews
   if (score !== 'all') {
@@ -44,13 +35,13 @@ const ReviewsPage = ({ vinylId = null, onClearVinyl }) => {
 
       <ReviewFilters score={score} onChange={setScore} />
       {vinylId && <button type="button" className="text-link link-button" onClick={onClearVinyl}>Ver reseñas de todos los vinilos</button>}
-      {error && <div role="alert"><p>{error}</p><button type="button" onClick={() => setReload((value) => value + 1)}>Reintentar</button></div>}
+      {error && <div role="alert"><p>{error}</p><button type="button" onClick={() => dispatch(fetchReviews({ vinylId, force: true }))}>Reintentar</button></div>}
 
       {loading ? (
         <p className="empty-state">Cargando reseñas…</p>
       ) : !error && (
         <div className="review-list">
-          {filtered.map((review) => <ReviewCard key={review.id} review={review} onChanged={() => setReload((value) => value + 1)} />)}
+          {filtered.map((review) => <ReviewCard key={review.id} review={review} />)}
           {!filtered.length && <p className="empty-state">No hay reseñas con estos filtros.</p>}
         </div>
       )}
