@@ -15,7 +15,7 @@ const ReviewCard = ({ review, onChanged }) => (
       <time>{review.createdAt ? new Date(review.createdAt).toLocaleDateString('es-AR') : '—'}</time>
       <span>{review.edited ? 'EDITADA' : 'PUBLICADA'}</span>
     </div>
-    {onChanged && <ReviewActions review={review} onChanged={onChanged} />}
+    <ReviewActions review={review} onChanged={onChanged} />
   </article>
 )
 export default ReviewCard

@@ -1,6 +1,8 @@
 import { useContext, useState } from 'react';
 import { AuthContext } from '../../context/AuthContext';
-import { deleteReview, updateReview } from '../../services/reviewService';
+import { useDispatch, useSelector } from 'react-redux';
+import { deleteReview, updateReview } from '../../Redux/actions/reviewsActions.js';
+import { emptyRequest, getMessage } from '../../Redux/requestState.js';
 const ReviewActions = ({
   review,
   onChanged
@@ -13,7 +15,9 @@ const ReviewActions = ({
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [score, setScore] = useState(review.score != null ? review.score : 5);
   const [comment, setComment] = useState(review.comment != null ? review.comment : '');
-  const [pending, setPending] = useState(false);
+  const dispatch = useDispatch();
+  const mutation = useSelector(state => state.reviews.mutations[review.id] || emptyRequest);
+  const pending = mutation.status === 'loading';
   const [error, setError] = useState('');
   const isAuthor = Boolean(user) && String(user.id) === String(review.userId);
   if (!isAuthor && !isAdmin) return null;
@@ -24,28 +28,24 @@ const ReviewActions = ({
       setError('Completá el comentario y elegí un puntaje entre 1 y 5.');
       return Promise.resolve();
     }
-    setPending(true);
-    return Promise.resolve(updateReview(review.id, {
+    return dispatch(updateReview({
+      reviewId: review.id,
+      vinylId: review.vinylId,
       score: Number(score),
       comment: comment.trim()
-    })).then(() => {
+    })).unwrap().then(() => {
       setEditing(false);
-      onChanged();
+      if (onChanged) onChanged();
     }).catch(requestError => {
-      setError(requestError.message);
-    }).finally(() => {
-      setPending(false);
+      setError(getMessage(requestError));
     });
   };
   const remove = () => {
     setError('');
-    setPending(true);
-    return Promise.resolve(deleteReview(review.id)).then(() => {
-      onChanged();
+    return dispatch(deleteReview({ reviewId: review.id, vinylId: review.vinylId })).unwrap().then(() => {
+      if (onChanged) onChanged();
     }).catch(requestError => {
-      setError(requestError.message);
-    }).finally(() => {
-      setPending(false);
+      setError(getMessage(requestError));
     });
   };
   return <div className="review-management">

@@ -1,18 +1,18 @@
 import { useEffect, useState } from 'react'
-import { collections, matchesCollection } from '../data/collections'
+import { collections } from '../data/collections'
 import VinylFilters from '../components/vinyl/VinylFilters'
 import VinylGrid from '../components/vinyl/VinylGrid'
-import { getVinyls } from '../services/vinylService'
-import { getVinylPrice } from '../components/vinyl/vinylUtils'
+import { useDispatch, useSelector } from 'react-redux'
+import { fetchVinyls } from '../Redux/actions/catalogActions.js'
+import { selectFilteredVinyls } from '../Redux/slices/catalogSlice.js'
 
 const emptyFilters = { search: '', stock: 'all', sort: 'featured' }
 
 const CatalogPage = ({ onOpenVinyl, collectionId, onClearCollection, focusSearch = false, searchRequest }) => {
   const collection = collections.find((item) => item.id === collectionId)
-  const [vinyls, setVinyls] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-  const [reload, setReload] = useState(0)
+  const dispatch = useDispatch()
+  const { status, error } = useSelector(state => state.catalog.list)
+  const loading = status === 'idle' || status === 'loading'
   const [motionPaused, setMotionPaused] = useState(false)
   const [filters, setFilters] = useState(emptyFilters)
 
@@ -26,40 +26,9 @@ const CatalogPage = ({ onOpenVinyl, collectionId, onClearCollection, focusSearch
     }
   }, [focusSearch, searchRequest])
 
-  useEffect(() => {
-    let active = true
-    setLoading(true)
-    setError('')
-    getVinyls()
-      .then((data) => { if (active) setVinyls(data) })
-      .catch((requestError) => { if (active) setError(requestError.message) })
-      .finally(() => { if (active) setLoading(false) })
-    return () => { active = false }
-  }, [reload])
+  useEffect(() => { dispatch(fetchVinyls()) }, [dispatch])
 
-  let filteredVinyls = vinyls.filter((vinyl) => matchesCollection(vinyl, collection))
-  const search = filters.search.trim().toLowerCase()
-
-  if (search) {
-    filteredVinyls = filteredVinyls.filter((vinyl) =>
-      `${vinyl.name} ${vinyl.artistName || ''}`.toLowerCase().includes(search)
-    )
-  }
-  if (filters.stock === 'available') {
-    filteredVinyls = filteredVinyls.filter((vinyl) => vinyl.stock > 0)
-  }
-  if (filters.stock === 'unavailable') {
-    filteredVinyls = filteredVinyls.filter((vinyl) => vinyl.stock <= 0)
-  }
-  if (filters.sort === 'price-asc') {
-    filteredVinyls.sort((a, b) => getVinylPrice(a) - getVinylPrice(b))
-  }
-  if (filters.sort === 'price-desc') {
-    filteredVinyls.sort((a, b) => getVinylPrice(b) - getVinylPrice(a))
-  }
-  if (filters.sort === 'year-desc') {
-    filteredVinyls.sort((a, b) => b.year - a.year)
-  }
+  const filteredVinyls = useSelector(state => selectFilteredVinyls(state, filters, collectionId))
 
   return (
     <div className={`page catalog-page ${motionPaused ? 'disc-animation-paused' : ''}`}>
@@ -80,7 +49,7 @@ const CatalogPage = ({ onOpenVinyl, collectionId, onClearCollection, focusSearch
       {filteredVinyls.some((vinyl) => vinyl.image && vinyl.image.startsWith('/covers/') && vinyl.image.endsWith('.svg')) && <button className="clear-button disc-motion-control" type="button" aria-pressed={motionPaused} onClick={() => setMotionPaused((value) => !value)}>
         {motionPaused ? 'Reanudar giro de discos' : 'Pausar giro de discos'}
       </button>}
-      {error && <div role="alert"><p>{error}</p><button type="button" onClick={() => setReload((value) => value + 1)}>Reintentar</button></div>}
+      {error && <div role="alert"><p>{error}</p><button type="button" onClick={() => dispatch(fetchVinyls({ force: true }))}>Reintentar</button></div>}
       {!loading && !error && <VinylGrid vinyls={filteredVinyls} onOpenVinyl={onOpenVinyl} />}
     </div>
   )
