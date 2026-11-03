@@ -5,6 +5,7 @@ import ArchiveCategoryGrid from '../components/home/ArchiveCategoryGrid'
 import ArchiveQuote from '../components/home/ArchiveQuote'
 import SectionTitle from '../components/ui/SectionTitle'
 import { collections as categories } from '../data/collections'
+import MusicExperiences from '../components/experiences/MusicExperiences'
 
 const HomePage = ({ user, onNavigate }) => {
   const navigate = useNavigate()
@@ -26,6 +27,7 @@ const HomePage = ({ user, onNavigate }) => {
         <ArchiveStrip categoryCount={categories.length} />
         <ArchiveCategoryGrid categories={categories} onSelect={handleSelect} />
       </section>
+      <MusicExperiences />
       <ArchiveQuote quote="La pureza de la cinta máster preservada en surcos de cera virgen." author="BÓVEDA ONGAKU" />
     </>
   )

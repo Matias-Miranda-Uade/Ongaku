@@ -36,7 +36,7 @@ const CartPage = ({
       if (result?.error) dispatch(setCheckoutError(result.error));
     });
   };
-  const suggested = useSelector(state => products.filter(product => !selectIsInCart(product.id)(state)).slice(0, 3));
+  const suggested = useSelector(state => products.filter(product => product.stock > 0 && !selectIsInCart(product.id)(state)).slice(0, 3));
   const handleAdd = product => syncing ? undefined : dispatch(addItem({ product }));
   if (isAdmin) {
     return <section className="empty-state-card cart-admin-notice">

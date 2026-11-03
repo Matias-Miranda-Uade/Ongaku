@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import AudioPreview from '../components/audio/AudioPreview'
 import ReviewCard from '../components/review/ReviewCard'
@@ -6,13 +6,16 @@ import ReviewComposer from '../components/review/ReviewComposer'
 import RatingStars from '../components/ui/RatingStars'
 import VinylDetailInfo from '../components/vinyl-detail/VinylDetailInfo'
 import VinylGallery from '../components/vinyl-detail/VinylGallery'
-import { fetchVinylById } from '../Redux/actions/catalogActions.js'
+import Discover from '../components/vinyl-detail/Discover'
+import '../components/vinyl-detail/experiences.css'
+import { fetchVinylById, fetchVinyls } from '../Redux/actions/catalogActions.js'
 import { fetchReviews } from '../Redux/actions/reviewsActions.js'
 import { selectReviewData } from '../Redux/slices/reviewsSlice.js'
 import { emptyRequest } from '../Redux/requestState.js'
 
-const VinylDetailPage = ({ vinylId, onBack, onReviews, onLogin }) => {
+const VinylDetailPage = ({ vinylId, onBack, onReviews, onLogin, onOpenVinyl }) => {
   const dispatch = useDispatch()
+  const [playing, setPlaying] = useState(false)
   const vinyl = useSelector(state => state.catalog.entities[vinylId])
   const detailRequest = useSelector(state => state.catalog.details[vinylId] || emptyRequest)
   const reviewData = useSelector(state => selectReviewData(state, vinylId))
@@ -21,6 +24,8 @@ const VinylDetailPage = ({ vinylId, onBack, onReviews, onLogin }) => {
   const reviewsLoading = reviewData.status === 'idle' || reviewData.status === 'loading'
 
   useEffect(() => {
+    setPlaying(false)
+    dispatch(fetchVinyls())
     dispatch(fetchVinylById({ vinylId }))
     dispatch(fetchReviews({ vinylId }))
   }, [dispatch, vinylId])
@@ -38,11 +43,13 @@ const VinylDetailPage = ({ vinylId, onBack, onReviews, onLogin }) => {
     <div className="page detail-page">
       <button className="back-link link-button" type="button" onClick={onBack}>← VOLVER AL CATÁLOGO</button>
       <div className="detail-layout">
-        <VinylGallery vinyl={vinyl} />
+        <VinylGallery key={vinylId} vinyl={vinyl} playing={playing} />
         <VinylDetailInfo vinyl={vinyl} />
       </div>
 
-      <AudioPreview audioPreviewId={vinyl.audioPreviewId} externalUrl={vinyl.albumUrl} />
+      <AudioPreview key={vinylId} onPlaybackChange={setPlaying} vinyl={vinyl} />
+
+      <Discover key={`discover-${vinylId}`} vinyl={vinyl} onOpen={onOpenVinyl} />
 
       <section className="detail-reviews">
         <div className="section-heading-row">

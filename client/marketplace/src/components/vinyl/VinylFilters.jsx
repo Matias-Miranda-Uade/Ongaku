@@ -1,5 +1,8 @@
-const VinylFilters = ({ filters, onChange, onClear }) => (
-  <section className="filters" aria-label="Filtros de catálogo">
+import { matchesMood, moods } from '../experiences/musicDiscovery'
+import './moodFilter.css'
+
+const VinylFilters = ({ filters, onChange, onClear, vinyls = [] }) => (
+  <section className="filters has-mood-filter" aria-label="Filtros de catálogo">
     <label className="search-field">
       <span>BUSCAR</span>
       <input
@@ -16,6 +19,14 @@ const VinylFilters = ({ filters, onChange, onClear }) => (
         <option value="all">Todos</option>
         <option value="available">En stock</option>
         <option value="unavailable">Sin stock</option>
+      </select>
+    </label>
+
+    <label>
+      <span>ÁNIMO</span>
+      <select value={filters.mood || ''} onChange={(event) => onChange('mood', event.target.value)}>
+        <option value="">Todos los ánimos</option>
+        {moods.map(mood => <option key={mood.id} value={mood.id}>{mood.name} ({vinyls.filter(vinyl => matchesMood(vinyl, mood.id)).length})</option>)}
       </select>
     </label>
 

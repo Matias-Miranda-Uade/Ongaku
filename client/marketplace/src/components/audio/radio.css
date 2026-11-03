@@ -1,0 +1,39 @@
+.ongaku-radio { position: fixed; bottom: 20px; right: 20px; width: min(400px, calc(100vw - 32px)); z-index: 150; padding: 16px 20px; background: #17181bf5; color: #e9e5df; border: 1px solid #8a6a60; box-shadow: 0 18px 70px #0009; backdrop-filter: blur(20px); animation: radio-enter .35s ease both; max-height: calc(100dvh - 40px); overflow-y: auto; }
+.ongaku-radio > header { display: flex; justify-content: space-between; align-items: center; gap: 12px; border-bottom: 1px solid #ffffff25; padding-bottom: 10px; font: 10px monospace; letter-spacing: .08em; }
+.ongaku-radio > header > div { display: flex; }
+.ongaku-radio button { min-width: 36px; min-height: 36px; background: transparent; border: 1px solid #ffffff25; color: inherit; cursor: pointer; }
+.ongaku-radio button:hover { background: #ffffff18; }
+.ongaku-radio button:focus-visible, .radio-controls input:focus-visible { outline: 2px solid #d6a08c; outline-offset: 3px; }
+.ongaku-radio button:disabled { opacity: .35; cursor: not-allowed; }
+.ongaku-radio header i { display: inline-block; width: 5px; height: 5px; border-radius: 50%; margin-left: 6px; background: #777; }
+.ongaku-radio header i.is-on { background: #a7c998; box-shadow: 0 0 12px #a7c998; }
+.radio-now { display: flex; gap: 14px; align-items: center; padding: 16px 0; }
+.radio-now > img, .radio-now > svg { width: 54px; height: 54px; flex-shrink: 0; object-fit: cover; }
+.radio-now > div { flex: 1; min-width: 0; }
+.radio-now p { font: 10px monospace; color: #c6b2ab; margin: 0 0 6px; }
+.radio-now a { color: inherit; font-size: 17px; text-decoration: none; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.radio-transport { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 8px 0 14px; }
+.radio-controls button { min-width: 44px; min-height: 44px; border: 1px solid currentColor; background: transparent; color: inherit; cursor: pointer; }
+.radio-controls button:disabled { opacity: .4; cursor: not-allowed; }
+.radio-controls .radio-play { border-radius: 50%; width: 50px; height: 50px; background: #d19b86; color: #17181b; border-color: #d19b86; transition: transform .2s, box-shadow .2s; }
+.radio-play:hover { transform: scale(1.07); box-shadow: 0 0 0 6px #d19b8625; }
+.radio-progress { display: flex; gap: 10px; align-items: center; font: 10px monospace; }
+.radio-progress input { flex: 1; min-width: 40px; }
+.radio-controls input { accent-color: #cc9986; cursor: pointer; min-height: 24px; }
+.radio-volume { display: flex; align-items: center; justify-content: end; gap: 14px; margin-top: 12px; font: 10px monospace; }
+.radio-volume input { width: 90px; }
+.radio-bars { display: flex; align-items: center; gap: 3px; height: 64px; overflow: hidden; }
+.radio-bars span { flex: 1; height: 100%; transform: scaleY(.08); background: linear-gradient(#e2bea1, #a35744); }
+.radio-visualizer p, .radio-external { font: 9px monospace; line-height: 1.6; opacity: .65; margin: 6px 0 0; }
+.ongaku-radio iframe { display: block; border: 0; max-width: 100%; }
+.ongaku-radio.is-mini { width: min(330px, calc(100vw - 32px)); }
+.ongaku-radio.is-mini .radio-now { padding-bottom: 0; }
+.ongaku-radio.is-leaving { animation: radio-leave .2s ease both; }
+.has-ongaku-radio { padding-bottom: 150px; }
+.detail-radio-preview { gap: 32px; }
+.detail-radio-preview > div { min-width: 0; }
+.catalog-radio-button { margin: 12px 0; width: 100%; }
+@keyframes radio-enter { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes radio-leave { to { opacity: 0; transform: translateY(25px); } }
+@media(max-width: 600px) { .ongaku-radio { bottom: 12px; right: 16px; } .detail-radio-preview { display: grid; grid-template-columns: 1fr; } }
+@media(prefers-reduced-motion: reduce) { .ongaku-radio, .radio-play { animation: none !important; transition: none !important; } }

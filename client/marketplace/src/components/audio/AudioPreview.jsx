@@ -1,35 +1,18 @@
-import { useEffect, useState } from 'react'
-import { getAudioPreview } from '../../services/vinylService'
-import MediaPlayer from './MediaPlayer'
+import { useEffect } from 'react'
+import { hasPreview, useRadio } from '../../context/RadioContext'
+import AudioVisualizer from './AudioVisualizer'
+import RadioControls from './RadioControls'
 
-const AudioPreview = ({ audioPreviewId, externalUrl }) => {
-  const [preview, setPreview] = useState(null)
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    let active = true
-    setPreview(null)
-    setError('')
-    setLoading(true)
-    getAudioPreview(audioPreviewId)
-      .then((data) => { if (active) setPreview(data) })
-      .catch((requestError) => { if (active) setError(requestError.message) })
-      .finally(() => { if (active) setLoading(false) })
-    return () => { active = false }
-  }, [audioPreviewId])
-
-  if (!audioPreviewId && !externalUrl) return null
-  return (
-    <section className="audio-preview-section">
-      <div>
-        <p className="eyebrow">PREVIEW</p>
-        <h2>Escuchá el vinilo</h2>
-      </div>
-      {loading ? <p role="status">Cargando audio…</p>
-        : error ? <p role="alert">{error}</p>
-          : preview?.url || externalUrl ? <MediaPlayer id={preview?.id} url={preview?.url || externalUrl} durationSeconds={preview?.durationSeconds} /> : <p>No hay audio disponible.</p>}
-    </section>
-  )
+export default function AudioPreview({ vinyl, onPlaybackChange }) {
+  const radio = useRadio()
+  const active = String(radio.track?.vinyl.id) === String(vinyl.id)
+  useEffect(() => { onPlaybackChange?.(active && radio.playing) }, [active, radio.playing, onPlaybackChange])
+  if (!hasPreview(vinyl)) return null
+  return <section className="audio-preview-section detail-radio-preview">
+    <div><p className="eyebrow">PREVIEW / ONGAKU RADIO</p><h2>Escuchá el vinilo</h2><p>Tu música sigue sonando mientras explorás.</p></div>
+    <div>
+      {active && radio.track.source.type === 'audio' ? <RadioControls /> : <button type="button" className="music-button" disabled={radio.loading} onClick={() => active ? radio.setMinimized(false) : radio.playVinyl(vinyl)}>{active ? 'Abrir reproductor externo ↗' : '▶ Escuchar preview'}</button>}
+      <AudioVisualizer active={active} />
+    </div>
+  </section>
 }
-export default AudioPreview

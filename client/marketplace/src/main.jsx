@@ -6,13 +6,15 @@ import App from './App'
 import { AuthProvider } from './context/AuthContext'
 import { store } from './Redux/store'
 import './index.css'
+import { RadioProvider } from './context/RadioContext'
+import OngakuRadio from './components/audio/OngakuRadio'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <Provider store={store}>
       <BrowserRouter>
         <AuthProvider>
-          <App />
+          <RadioProvider><App /><OngakuRadio /></RadioProvider>
         </AuthProvider>
       </BrowserRouter>
     </Provider>

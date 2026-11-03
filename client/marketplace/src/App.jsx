@@ -201,7 +201,7 @@ const AppContent = ({
         {page === 'login' && <LoginPage onNavigate={openPage} onLogin={handleLogin} />}
         {page === 'register' && <RegisterPage onNavigate={openPage} onRegister={handleRegister} />}
         {page === 'catalog' && <CatalogPage onOpenVinyl={openVinyl} collectionId={query.get('collection')} onClearCollection={() => navigate('/app/catalog')} focusSearch={focusCatalogSearch} searchRequest={searchRequest} />}
-        {page === 'vinyl-detail' && selectedVinylId && <VinylDetailPage vinylId={selectedVinylId} onBack={() => openPage('catalog')} onReviews={() => navigate(`/app/reviews?vinylId=${encodeURIComponent(selectedVinylId)}`)} onLogin={() => openPage('login')} />}
+        {page === 'vinyl-detail' && selectedVinylId && <VinylDetailPage onOpenVinyl={openVinyl} vinylId={selectedVinylId} onBack={() => openPage('catalog')} onReviews={() => navigate(`/app/reviews?vinylId=${encodeURIComponent(selectedVinylId)}`)} onLogin={() => openPage('login')} />}
         {page === 'reviews' && <ReviewsPage vinylId={query.get('vinylId')} onClearVinyl={() => navigate('/app/reviews')} />}
         {page === 'favorites' && <div className="legacy-page"><FavoritesPage onNavigate={openPage} onOpenVinyl={openVinyl} /></div>}
         {page === 'cart' && <div className="legacy-page">
