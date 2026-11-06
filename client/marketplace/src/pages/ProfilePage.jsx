@@ -1,8 +1,6 @@
 import { useContext, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { FavoritesContext } from '../context/FavoritesContext';
-import { selectTotalProducts } from '../Redux/slices/cartSlice';
-import { selectOrdersCount } from '../Redux/slices/ordersSlice';
 import ProfileHeader from '../components/profile/ProfileHeader';
 import ProfileStats from '../components/profile/ProfileStats';
 import ProfileTabs from '../components/profile/ProfileTabs';
@@ -28,8 +26,8 @@ const ProfilePage = ({
   onNavigate,
   onUserChange
 }) => {
-  const totalProducts = useSelector(selectTotalProducts);
-  const ordersCount = useSelector(selectOrdersCount);
+  const totalProducts = useSelector(state => state.cart.items.length);
+  const ordersCount = useSelector(state => state.orders.items.length);
   const {
     favorites
   } = useContext(FavoritesContext);

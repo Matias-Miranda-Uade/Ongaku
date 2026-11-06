@@ -3,12 +3,11 @@ import { useDispatch, useSelector } from 'react-redux'
 import { FavoritesContext } from '../context/FavoritesContext'
 import { AuthContext } from '../context/AuthContext'
 import { addItem } from '../Redux/actions/cartActions'
-import { selectCartItems } from '../Redux/slices/cartSlice'
 
 const FavoritesPage = ({ onNavigate, onOpenVinyl }) => {
 
     const { favorites, removeFavorite } = useContext(FavoritesContext)
-    const items = useSelector(selectCartItems)
+    const items = useSelector(state => state.cart.items)
     const syncing = useSelector(state => state.cart.status === 'loading')
     const dispatch = useDispatch()
     const { isAdmin } = useContext(AuthContext)

@@ -1,9 +1,9 @@
 import { useDispatch, useSelector } from 'react-redux'
-import { selectIsTrackingOpen, toggleTracking } from '../../Redux/slices/ordersSlice'
+import { toggleTracking } from '../../Redux/slices/ordersSlice'
 
 const TrackingButton = ({ orderId, trackingCode }) => {
     const dispatch = useDispatch()
-    const visible = useSelector(selectIsTrackingOpen(orderId))
+    const visible = useSelector(state => Boolean(state.orders.trackingOpen[orderId]))
 
     return (
         <>

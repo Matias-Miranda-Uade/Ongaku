@@ -1,23 +1,21 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import {
-  cancelOrder,
-  createOrder,
-  fetchOrderById,
-  fetchOrders,
-  payOrder
-} from '../actions/ordersActions';
+  cancelOrder as cancelOrderRequest,
+  createOrder as createOrderRequest,
+  createPayment,
+  getOrder,
+  getOrders
+} from '../../services/api';
+
+const sameId = (left, right) => String(left) === String(right);
 
 const initialState = {
   items: [],
   status: 'idle',
-  fetchRequestId: null,
   error: '',
-  detailId: null,
-  detailRequestId: null,
-  detailError: '',
   detailStatus: 'idle',
+  detailError: '',
   pendingAction: null,
-  pendingRequestId: null,
   checkoutError: '',
   actionError: '',
   notice: '',
@@ -31,12 +29,54 @@ const initialState = {
   }
 };
 
-const sameId = (left, right) => String(left) === String(right);
 const replaceOrder = (state, order) => {
   const index = state.items.findIndex(item => sameId(item.id, order.id));
-  if (index === -1) state.items.unshift(order);
-  else state.items[index] = order;
+  if (index === -1) {
+    state.items.unshift(order);
+  } else {
+    state.items[index] = order;
+  }
 };
+
+export const fetchOrders = createAsyncThunk('orders/fetchOrders', async () => getOrders());
+
+export const fetchOrderById = createAsyncThunk('orders/fetchOrderById', async id => getOrder(id));
+
+export const createOrder = createAsyncThunk('orders/createOrder', async () => createOrderRequest());
+
+export const cancelOrder = createAsyncThunk('orders/cancelOrder', async id => cancelOrderRequest(id));
+
+export const payOrder = createAsyncThunk('orders/payOrder', async ({ order, savedCardId, addressId }) => {
+  if (!addressId) {
+    throw new Error('Elegí una dirección de envío antes de pagar.');
+  }
+  const payment = await createPayment({
+    orderId: order.id,
+    amount: order.total,
+    savedCardId,
+    addressId
+  });
+  const fallbackOrder = {
+    ...order,
+    payment,
+    status: 'PAGADA',
+    orderStatus: {
+      ...order.orderStatus,
+      name: 'PAGADA'
+    }
+  };
+  try {
+    return {
+      order: await getOrder(order.id),
+      notice: 'Pago registrado.'
+    };
+  } catch {
+    return {
+      order: fallbackOrder,
+      notice: 'El pago se registró. Recargá la orden para ver los datos de envío actualizados.'
+    };
+  }
+});
 
 const ordersSlice = createSlice({
   name: 'orders',
@@ -79,99 +119,68 @@ const ordersSlice = createSlice({
   },
   extraReducers: builder => {
     builder
-      .addCase(fetchOrders.pending, (state, action) => {
+      .addCase(fetchOrders.pending, state => {
         state.status = 'loading';
-        state.fetchRequestId = action.meta.requestId;
         state.error = '';
       })
       .addCase(fetchOrders.fulfilled, (state, action) => {
-        if (state.fetchRequestId !== action.meta.requestId) return;
-        const currentById = new Map(state.items.map(order => [String(order.id), order]));
-        const fetchedIds = new Set(action.payload.map(order => String(order.id)));
-        state.items = [
-          ...action.payload.map(order => currentById.get(String(order.id)) ?? order),
-          ...state.items.filter(order => !fetchedIds.has(String(order.id)))
-        ];
+        state.items = action.payload;
         state.status = 'succeeded';
-        state.fetchRequestId = null;
       })
       .addCase(fetchOrders.rejected, (state, action) => {
-        if (state.fetchRequestId !== action.meta.requestId) return;
         state.status = 'failed';
-        state.error = action.payload ?? action.error.message ?? '';
-        state.fetchRequestId = null;
+        state.error = action.error.message;
       })
-      .addCase(fetchOrderById.pending, (state, action) => {
+      .addCase(fetchOrderById.pending, state => {
         state.detailStatus = 'loading';
-        state.detailId = action.meta.arg;
-        state.detailRequestId = action.meta.requestId;
         state.detailError = '';
       })
       .addCase(fetchOrderById.fulfilled, (state, action) => {
-        if (state.detailRequestId !== action.meta.requestId) return;
         replaceOrder(state, action.payload);
         state.detailStatus = 'succeeded';
-        state.detailRequestId = null;
       })
       .addCase(fetchOrderById.rejected, (state, action) => {
-        if (action.meta.condition || state.detailRequestId !== action.meta.requestId) return;
         state.detailStatus = 'failed';
-        state.detailError = action.payload ?? action.error.message ?? '';
-        state.detailRequestId = null;
+        state.detailError = action.error.message;
       })
-      .addCase(createOrder.pending, (state, action) => {
+      .addCase(createOrder.pending, state => {
         state.pendingAction = 'creating';
-        state.pendingRequestId = action.meta.requestId;
         state.checkoutError = '';
       })
       .addCase(createOrder.fulfilled, (state, action) => {
-        if (state.pendingRequestId !== action.meta.requestId) return;
         replaceOrder(state, action.payload);
         state.pendingAction = null;
-        state.pendingRequestId = null;
       })
       .addCase(createOrder.rejected, (state, action) => {
-        if (action.meta.condition || state.pendingRequestId !== action.meta.requestId) return;
         state.pendingAction = null;
-        state.pendingRequestId = null;
-        state.checkoutError = action.payload ?? action.error.message ?? '';
+        state.checkoutError = action.error.message;
       })
-      .addCase(cancelOrder.pending, (state, action) => {
+      .addCase(cancelOrder.pending, state => {
         state.pendingAction = 'cancelling';
-        state.pendingRequestId = action.meta.requestId;
         state.actionError = '';
       })
       .addCase(cancelOrder.fulfilled, (state, action) => {
-        if (state.pendingRequestId !== action.meta.requestId) return;
         replaceOrder(state, action.payload);
         state.pendingAction = null;
-        state.pendingRequestId = null;
       })
       .addCase(cancelOrder.rejected, (state, action) => {
-        if (action.meta.condition || state.pendingRequestId !== action.meta.requestId) return;
         state.pendingAction = null;
-        state.pendingRequestId = null;
-        state.actionError = action.payload ?? action.error.message ?? '';
+        state.actionError = action.error.message;
       })
-      .addCase(payOrder.pending, (state, action) => {
+      .addCase(payOrder.pending, state => {
         state.pendingAction = 'paying';
-        state.pendingRequestId = action.meta.requestId;
         state.actionError = '';
         state.notice = '';
       })
       .addCase(payOrder.fulfilled, (state, action) => {
-        if (state.pendingRequestId !== action.meta.requestId) return;
         replaceOrder(state, action.payload.order);
         state.pendingAction = null;
-        state.pendingRequestId = null;
         state.notice = action.payload.notice;
         state.checkoutForm = initialState.checkoutForm;
       })
       .addCase(payOrder.rejected, (state, action) => {
-        if (action.meta.condition || state.pendingRequestId !== action.meta.requestId) return;
         state.pendingAction = null;
-        state.pendingRequestId = null;
-        const message = action.payload ?? action.error.message ?? '';
+        const message = action.error.message;
         state.actionError = message === 'Elegí una dirección de envío antes de pagar.'
           ? message
           : `No se pudo pagar la orden: ${message}`;
@@ -192,20 +201,5 @@ export const {
   setCheckoutSelectedCard,
   resetCheckoutForm
 } = ordersSlice.actions;
-export const selectOrders = state => state.orders.items;
-export const selectOrderById = id => state => state.orders.items.find(order => sameId(order.id, id));
-export const selectOrdersStatus = state => state.orders.status;
-export const selectOrdersError = state => state.orders.error;
-export const selectOrdersCount = state => state.orders.items.length;
-export const selectPendingAction = state => state.orders.pendingAction;
-export const selectCheckoutError = state => state.orders.checkoutError;
-export const selectOrdersActionError = state => state.orders.actionError;
-export const selectOrdersNotice = state => state.orders.notice;
-export const selectStatusFilter = state => state.orders.statusFilter;
-export const selectFilteredOrders = state => state.orders.statusFilter === 'TODAS'
-  ? state.orders.items
-  : state.orders.items.filter(order => order.status === state.orders.statusFilter);
-export const selectCheckoutForm = state => state.orders.checkoutForm;
-export const selectIsTrackingOpen = orderId => state => Boolean(state.orders.trackingOpen[orderId]);
 
 export default ordersSlice.reducer;

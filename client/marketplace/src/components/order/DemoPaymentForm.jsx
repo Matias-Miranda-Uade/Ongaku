@@ -57,8 +57,8 @@ const ManualDemoPaymentForm = ({
     if (paying || disabled || paymentDisabled) return;
     const nextErrors = validateCard(card);
     dispatch(setCheckoutCardErrors(nextErrors));
-    if (Object.keys(nextErrors).length) return Promise.resolve();
-    return Promise.resolve(onPay(order));
+    if (Object.keys(nextErrors).length) return;
+    return onPay(order);
   };
   return <form className="demo-payment-form" onSubmit={handleSubmit} autoComplete="off">
       <label>

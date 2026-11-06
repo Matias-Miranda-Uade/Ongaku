@@ -8,12 +8,12 @@ import DemoPaymentForm from '../components/order/DemoPaymentForm'
 import OrderTotals from '../components/order/OrderTotals'
 import TrackingButton from '../components/order/TrackingButton'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectCheckoutForm, setCheckoutAddress } from '../Redux/slices/ordersSlice'
+import { setCheckoutAddress } from '../Redux/slices/ordersSlice'
 import AddressBook from '../components/profile/AddressBook'
 
 const OrderDetailPage = ({ order, onBack, onCancel, onRate, onPay, isAdmin = false, paying = false, cancelling = false, submittingVinylId = null, focusReview = false }) => {
   const dispatch = useDispatch()
-  const checkoutForm = useSelector(selectCheckoutForm)
+  const checkoutForm = useSelector(state => state.orders.checkoutForm)
   const addressId = checkoutForm.addressId
   const pendingCheckout = order.status === 'PENDIENTE' && !isAdmin
   return (

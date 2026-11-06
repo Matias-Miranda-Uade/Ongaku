@@ -7,12 +7,11 @@ import './admin.css';
 import './controls.css';
 import { FavoritesProvider } from './context/FavoritesContext';
 import { AuthContext } from './context/AuthContext';
-import { createOrder, fetchOrders } from './Redux/actions/ordersActions';
+import { createOrder, fetchOrders } from './Redux/slices/ordersSlice';
 import { fetchMyReviews } from './Redux/actions/reviewsActions';
-import { resetCart, selectCartError } from './Redux/slices/cartSlice';
-import { resetOrders, selectOrdersError } from './Redux/slices/ordersSlice';
+import { resetCart, syncCart } from './Redux/slices/cartSlice';
+import { resetOrders } from './Redux/slices/ordersSlice';
 import { resetReviews, setReviewOwner } from './Redux/slices/reviewsSlice';
-import { syncCart } from './Redux/actions/cartActions';
 import AppRoutes, { ADMIN_BASE_PATH, isAdminPath } from './routes/AppRoutes';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
@@ -85,7 +84,7 @@ const App = () => {
     logout
   } = useContext(AuthContext);
   const dispatch = useDispatch();
-  const ordersError = useSelector(selectOrdersError);
+  const ordersError = useSelector(state => state.orders.error);
   const storageError = sessionError || (ordersError ? `No se pudieron cargar tus órdenes: ${ordersError}` : '');
   const shopper = user && !isAdmin ? user : null;
   useEffect(() => {
@@ -163,27 +162,26 @@ const AppContent = ({
 }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const cartError = useSelector(selectCartError);
+  const cartError = useSelector(state => state.cart.error);
   const query = new URLSearchParams(queryString);
   const handleCheckout = () => {
-    if (isAdmin) return Promise.resolve({
-      error: 'Las cuentas de administración no pueden crear compras.'
-    });
+    if (isAdmin) {
+      return { error: 'Las cuentas de administración no pueden crear compras.' };
+    }
     if (!user) {
       navigate('/app/login', {
         state: {
           returnTo: '/app/cart'
         }
       });
-      return Promise.resolve(false);
+      return false;
     }
-    return dispatch(createOrder()).unwrap().then(order => {
-      navigate(`/app/orders/${order.id}`);
+    return dispatch(createOrder()).then(result => {
+      if (result.error) {
+        return { error: typeof result.error === 'string' ? result.error : result.error.message };
+      }
+      navigate(`/app/orders/${result.payload.id}`);
       return true;
-    }).catch(error => {
-      return {
-        error: typeof error === 'string' ? error : error.message
-      };
     });
   };
   return <>

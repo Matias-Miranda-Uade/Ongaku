@@ -1,35 +1,92 @@
-import { createSlice } from '@reduxjs/toolkit';
-import { createOrder } from '../actions/ordersActions';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { createOrder } from './ordersSlice';
 import {
-  addItem,
-  clearCart,
-  fetchSuggestions,
-  removeItem,
-  syncCart,
-  updateQuantity
-} from '../actions/cartActions';
+  addCartItem,
+  clearServerCart,
+  getCart,
+  getVinyls,
+  removeCartItem,
+  updateCartItem
+} from '../../services/api';
+
+const sameId = (left, right) => String(left) === String(right);
 
 const initialState = {
   items: [],
   ownerId: null,
-  syncRequestId: null,
-  syncTargetId: null,
-  syncPreviousOwnerId: null,
-  syncGuestItems: [],
-  checkoutOwnerId: null,
-  checkoutRequestId: null,
   status: 'idle',
   error: '',
-  pendingIds: [],
-  requestOwners: {},
-  lastAddedId: null,
   suggestions: { items: [], status: 'idle', error: '' }
 };
 
-const sameId = (left, right) => String(left) === String(right);
-const applyCartResult = (state, action) => {
-  if (action.payload.ownerId === state.ownerId) state.items = action.payload.items;
-};
+export const syncCart = createAsyncThunk('cart/syncCart', async (userId, { getState }) => {
+  const guestItems = getState().cart.items;
+  let serverCart = await getCart();
+  for (const item of guestItems) {
+    serverCart = await addCartItem(item.id, item.quantity);
+  }
+  return { items: serverCart.items, ownerId: userId };
+});
+
+export const addItem = createAsyncThunk('cart/addItem', async ({ product, quantity = 1 }, { getState }) => {
+  const cart = getState().cart;
+  const ownerId = cart.ownerId;
+  if (product.stock <= 0) {
+    return { items: cart.items, ownerId };
+  }
+  if (ownerId !== null) {
+    const result = await addCartItem(product.id, quantity);
+    return { items: result.items, ownerId };
+  }
+  const existing = cart.items.find(item => sameId(item.id, product.id));
+  const items = existing
+    ? cart.items.map(item => sameId(item.id, product.id)
+      ? { ...item, quantity: Math.min(item.quantity + quantity, item.stock) }
+      : item)
+    : [...cart.items, { ...product, quantity: Math.min(quantity, product.stock) }];
+  return { items, ownerId };
+});
+
+export const updateQuantity = createAsyncThunk('cart/updateQuantity', async ({ id, quantity }, { getState }) => {
+  const cart = getState().cart;
+  const ownerId = cart.ownerId;
+  if (ownerId !== null) {
+    const result = await updateCartItem(id, quantity);
+    return { items: result.items, ownerId };
+  }
+  const items = cart.items.map(item => sameId(item.id, id)
+    ? { ...item, quantity: Math.max(1, Math.min(quantity, item.stock)) }
+    : item);
+  return { items, ownerId };
+});
+
+export const removeItem = createAsyncThunk('cart/removeItem', async (id, { getState }) => {
+  const cart = getState().cart;
+  const ownerId = cart.ownerId;
+  if (ownerId !== null) {
+    const result = await removeCartItem(id);
+    return { items: result.items, ownerId };
+  }
+  return { items: cart.items.filter(item => !sameId(item.id, id)), ownerId };
+});
+
+export const clearCart = createAsyncThunk('cart/clearCart', async (_, { getState }) => {
+  const ownerId = getState().cart.ownerId;
+  if (ownerId !== null) {
+    const result = await clearServerCart();
+    return { items: result.items, ownerId };
+  }
+  return { items: [], ownerId };
+});
+
+export const fetchSuggestions = createAsyncThunk('cart/fetchSuggestions', async () => {
+  const products = await getVinyls();
+  return products.map(product => ({
+    ...product,
+    artist: product.artistName,
+    price: product.finalPrice ?? product.price
+  }));
+});
 
 const cartSlice = createSlice({
   name: 'cart',
@@ -38,118 +95,56 @@ const cartSlice = createSlice({
     resetCart(state) {
       state.items = [];
       state.ownerId = null;
-      state.syncRequestId = null;
-      state.syncTargetId = null;
-      state.syncPreviousOwnerId = null;
-      state.syncGuestItems = [];
-      state.checkoutOwnerId = null;
-      state.checkoutRequestId = null;
       state.status = 'idle';
       state.error = '';
-      state.pendingIds = [];
-      state.requestOwners = {};
-      state.lastAddedId = null;
+      state.suggestions = { items: [], status: 'idle', error: '' };
     },
     clearLastAdded(state) {
-      state.lastAddedId = null;
+      state.error = '';
     }
   },
   extraReducers: builder => {
     builder
-      .addCase(syncCart.pending, (state, action) => {
-        state.syncRequestId = action.meta.requestId;
-        state.syncTargetId = action.meta.arg;
-        state.syncPreviousOwnerId = state.ownerId;
-        state.syncGuestItems = state.ownerId === null ? state.items : [];
-        if (state.ownerId !== null && !sameId(state.ownerId, action.meta.arg)) state.items = [];
-        state.ownerId = action.meta.arg;
+      .addCase(syncCart.pending, state => {
         state.status = 'loading';
         state.error = '';
       })
       .addCase(syncCart.fulfilled, (state, action) => {
-        if (state.syncRequestId !== action.meta.requestId) return;
         state.ownerId = action.payload.ownerId;
-        state.syncRequestId = null;
-        state.syncTargetId = null;
-        state.syncPreviousOwnerId = null;
-        state.syncGuestItems = [];
         state.items = action.payload.items;
         state.status = 'succeeded';
       })
       .addCase(syncCart.rejected, (state, action) => {
-        if (state.syncRequestId !== action.meta.requestId) return;
-        state.syncRequestId = null;
-        state.syncTargetId = null;
-        if (state.syncPreviousOwnerId === null) state.ownerId = null;
-        state.syncPreviousOwnerId = null;
-        state.syncGuestItems = [];
         state.status = 'failed';
-        state.error = action.payload ?? action.error.message ?? '';
-      })
-      .addCase(addItem.pending, (state, action) => {
-        const id = action.meta.arg.product.id;
-        state.requestOwners[action.meta.requestId] = state.ownerId;
-        if (!state.pendingIds.some(item => sameId(item, id))) state.pendingIds.push(id);
-        state.lastAddedId = null;
-        state.error = '';
+        state.error = action.error.message;
       })
       .addCase(addItem.fulfilled, (state, action) => {
-        const isCurrent = Object.hasOwn(state.requestOwners, action.meta.requestId);
-        delete state.requestOwners[action.meta.requestId];
-        if (isCurrent) state.pendingIds = state.pendingIds.filter(id => !sameId(id, action.meta.arg.product.id));
-        if (isCurrent && action.payload.ownerId === state.ownerId) {
-          state.items = action.payload.items;
-          state.lastAddedId = action.meta.arg.product.id;
-        }
+        state.items = action.payload.items;
+        state.ownerId = action.payload.ownerId;
       })
       .addCase(addItem.rejected, (state, action) => {
-        const requestOwner = state.requestOwners[action.meta.requestId];
-        const isCurrent = Object.hasOwn(state.requestOwners, action.meta.requestId) && requestOwner === state.ownerId;
-        delete state.requestOwners[action.meta.requestId];
-        if (isCurrent) state.pendingIds = state.pendingIds.filter(id => !sameId(id, action.meta.arg.product.id));
-        if (isCurrent) state.error = action.payload ?? action.error.message ?? '';
-      })
-      .addCase(updateQuantity.pending, (state, action) => {
-        state.requestOwners[action.meta.requestId] = state.ownerId;
-        state.error = '';
+        state.error = action.error.message;
       })
       .addCase(updateQuantity.fulfilled, (state, action) => {
-        const isCurrent = Object.hasOwn(state.requestOwners, action.meta.requestId);
-        delete state.requestOwners[action.meta.requestId];
-        if (isCurrent) applyCartResult(state, action);
+        state.items = action.payload.items;
+        state.ownerId = action.payload.ownerId;
       })
       .addCase(updateQuantity.rejected, (state, action) => {
-        const isCurrent = Object.hasOwn(state.requestOwners, action.meta.requestId) && state.requestOwners[action.meta.requestId] === state.ownerId;
-        delete state.requestOwners[action.meta.requestId];
-        if (isCurrent) state.error = action.payload ?? action.error.message ?? '';
-      })
-      .addCase(removeItem.pending, (state, action) => {
-        state.requestOwners[action.meta.requestId] = state.ownerId;
-        state.error = '';
+        state.error = action.error.message;
       })
       .addCase(removeItem.fulfilled, (state, action) => {
-        const isCurrent = Object.hasOwn(state.requestOwners, action.meta.requestId);
-        delete state.requestOwners[action.meta.requestId];
-        if (isCurrent) applyCartResult(state, action);
+        state.items = action.payload.items;
+        state.ownerId = action.payload.ownerId;
       })
       .addCase(removeItem.rejected, (state, action) => {
-        const isCurrent = Object.hasOwn(state.requestOwners, action.meta.requestId) && state.requestOwners[action.meta.requestId] === state.ownerId;
-        delete state.requestOwners[action.meta.requestId];
-        if (isCurrent) state.error = action.payload ?? action.error.message ?? '';
-      })
-      .addCase(clearCart.pending, (state, action) => {
-        state.requestOwners[action.meta.requestId] = state.ownerId;
-        state.error = '';
+        state.error = action.error.message;
       })
       .addCase(clearCart.fulfilled, (state, action) => {
-        const isCurrent = Object.hasOwn(state.requestOwners, action.meta.requestId);
-        delete state.requestOwners[action.meta.requestId];
-        if (isCurrent) applyCartResult(state, action);
+        state.items = action.payload.items;
+        state.ownerId = action.payload.ownerId;
       })
       .addCase(clearCart.rejected, (state, action) => {
-        const isCurrent = Object.hasOwn(state.requestOwners, action.meta.requestId) && state.requestOwners[action.meta.requestId] === state.ownerId;
-        delete state.requestOwners[action.meta.requestId];
-        if (isCurrent) state.error = action.payload ?? action.error.message ?? '';
+        state.error = action.error.message;
       })
       .addCase(fetchSuggestions.pending, state => {
         state.suggestions.status = 'loading';
@@ -161,36 +156,14 @@ const cartSlice = createSlice({
       })
       .addCase(fetchSuggestions.rejected, (state, action) => {
         state.suggestions.status = 'failed';
-        state.suggestions.error = action.payload ?? action.error.message ?? '';
+        state.suggestions.error = action.error.message;
       })
-      .addCase(createOrder.fulfilled, (state, action) => {
-        if (state.checkoutRequestId === action.meta.requestId && state.checkoutOwnerId === state.ownerId) {
-          state.items = [];
-          state.error = '';
-        }
-        if (state.checkoutRequestId === action.meta.requestId) {
-          state.checkoutRequestId = null;
-          state.checkoutOwnerId = null;
-        }
-      })
-      .addCase(createOrder.pending, (state, action) => {
-        state.checkoutRequestId = action.meta.requestId;
-        state.checkoutOwnerId = state.ownerId;
-      })
-      .addCase(createOrder.rejected, (state, action) => {
-        if (state.checkoutRequestId !== action.meta.requestId) return;
-        state.checkoutRequestId = null;
-        state.checkoutOwnerId = null;
+      .addCase(createOrder.fulfilled, state => {
+        state.items = [];
       });
   }
 });
 
 export const { resetCart, clearLastAdded } = cartSlice.actions;
-export const selectCartItems = state => state.cart.items;
-export const selectCartError = state => state.cart.error;
-export const selectTotalProducts = state => state.cart.items.length;
-export const selectTotalUnits = state => state.cart.items.reduce((total, item) => total + item.quantity, 0);
-export const selectCartTotal = state => state.cart.items.reduce((total, item) => total + (item.subtotal ?? item.price * item.quantity), 0);
-export const selectIsInCart = id => state => state.cart.items.some(item => sameId(item.id, id));
 
 export default cartSlice.reducer;
