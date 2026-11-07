@@ -1,13 +1,11 @@
-import { useDispatch, useSelector } from 'react-redux'
-import { toggleTracking } from '../../Redux/slices/ordersSlice'
+import { useState } from 'react'
 
-const TrackingButton = ({ orderId, trackingCode }) => {
-    const dispatch = useDispatch()
-    const visible = useSelector(state => Boolean(state.orders.trackingOpen[orderId]))
+const TrackingButton = ({ trackingCode }) => {
+    const [visible, setVisible] = useState(false)
 
     return (
         <>
-        <button onClick={() => dispatch(toggleTracking(orderId))}>
+        <button type="button" onClick={() => setVisible(value => !value)}>
             {visible ? 'Ocultar seguimiento' : 'Seguir envío'}
         </button>
         {visible && <p>Código de seguimiento: {trackingCode}</p>}

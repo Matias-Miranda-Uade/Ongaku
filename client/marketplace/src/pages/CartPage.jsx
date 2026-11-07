@@ -1,57 +1,19 @@
-import { useContext, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useContext } from 'react';
+import { useSelector } from 'react-redux';
 import { AuthContext } from '../context/AuthContext';
-import { addItem, clearCart, fetchSuggestions, removeItem, updateQuantity } from '../Redux/slices/cartSlice';
-import { clearCheckoutError, setCheckoutError } from '../Redux/slices/ordersSlice';
 import CartItemsList from '../components/cart/CartItemsList';
 import CartSummary from '../components/cart/CartSummary';
 import CartGuarantees from '../components/cart/CartGuarantees';
 import SuggestedProducts from '../components/cart/SuggestedProducts';
+import ClearCartButton from '../components/cart/ClearCartButton';
 
-const CartPage = ({ onCheckout, onNavigate }) => {
+const CartPage = ({ onNavigate }) => {
   const { isAdmin } = useContext(AuthContext);
-  const dispatch = useDispatch();
   const items = useSelector(state => state.cart.items);
+  const syncing = useSelector(state => state.cart.loading);
   const totalProducts = items.length;
   const totalUnits = items.reduce((total, item) => total + item.quantity, 0);
   const total = items.reduce((sum, item) => sum + (item.subtotal ?? item.price * item.quantity), 0);
-  const products = useSelector(state => state.cart.suggestions.items);
-  const suggestionError = useSelector(state => state.cart.suggestions.error);
-  const syncing = useSelector(state => state.cart.status === 'loading');
-  const checkoutError = useSelector(state => state.orders.checkoutError);
-  const pending = useSelector(state => state.orders.pendingAction === 'creating');
-
-  useEffect(() => {
-    if (!isAdmin) {
-      dispatch(fetchSuggestions());
-    }
-  }, [dispatch, isAdmin]);
-
-  const handleCheckout = () => {
-    if (pending || syncing) {
-      return;
-    }
-    dispatch(clearCheckoutError());
-    const result = onCheckout?.();
-    if (!result || typeof result.then !== 'function') {
-      if (result && result.error) {
-        dispatch(setCheckoutError(result.error));
-      }
-      return result;
-    }
-    return result.then(next => {
-      if (next && next.error) {
-        dispatch(setCheckoutError(next.error));
-      }
-      return next;
-    });
-  };
-
-  const suggested = products.filter(product => !items.some(item => String(item.id) === String(product.id))).slice(0, 3);
-  const handleAdd = product => {
-    if (syncing) return;
-    dispatch(addItem({ product }));
-  };
 
   if (isAdmin) {
     return (
@@ -71,7 +33,6 @@ const CartPage = ({ onCheckout, onNavigate }) => {
         <h1>Bolsa de selección</h1>
         <p className="legacy-description">{totalUnits} {totalUnits === 1 ? 'pieza' : 'piezas'} en tu bolsa.</p>
       </div>
-      {checkoutError && <p role="alert">{checkoutError}</p>}
       {items.length === 0 ? (
         <div className="empty-state-card">
           <h2>Tu bolsa está esperando una primera pieza.</h2>
@@ -81,23 +42,17 @@ const CartPage = ({ onCheckout, onNavigate }) => {
       ) : (
         <div className="cart-layout">
           <div className="cart-items-column">
-            <CartItemsList
-              items={items}
-              onQuantityChange={(id, quantity) => dispatch(updateQuantity({ id, quantity }))}
-              onRemove={id => dispatch(removeItem(id))}
-              disabled={syncing}
-            />
-            <button className="text-link-button" disabled={syncing} onClick={() => dispatch(clearCart())}>Vaciar la bolsa</button>
+            <CartItemsList items={items} disabled={syncing} />
+            <ClearCartButton disabled={syncing} />
           </div>
           <aside className="cart-summary-panel">
-            <CartSummary totalProducts={totalProducts} totalUnits={totalUnits} total={total} onCheckout={handleCheckout} disabled={pending || syncing} pending={pending} />
+            <CartSummary totalProducts={totalProducts} totalUnits={totalUnits} total={total} disabled={syncing} />
             <CartGuarantees />
           </aside>
         </div>
       )}
       <div className="cart-suggestions">
-        {suggestionError && <p role="alert">No se pudieron cargar las sugerencias: {suggestionError}</p>}
-        <SuggestedProducts products={suggested} onAdd={handleAdd} disabled={syncing} />
+        <SuggestedProducts disabled={syncing} />
       </div>
     </section>
   );

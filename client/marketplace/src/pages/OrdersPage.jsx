@@ -1,82 +1,32 @@
-import { useContext, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useContext, useState } from 'react';
+import { useSelector } from 'react-redux';
 import OrderFilters from '../components/order/OrderFilters';
 import OrderCard from '../components/order/OrderCard';
 import OrderDetailPage from './OrderDetailPage';
 import { AuthContext } from '../context/AuthContext';
-import { cancelOrder, fetchOrderById, payOrder, setStatusFilter, resetCheckoutForm } from '../Redux/slices/ordersSlice';
 import { createReview } from '../Redux/actions/reviewsActions';
 import { selectMyReviews, selectReviewsError, selectSubmittingVinylId } from '../Redux/slices/reviewsSlice';
 
-const sameId = (left, right) => String(left) === String(right);
 const attachReviews = (order, reviews) => order && ({
   ...order,
   items: order.items.map(item => ({
     ...item,
-    review: reviews.find(review => sameId(review.vinylId, item.vinylId)) ?? item.review ?? null
+    review: reviews.find(review => String(review.vinylId) === String(item.vinylId)) ?? item.review ?? null
   }))
 });
 
 const OrdersPage = ({ authenticated, selectedOrderId, onNavigate, onSelectOrder, focusReview = false }) => {
   const { isAdmin } = useContext(AuthContext);
-  const dispatch = useDispatch();
   const orders = useSelector(state => state.orders.items);
+  const ordersLoading = useSelector(state => state.orders.loading);
+  const selectedOrder = useSelector(state => state.orders.items.find(order => String(order.id) === String(selectedOrderId)));
   const reviews = useSelector(selectMyReviews);
-  const selectedOrder = useSelector(state => state.orders.items.find(order => sameId(order.id, selectedOrderId)));
-  const ordersStatus = useSelector(state => state.orders.status);
-  const detailStatus = useSelector(state => state.orders.detailStatus);
-  const detailError = useSelector(state => state.orders.detailError);
-  const actionError = useSelector(state => state.orders.actionError);
   const reviewError = useSelector(selectReviewsError);
-  const notice = useSelector(state => state.orders.notice);
-  const pendingAction = useSelector(state => state.orders.pendingAction);
-  const status = useSelector(state => state.orders.statusFilter);
-  const filtered = useSelector(state => state.orders.statusFilter === 'TODAS'
-    ? state.orders.items
-    : state.orders.items.filter(order => order.status === state.orders.statusFilter));
   const submittingVinylId = useSelector(selectSubmittingVinylId);
-
-  useEffect(() => {
-    if (!selectedOrderId || !authenticated || ordersStatus !== 'succeeded' || selectedOrder) return;
-    dispatch(fetchOrderById(selectedOrderId));
-  }, [dispatch, selectedOrderId, authenticated, ordersStatus, selectedOrder]);
-
-  useEffect(() => {
-    if (selectedOrderId) {
-      dispatch(resetCheckoutForm());
-    }
-  }, [dispatch, selectedOrderId]);
-
-  const handleCancelOrder = id => {
-    if (pendingAction) {
-      return;
-    }
-    return dispatch(cancelOrder(id)).then(result => {
-      if (result.error) {
-        return undefined;
-      }
-      return result.payload;
-    });
-  };
-
-  const handlePayOrder = (order, { savedCardId, addressId } = {}) => {
-    if (isAdmin || pendingAction || order.status !== 'PENDIENTE') {
-      return;
-    }
-    return dispatch(payOrder({ order, savedCardId, addressId })).then(result => {
-      if (result.error) {
-        return undefined;
-      }
-      return result.payload;
-    });
-  };
-
-  const rateItem = (vinylId, review) => dispatch(createReview({ ...review, vinylId })).then(result => {
-    if (result.error) {
-      return undefined;
-    }
-    return result.payload;
-  });
+  const [status, setStatus] = useState('TODAS');
+  const filtered = status === 'TODAS'
+    ? orders
+    : orders.filter(order => order.status === status);
 
   if (!authenticated) {
     return (
@@ -91,26 +41,19 @@ const OrdersPage = ({ authenticated, selectedOrderId, onNavigate, onSelectOrder,
 
   if (selectedOrderId) {
     const detailOrder = attachReviews(selectedOrder, reviews);
-    const loadingDetail = ordersStatus === 'succeeded' && detailStatus === 'loading';
-    const visibleError = actionError || reviewError || (detailError ? `No se pudo cargar la orden: ${detailError}` : '');
 
     return (
       <section className="orders-page">
-        {visibleError && <p className="form-error" role="alert">{visibleError}</p>}
-        {notice && <p className="storage-notice" role="status">{notice}</p>}
-        {loadingDetail && !detailOrder ? (
+        {reviewError && <p className="form-error" role="alert">{reviewError}</p>}
+        {ordersLoading && !detailOrder ? (
           <p className="orders-loading" role="status">Cargando orden…</p>
         ) : detailOrder ? (
           <OrderDetailPage
+            key={selectedOrderId}
             order={detailOrder}
             onBack={() => onNavigate?.('orders')}
-            onCancel={handleCancelOrder}
-            onRate={rateItem}
-            onPay={handlePayOrder}
             isAdmin={isAdmin}
-            paying={pendingAction === 'paying'}
-            cancelling={pendingAction === 'cancelling'}
-            submittingReview={submittingVinylId != null}
+            ordersLoading={ordersLoading}
             submittingVinylId={submittingVinylId}
             focusReview={focusReview}
           />
@@ -132,12 +75,14 @@ const OrdersPage = ({ authenticated, selectedOrderId, onNavigate, onSelectOrder,
         <h1>Mis órdenes</h1>
         <p className="legacy-description">El recorrido de cada edición que elegiste.</p>
       </div>
-      {(actionError || reviewError) && <p className="form-error" role="alert">{actionError || reviewError}</p>}
+      {reviewError && <p className="form-error" role="alert">{reviewError}</p>}
       <div className="orders-toolbar">
         <span className="orders-count">{orders.length} {orders.length === 1 ? 'ORDEN' : 'ÓRDENES'}</span>
-        <OrderFilters status={status} onChange={value => dispatch(setStatusFilter(value))} />
+        <OrderFilters status={status} onChange={setStatus} />
       </div>
-      {filtered.length === 0 ? (
+      {ordersLoading ? (
+        <p className="orders-loading" role="status">Cargando órdenes…</p>
+      ) : filtered.length === 0 ? (
         <section className="empty-state-card">
           <p className="eyebrow">TU ACTIVIDAD</p>
           <h2>{orders.length ? 'No hay órdenes con este estado' : 'Todavía no hay órdenes'}</h2>

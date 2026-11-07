@@ -1,4 +1,4 @@
-import { useContext, useEffect } from 'react';
+import { useContext, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import './App.css';
@@ -7,7 +7,7 @@ import './admin.css';
 import './controls.css';
 import { FavoritesProvider } from './context/FavoritesContext';
 import { AuthContext } from './context/AuthContext';
-import { createOrder, fetchOrders } from './Redux/slices/ordersSlice';
+import { fetchOrders } from './Redux/slices/ordersSlice';
 import { fetchMyReviews } from './Redux/actions/reviewsActions';
 import { resetCart, syncCart } from './Redux/slices/cartSlice';
 import { resetOrders } from './Redux/slices/ordersSlice';
@@ -84,6 +84,7 @@ const App = () => {
     logout
   } = useContext(AuthContext);
   const dispatch = useDispatch();
+  const previousShopperId = useRef(undefined);
   const ordersError = useSelector(state => state.orders.error);
   const storageError = sessionError || (ordersError ? `No se pudieron cargar tus órdenes: ${ordersError}` : '');
   const shopper = user && !isAdmin ? user : null;
@@ -95,8 +96,18 @@ const App = () => {
     });
   }, [location.pathname, location.state]);
   useEffect(() => {
-    dispatch(setReviewOwner(shopper?.id ?? null));
+    const nextShopperId = shopper?.id ?? null;
+    const previousId = previousShopperId.current;
+    const sameSession = previousId === nextShopperId
+      || previousId != null && nextShopperId != null && String(previousId) === String(nextShopperId);
+    if (previousId !== undefined && sameSession) return;
+    previousShopperId.current = nextShopperId;
+    dispatch(setReviewOwner(nextShopperId));
     if (shopper) {
+      if (previousId != null && String(previousId) !== String(shopper.id)) {
+        dispatch(resetCart());
+      }
+      dispatch(resetOrders());
       dispatch(syncCart(shopper.id));
       dispatch(fetchOrders());
       dispatch(fetchMyReviews());
@@ -164,26 +175,6 @@ const AppContent = ({
   const dispatch = useDispatch();
   const cartError = useSelector(state => state.cart.error);
   const query = new URLSearchParams(queryString);
-  const handleCheckout = () => {
-    if (isAdmin) {
-      return { error: 'Las cuentas de administración no pueden crear compras.' };
-    }
-    if (!user) {
-      navigate('/app/login', {
-        state: {
-          returnTo: '/app/cart'
-        }
-      });
-      return false;
-    }
-    return dispatch(createOrder()).then(result => {
-      if (result.error) {
-        return { error: typeof result.error === 'string' ? result.error : result.error.message };
-      }
-      navigate(`/app/orders/${result.payload.id}`);
-      return true;
-    });
-  };
   return <>
     {cartError && <p className="storage-notice" role="alert">{cartError}</p>}
     <div className="app-shell">
@@ -203,7 +194,7 @@ const AppContent = ({
         {page === 'reviews' && <ReviewsPage vinylId={query.get('vinylId')} onClearVinyl={() => navigate('/app/reviews')} />}
         {page === 'favorites' && <div className="legacy-page"><FavoritesPage onNavigate={openPage} onOpenVinyl={openVinyl} /></div>}
         {page === 'cart' && <div className="legacy-page">
-            <CartPage onCheckout={handleCheckout} onNavigate={openPage} />
+            <CartPage onNavigate={openPage} />
           </div>}
         {page === 'orders' && <div className="legacy-page">
             <OrdersPage authenticated={Boolean(user)} selectedOrderId={selectedOrderId} onNavigate={openPage} onSelectOrder={(orderId, focusReview = false) => navigate(`/app/orders/${orderId}${focusReview ? '?focusReview=1' : ''}`)} focusReview={query.get('focusReview') === '1'} />

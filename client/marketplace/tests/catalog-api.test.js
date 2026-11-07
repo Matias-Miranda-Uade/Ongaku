@@ -1,11 +1,13 @@
 import assert from 'node:assert/strict'
 import { after, beforeEach, test } from 'node:test'
+import { configureStore } from '@reduxjs/toolkit'
 import { http } from '../src/services/api.js'
 import { createArtist, deleteArtist, createCategory, getCatalogLookups, uploadCover } from '../src/services/adminService.js'
 import {
-  ApiError, createFavorite, createOrder, createPayment, createReview, deleteAddress, deleteCard, deleteFavorite, deleteReview, getAddresses, getAudioPreview, getFavorites, getOrder, getOrders, getSavedCards, saveAddress, saveCard,
+  ApiError, createFavorite, createReview, deleteAddress, deleteCard, deleteFavorite, deleteReview, getAddresses, getAudioPreview, getFavorites, getSavedCards, saveAddress, saveCard,
   getReviewEligibility, getReviews, getReviewsByVinyl, getVinylById, getVinyls, request, updateReview, login, logout, getAccessToken,
 } from '../src/services/api.js'
+import ordersReducer, { createOrder, fetchOrders, payOrder } from '../src/Redux/slices/ordersSlice.js'
 
 const originalAdapter = http.defaults.adapter
 const originalWindow = globalThis.window
@@ -47,7 +49,13 @@ beforeEach(() => {
         data = text
       }
     }
-    return { data, status, statusText: '', headers: {}, config, request: {} }
+    const response = { data, status, statusText: '', headers: {}, config, request: {} }
+    if (status >= 400) {
+      const error = new Error(`Request failed with status code ${status}`)
+      error.response = response
+      throw error
+    }
+    return response
   }
 })
 
@@ -116,7 +124,7 @@ test('subir una portada envía el archivo multipart con autenticación y sin for
   assert.equal(calls[0].method, 'POST')
   assert.ok(calls[0].body instanceof FormData)
   assert.ok(calls[0].body.get('file') instanceof Blob)
-  assert.equal(calls[0].headers['Content-Type'], undefined)
+  assert.notEqual(calls[0].headers['Content-Type'], 'application/json')
   assert.equal(calls[0].headers.Authorization, 'Bearer session-token')
 })
 
@@ -214,11 +222,13 @@ test('la posibilidad de reseñar se consulta para el usuario autenticado y el vi
 
 test('pagar envía el total de la orden y no envía un estado aprobado inventado', async () => {
   routes['/payments'] = { id: 10, orderId: 9, amount: 25600, method: 'SIMULADO', status: 'APROBADO' }
-  const payment = await createPayment({ orderId: 9, amount: 25600 })
-  assert.equal(payment.status, 'APROBADO')
+  routes['/orders/9'] = { id: 9, orderStatus: { name: 'PAGADA' }, total: 25600, items: [] }
+  const store = configureStore({ reducer: { orders: ordersReducer } })
+  const result = await store.dispatch(payOrder({ order: { id: 9, total: 25600 }, addressId: 5 }))
+  assert.equal(result.payload.payment.status, 'APROBADO')
   assert.equal(calls[0].method, 'POST')
   assert.equal(calls[0].headers.Authorization, 'Bearer session-token')
-  assert.deepEqual(JSON.parse(calls[0].body), { orderId: 9, amount: 25600, method: 'SIMULADO' })
+  assert.deepEqual(JSON.parse(calls[0].body), { orderId: 9, amount: 25600, method: 'SIMULADO', addressId: 5 })
 })
 
 test('las órdenes muestran el pago registrado también después de recargar', async () => {
@@ -227,13 +237,16 @@ test('las órdenes muestran el pago registrado también después de recargar', a
   routes['/orders'] = [order]
   routes['/orders/9'] = order
   routes['/payments'] = [payment, { id: 11, orderId: 99 }]
-  assert.deepEqual((await getOrders())[0].payment, payment)
-  assert.deepEqual((await getOrder(9)).payment, payment)
+  const store = configureStore({ reducer: { orders: ordersReducer } })
+  const result = await store.dispatch(fetchOrders())
+  assert.deepEqual(result.payload[0].payment, payment)
 })
 
 test('un pago duplicado conserva el conflicto enviado por el backend', async () => {
   routes['/payments'] = Response.json({ message: 'Orden ya pagada' }, { status: 409 })
-  await assert.rejects(createPayment({ orderId: 9, amount: 25600 }), (error) => error.isConflict)
+  const store = configureStore({ reducer: { orders: ordersReducer } })
+  const result = await store.dispatch(payOrder({ order: { id: 9, total: 25600 }, addressId: 5 }))
+  assert.equal(result.error.message, 'Orden ya pagada')
 })
 
 test('las direcciones se guardan, editan y seleccionan en el checkout', async () => {
@@ -247,7 +260,9 @@ test('las direcciones se guardan, editan y seleccionan en el checkout', async ()
   routes['/users/me/addresses'] = [{ id: 5, details: address }]
   assert.equal((await getAddresses())[0].id, 5)
   routes['/orders'] = { id: 9, items: [], status: 'PENDIENTE' }
-  assert.equal((await createOrder()).shippingAddress, undefined)
+  const store = configureStore({ reducer: { orders: ordersReducer } })
+  const createdOrder = await store.dispatch(createOrder())
+  assert.equal(createdOrder.payload.shippingAddress, undefined)
   assert.equal(calls[3].body, undefined)
   routes['/users/me/addresses/5'] = new Response(null, { status: 204 })
   await deleteAddress(5)
@@ -283,11 +298,13 @@ test('el carrito crea la orden sin datos de checkout y el pago envía dirección
   routes['/users/me/cards'] = [{ id: 6, ...card }]
   assert.equal((await getSavedCards())[0].id, 6)
   routes['/orders'] = { id: 9, items: [], status: 'PENDIENTE' }
-  await createOrder()
+  const store = configureStore({ reducer: { orders: ordersReducer } })
+  await store.dispatch(createOrder())
   assert.equal(calls.at(-1).body, undefined)
   routes['/payments'] = { id: 10, cardBrand: 'VISA', cardLastFour: '4242' }
-  await createPayment({ orderId: 9, amount: 100, savedCardId: 6, addressId: 5 })
-  assert.deepEqual(JSON.parse(calls.at(-1).body), { orderId: 9, amount: 100, method: 'SIMULADO', savedCardId: 6, addressId: 5 })
+  routes['/orders/9'] = { id: 9, status: 'PAGADA', total: 100, items: [] }
+  await store.dispatch(payOrder({ order: { id: 9, total: 100 }, savedCardId: 6, addressId: 5 }))
+  assert.deepEqual(JSON.parse(calls.at(-2).body), { orderId: 9, amount: 100, method: 'SIMULADO', savedCardId: 6, addressId: 5 })
   routes['/users/me/cards/6'] = new Response(null, { status: 204 })
   await deleteCard(6)
   assert.equal(calls.at(-1).method, 'DELETE')

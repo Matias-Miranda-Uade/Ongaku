@@ -3,17 +3,17 @@
 ## Estructura
 
 - `store.js` configura el store y registra los reducers de `cart`, `orders`, `reviews` y `catalog`. Redux Toolkit ya incorpora el middleware thunk.
-- `slices/` define el estado, los reducers síncronos y los `extraReducers` de los thunks. También exporta los selectores de cada dominio.
-- `actions/` contiene los thunks con `createAsyncThunk`; estos llaman a las funciones de `services/api.js` y convierten los errores en mensajes serializables.
+- `slices/` define el estado y procesa las operaciones asíncronas. Carrito y órdenes declaran sus thunks junto al slice; catálogo y reseñas conservan sus thunks en `actions/`.
+- `actions/` contiene los thunks de catálogo y reseñas. Los slices de esos dominios conservan sus selectores; carrito y órdenes se leen con selectores inline.
 
-## Patrón de una operación asíncrona
+## Carrito y órdenes
 
-Las órdenes sirven como ejemplo: `actions/ordersActions.js` declara un thunk con `createAsyncThunk`, y `slices/ordersSlice.js` procesa sus estados `pending`, `fulfilled` y `rejected`. Los componentes usan `useDispatch` para iniciarlo y `useSelector` para leer el resultado. Los thunks de carga usan `condition` para evitar repetir GET ya completados o en curso.
+`slices/cartSlice.js` y `slices/ordersSlice.js` declaran sus thunks con `createAsyncThunk` en el mismo archivo, antes de `createSlice`. Sus estados guardan los datos (`items`, `loading`, `error`; el carrito también `ownerId`) y cada slice mantiene únicamente su acción síncrona de reset. Los formularios, filtros, avisos y estados temporales de botones viven en `useState` dentro de los componentes. Los componentes despachan sus thunks directamente y leen el store con `useSelector` inline.
 
 ## Cómo agregar otro slice
 
-1. Crear las acciones/thunks en `actions/`, reutilizando las funciones existentes de `services/api.js`.
-2. Crear el slice en `slices/`, manejar ahí el ciclo asíncrono y exportar selectores.
+1. Para catálogo y reseñas, crear las acciones/thunks en `actions/`, reutilizando las funciones existentes de `services/api.js`. Carrito y órdenes mantienen sus thunks dentro de sus archivos de slice.
+2. Crear el slice en `slices/` y manejar ahí el ciclo asíncrono; exportar selectores solo cuando los componentes de ese dominio los necesiten.
 3. Registrar el reducer en `store.js`.
 4. Conectar los componentes con `useSelector` y `useDispatch`, sin duplicar en estado local datos ya globales.
 

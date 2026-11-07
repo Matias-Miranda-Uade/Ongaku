@@ -1,205 +1,104 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import {
-  cancelOrder as cancelOrderRequest,
-  createOrder as createOrderRequest,
-  createPayment,
-  getOrder,
-  getOrders
-} from '../../services/api';
-
-const sameId = (left, right) => String(left) === String(right);
+import { http, normalizeOrder, readData } from '../../services/api.js';
 
 const initialState = {
   items: [],
-  status: 'idle',
-  error: '',
-  detailStatus: 'idle',
-  detailError: '',
-  pendingAction: null,
-  checkoutError: '',
-  actionError: '',
-  notice: '',
-  statusFilter: 'TODAS',
-  trackingOpen: {},
-  checkoutForm: {
-    addressId: null,
-    selectedCardId: null,
-    card: { holder: '', number: '', expiry: '', securityCode: '' },
-    cardErrors: {}
-  }
+  loading: false,
+  error: ''
 };
 
-const replaceOrder = (state, order) => {
-  const index = state.items.findIndex(item => sameId(item.id, order.id));
-  if (index === -1) {
-    state.items.unshift(order);
-  } else {
-    state.items[index] = order;
-  }
-};
+export const fetchOrders = createAsyncThunk('orders/fetchOrders', async () => {
+  const [{ data: orders }, { data: payments }] = await Promise.all([
+    http.get('/orders'),
+    http.get('/payments')
+  ]);
+  const orderData = readData(orders);
+  const paymentData = readData(payments);
+  return Array.isArray(orderData)
+    ? orderData.map(order => normalizeOrder(order, Array.isArray(paymentData) ? paymentData : []))
+    : [];
+});
 
-export const fetchOrders = createAsyncThunk('orders/fetchOrders', async () => getOrders());
+export const createOrder = createAsyncThunk('orders/createOrder', async () => {
+  const { data } = await http.post('/orders');
+  return normalizeOrder(readData(data));
+});
 
-export const fetchOrderById = createAsyncThunk('orders/fetchOrderById', async id => getOrder(id));
-
-export const createOrder = createAsyncThunk('orders/createOrder', async () => createOrderRequest());
-
-export const cancelOrder = createAsyncThunk('orders/cancelOrder', async id => cancelOrderRequest(id));
+export const cancelOrder = createAsyncThunk('orders/cancelOrder', async id => {
+  const { data } = await http.patch(`/orders/${id}/status`, { status: 'CANCELADA' });
+  return normalizeOrder(readData(data));
+});
 
 export const payOrder = createAsyncThunk('orders/payOrder', async ({ order, savedCardId, addressId }) => {
-  if (!addressId) {
-    throw new Error('Elegí una dirección de envío antes de pagar.');
-  }
-  const payment = await createPayment({
+  const { data: payment } = await http.post('/payments', {
     orderId: order.id,
     amount: order.total,
-    savedCardId,
+    method: 'SIMULADO',
+    ...(savedCardId == null ? {} : { savedCardId }),
     addressId
   });
-  const fallbackOrder = {
-    ...order,
-    payment,
-    status: 'PAGADA',
-    orderStatus: {
-      ...order.orderStatus,
-      name: 'PAGADA'
-    }
-  };
-  try {
-    return {
-      order: await getOrder(order.id),
-      notice: 'Pago registrado.'
-    };
-  } catch {
-    return {
-      order: fallbackOrder,
-      notice: 'El pago se registró. Recargá la orden para ver los datos de envío actualizados.'
-    };
-  }
+  const { data: orderData } = await http.get(`/orders/${order.id}`);
+  return normalizeOrder(readData(orderData), [readData(payment)]);
 });
 
 const ordersSlice = createSlice({
   name: 'orders',
   initialState,
   reducers: {
-    resetOrders: () => initialState,
-    clearOrdersNotice(state) {
-      state.notice = '';
-    },
-    clearCheckoutError(state) {
-      state.checkoutError = '';
-    },
-    setCheckoutError(state, action) {
-      state.checkoutError = action.payload;
-    },
-    setStatusFilter(state, action) {
-      state.statusFilter = action.payload;
-    },
-    toggleTracking(state, action) {
-      const id = action.payload;
-      state.trackingOpen[id] = !state.trackingOpen[id];
-    },
-    setCheckoutAddress(state, action) {
-      state.checkoutForm.addressId = action.payload;
-    },
-    setCheckoutCardField(state, action) {
-      const { field, value } = action.payload;
-      state.checkoutForm.card[field] = value;
-      delete state.checkoutForm.cardErrors[field];
-    },
-    setCheckoutCardErrors(state, action) {
-      state.checkoutForm.cardErrors = action.payload;
-    },
-    setCheckoutSelectedCard(state, action) {
-      state.checkoutForm.selectedCardId = action.payload;
-    },
-    resetCheckoutForm(state) {
-      state.checkoutForm = initialState.checkoutForm;
-    }
+    resetOrders: () => initialState
   },
   extraReducers: builder => {
     builder
       .addCase(fetchOrders.pending, state => {
-        state.status = 'loading';
+        state.loading = true;
         state.error = '';
       })
       .addCase(fetchOrders.fulfilled, (state, action) => {
         state.items = action.payload;
-        state.status = 'succeeded';
+        state.loading = false;
       })
       .addCase(fetchOrders.rejected, (state, action) => {
-        state.status = 'failed';
+        state.loading = false;
         state.error = action.error.message;
       })
-      .addCase(fetchOrderById.pending, state => {
-        state.detailStatus = 'loading';
-        state.detailError = '';
-      })
-      .addCase(fetchOrderById.fulfilled, (state, action) => {
-        replaceOrder(state, action.payload);
-        state.detailStatus = 'succeeded';
-      })
-      .addCase(fetchOrderById.rejected, (state, action) => {
-        state.detailStatus = 'failed';
-        state.detailError = action.error.message;
-      })
       .addCase(createOrder.pending, state => {
-        state.pendingAction = 'creating';
-        state.checkoutError = '';
+        state.loading = true;
+        state.error = '';
       })
       .addCase(createOrder.fulfilled, (state, action) => {
-        replaceOrder(state, action.payload);
-        state.pendingAction = null;
+        state.items = [action.payload, ...state.items];
+        state.loading = false;
       })
-      .addCase(createOrder.rejected, (state, action) => {
-        state.pendingAction = null;
-        state.checkoutError = action.error.message;
+      .addCase(createOrder.rejected, state => {
+        state.loading = false;
       })
       .addCase(cancelOrder.pending, state => {
-        state.pendingAction = 'cancelling';
-        state.actionError = '';
+        state.loading = true;
+        state.error = '';
       })
       .addCase(cancelOrder.fulfilled, (state, action) => {
-        replaceOrder(state, action.payload);
-        state.pendingAction = null;
+        const index = state.items.findIndex(item => String(item.id) === String(action.payload.id));
+        if (index !== -1) state.items[index] = action.payload;
+        state.loading = false;
       })
-      .addCase(cancelOrder.rejected, (state, action) => {
-        state.pendingAction = null;
-        state.actionError = action.error.message;
+      .addCase(cancelOrder.rejected, state => {
+        state.loading = false;
       })
       .addCase(payOrder.pending, state => {
-        state.pendingAction = 'paying';
-        state.actionError = '';
-        state.notice = '';
+        state.loading = true;
+        state.error = '';
       })
       .addCase(payOrder.fulfilled, (state, action) => {
-        replaceOrder(state, action.payload.order);
-        state.pendingAction = null;
-        state.notice = action.payload.notice;
-        state.checkoutForm = initialState.checkoutForm;
+        const index = state.items.findIndex(item => String(item.id) === String(action.payload.id));
+        if (index !== -1) state.items[index] = action.payload;
+        state.loading = false;
       })
-      .addCase(payOrder.rejected, (state, action) => {
-        state.pendingAction = null;
-        const message = action.error.message;
-        state.actionError = message === 'Elegí una dirección de envío antes de pagar.'
-          ? message
-          : `No se pudo pagar la orden: ${message}`;
+      .addCase(payOrder.rejected, state => {
+        state.loading = false;
       });
   }
 });
 
-export const {
-  resetOrders,
-  clearOrdersNotice,
-  clearCheckoutError,
-  setCheckoutError,
-  setStatusFilter,
-  toggleTracking,
-  setCheckoutAddress,
-  setCheckoutCardField,
-  setCheckoutCardErrors,
-  setCheckoutSelectedCard,
-  resetCheckoutForm
-} = ordersSlice.actions;
+export const { resetOrders } = ordersSlice.actions;
 
 export default ordersSlice.reducer;
