@@ -2,7 +2,6 @@ import { useContext } from 'react'
 import { useSelector } from 'react-redux'
 import Button from '../ui/Button'
 import { FavoritesContext } from '../../context/FavoritesContext'
-import { selectTotalUnits } from '../../Redux/slices/cartSlice'
 
 const navigation = [
   { id: 'catalog', label: 'Catálogo' },
@@ -39,7 +38,7 @@ const ProfileIcon = () => (
 )
 
 const Header = ({ page, onNavigate, onSearch, user, isAdmin = false, onLogout }) => {
-  const totalUnits = useSelector(selectTotalUnits)
+  const totalUnits = useSelector(state => state.cart.items.reduce((total, item) => total + item.quantity, 0))
   const { favorites } = useContext(FavoritesContext)
   const activePage = page === 'vinyl-detail' ? 'catalog' : page
 

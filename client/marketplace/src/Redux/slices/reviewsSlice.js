@@ -5,12 +5,11 @@ import { eligibilityKey, emptyRequest, reviewsKey } from '../requestState.js';
 const initialState = {
   entities: {}, queries: {}, eligibility: {}, mutations: {}, ownerId: null,
   myReviewIds: [], status: 'idle', fetchRequestId: null, error: '',
-  submittingVinylId: null, submitRequestId: null, drafts: {}
+  submittingVinylId: null, submitRequestId: null
 };
 const sameId = (left, right) => String(left) === String(right);
 const emptyQuery = Object.freeze({ ...emptyRequest, ids: [], averageScore: 0, totalReviews: 0 });
 const emptyEligibility = Object.freeze({ ...emptyRequest, data: null });
-const emptyDraft = Object.freeze({ score: 0, comment: '', error: '' });
 const getError = action => action.payload || action.error.message || '';
 const clearPrivateState = state => {
   state.myReviewIds = [];
@@ -21,7 +20,6 @@ const clearPrivateState = state => {
   state.submitRequestId = null;
   state.eligibility = {};
   state.mutations = {};
-  state.drafts = {};
 };
 // Todas las vistas y "mis reseñas" apuntan a una única entidad por reseña.
 const applyReview = (state, review, removed = false) => {
@@ -56,19 +54,6 @@ const reviewsSlice = createSlice({
       clearPrivateState(state);
       state.ownerId = action.payload;
     },
-    setDraftScore(state, action) {
-      const { vinylId, score } = action.payload;
-      state.drafts[vinylId] = { ...emptyDraft, ...state.drafts[vinylId], score, error: '' };
-    },
-    setDraftComment(state, action) {
-      const { vinylId, comment } = action.payload;
-      state.drafts[vinylId] = { ...emptyDraft, ...state.drafts[vinylId], comment, error: '' };
-    },
-    setDraftError(state, action) {
-      const { vinylId, error } = action.payload;
-      state.drafts[vinylId] = { ...emptyDraft, ...state.drafts[vinylId], error };
-    },
-    clearDraft(state, action) { delete state.drafts[action.payload]; }
   },
   extraReducers: builder => {
     builder.addCase(fetchMyReviews.pending, (state, action) => {
@@ -128,7 +113,6 @@ const reviewsSlice = createSlice({
     }).addCase(createReview.fulfilled, (state, action) => {
       if (state.submitRequestId !== action.meta.requestId) return;
       applyReview(state, action.payload);
-      delete state.drafts[action.meta.arg.vinylId];
       state.submittingVinylId = null;
       state.submitRequestId = null;
     }).addCase(createReview.rejected, (state, action) => {
@@ -155,7 +139,7 @@ const reviewsSlice = createSlice({
   }
 });
 
-export const { resetReviews, setReviewOwner, setDraftScore, setDraftComment, setDraftError, clearDraft } = reviewsSlice.actions;
+export const { resetReviews, setReviewOwner } = reviewsSlice.actions;
 export const selectMyReviews = createSelector(
   [state => state.reviews.myReviewIds, state => state.reviews.entities],
   (ids, entities) => ids.map(id => entities[id]).filter(Boolean)
@@ -163,7 +147,6 @@ export const selectMyReviews = createSelector(
 export const selectReviewByVinylId = id => state => selectMyReviews(state).find(review => sameId(review.vinylId, id));
 export const selectReviewsError = state => state.reviews.error;
 export const selectSubmittingVinylId = state => state.reviews.submittingVinylId;
-export const selectReviewDraft = vinylId => state => state.reviews.drafts[vinylId] || emptyDraft;
 export const selectReviewQuery = (state, vinylId) => state.reviews.queries[reviewsKey(vinylId)] || emptyQuery;
 export const selectReviewData = createSelector(
   [selectReviewQuery, state => state.reviews.entities],

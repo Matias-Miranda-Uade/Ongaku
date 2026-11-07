@@ -1,6 +1,7 @@
 import CartItemQuantity from "./CartItemQuantity"
+import RemoveCartItemButton from "./RemoveCartItemButton"
 
-const CartItem = ({ item, onQuantityChange, onRemove, disabled = false }) => {
+const CartItem = ({ item, disabled = false }) => {
     return (
         <article className="cart-item-card">
             <img src={item.image} alt={`Portada de ${item.name}`} />
@@ -8,14 +9,14 @@ const CartItem = ({ item, onQuantityChange, onRemove, disabled = false }) => {
                 <p className="eyebrow">{item.artistName || item.artist}</p>
                 <h2>{item.name}</h2>
                 <p className="cart-item-edition">Prensado de archivo · {item.year}</p>
-                <button className="text-link-button" disabled={disabled} onClick={() => onRemove(item.id)}>Retirar de la bolsa</button>
+                <RemoveCartItemButton id={item.id} disabled={disabled} />
             </div>
             <div className="cart-item-purchase">
                 <strong>${(item.price * item.quantity).toLocaleString('es-AR')}</strong>
                 <CartItemQuantity
+                    id={item.id}
                     quantity={item.quantity}
                     max={item.stock}
-                    onChange={(quantity) => onQuantityChange(item.id, quantity)}
                     disabled={disabled}
                 />
             </div>

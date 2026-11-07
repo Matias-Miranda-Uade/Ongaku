@@ -2,14 +2,13 @@ import { useContext, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { FavoritesContext } from '../context/FavoritesContext'
 import { AuthContext } from '../context/AuthContext'
-import { addItem } from '../Redux/actions/cartActions'
-import { selectCartItems } from '../Redux/slices/cartSlice'
+import { addItem } from '../Redux/slices/cartSlice'
 
 const FavoritesPage = ({ onNavigate, onOpenVinyl }) => {
 
     const { favorites, removeFavorite } = useContext(FavoritesContext)
-    const items = useSelector(selectCartItems)
-    const syncing = useSelector(state => state.cart.status === 'loading')
+    const items = useSelector(state => state.cart.items)
+    const syncing = useSelector(state => state.cart.loading)
     const dispatch = useDispatch()
     const { isAdmin } = useContext(AuthContext)
     const [message, setMessage] = useState('')
@@ -32,8 +31,13 @@ const FavoritesPage = ({ onNavigate, onOpenVinyl }) => {
             setMessage(`Ya tenés el máximo disponible de "${product.name}" en el carrito`)
             return
         }
-        dispatch(addItem({ product }))
-        setMessage(`"${product.name}" agregado al carrito`)
+        dispatch(addItem({ product })).then(result => {
+            if (result.error) {
+                setMessage(result.error.message)
+                return
+            }
+            setMessage(`"${product.name}" agregado al carrito`)
+        })
     }
 
     return (

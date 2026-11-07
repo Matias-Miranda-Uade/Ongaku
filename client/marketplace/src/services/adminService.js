@@ -66,7 +66,7 @@ export const uploadCover = file => {
   body.append('file', file);
   return request('/admin/vinyls/covers', {
     method: 'POST',
-    body
+    data: body
   });
 };
 export const createAudioPreview = ({

@@ -9,7 +9,6 @@ export const setAccessToken = token => {
 export const clearAccessToken = () => {
   window.localStorage.removeItem(TOKEN_STORAGE_KEY);
 };
-const readData = payload => payload && Object.hasOwn(payload, 'data') ? payload.data : payload;
 export const http = axios.create({
   baseURL: API_BASE_URL
 });
@@ -18,9 +17,6 @@ http.interceptors.request.use(config => {
   // El token se consulta en cada request porque login/logout lo cambian en runtime.
   const token = getAccessToken();
   if (token) config.headers.Authorization = `Bearer ${token}`;
-  if (config.data instanceof FormData) {
-    config.headers.set('Content-Type', false);
-  }
   return config;
 });
 
@@ -50,65 +46,46 @@ export class ApiError extends Error {
     return this.status === 403;
   }
 }
-export const request = (url, options = {}) => {
-  const headers = { ...options.headers };
-  if (options.body && !(options.body instanceof FormData) && !headers['Content-Type'] && !headers['content-type']) {
-    headers['Content-Type'] = 'application/json';
-  }
-  const { body, ...config } = options;
-  return http.request({
-    ...config,
-    url,
-    headers,
-    ...(body === undefined ? {} : { data: body })
-  }).then(response => {
-    if (response.status === 204) return null;
-    let payload = response.data;
-    if (typeof payload === 'string') {
-      try {
-        payload = JSON.parse(payload);
-      } catch {
-        payload = null;
-      }
-    }
-    if (response.status < 200 || response.status >= 300) {
-      const errors = payload && Array.isArray(payload.errors) ? payload.errors : [];
-      const details = errors.length ? ` ${errors.join(' ')}` : '';
-      const fallback = response.status >= 500 ? 'El servidor no pudo procesar la solicitud. Verificá que el backend esté iniciado y volvé a intentar.' : `Error HTTP ${response.status}`;
-      const message = payload && payload.message ? payload.message : fallback;
-      throw new ApiError(`${message}${details}`, response.status, errors);
-    }
-    if (payload === null) {
-      throw new ApiError('El servidor devolvió una respuesta inválida. Verificá la dirección de la API.', 502);
-    }
-    return readData(payload);
-  }).catch(error => {
-    if (error instanceof ApiError) throw error;
-    const response = error.response;
-    if (response) {
-      let payload = response.data;
-      if (typeof payload === 'string') {
-        try {
-          payload = JSON.parse(payload);
-        } catch {
-          payload = null;
-        }
-      }
-      const errors = payload && Array.isArray(payload.errors) ? payload.errors : [];
-      const details = errors.length ? ` ${errors.join(' ')}` : '';
-      const fallback = response.status >= 500 ? 'El servidor no pudo procesar la solicitud. Verificá que el backend esté iniciado y volvé a intentar.' : `Error HTTP ${response.status}`;
-      const message = payload && payload.message ? payload.message : fallback;
-      throw new ApiError(`${message}${details}`, response.status, errors);
-    }
-    throw new ApiError('No se pudo conectar con el servidor. Verificá que el backend esté disponible.');
-  });
+const toApiError = response => {
+  const payload = response.data;
+  const errors = payload && Array.isArray(payload.errors) ? payload.errors : [];
+  const details = errors.length ? ` ${errors.join(' ')}` : '';
+  const fallback = response.status >= 500
+    ? 'El servidor no pudo procesar la solicitud. Verificá que el backend esté iniciado y volvé a intentar.'
+    : `Error HTTP ${response.status}`;
+  const message = payload && payload.message ? payload.message : fallback;
+  return new ApiError(`${message}${details}`, response.status, errors);
 };
-export const jsonRequest = (method, body) => ({
-  method,
-  ...(body === undefined ? {} : {
-    body: JSON.stringify(body)
-  })
+
+http.interceptors.response.use(response => {
+  if (response.status < 200 || response.status >= 300) {
+    return Promise.reject(toApiError(response));
+  }
+  if (response.data && typeof response.data === 'object' && 'data' in response.data) {
+    response.data = response.data.data;
+    response.dataEnvelope = true;
+  }
+  return response;
+}, error => {
+  if (error instanceof ApiError) return Promise.reject(error);
+  const response = error.response;
+  if (!response) {
+    return Promise.reject(new ApiError('No se pudo conectar con el servidor. Verificá que el backend esté disponible.'));
+  }
+  return Promise.reject(toApiError(response));
 });
+
+export const request = (url, options = {}) => http.request({
+  ...options,
+  url
+}).then(response => {
+  if (response.status === 204) return null;
+  if ((response.data == null && !response.dataEnvelope) || typeof response.data === 'string') {
+    throw new ApiError('El servidor devolvió una respuesta inválida. Verificá la dirección de la API.', 502);
+  }
+  return response.data;
+});
+export const jsonRequest = (method, data) => ({ method, data });
 const normalizeCartItem = item => ({
   ...item,
   id: item.vinylId,
@@ -187,73 +164,6 @@ export const changePassword = ({
     newPassword
   }));
 };
-export const getCart = () => {
-  return request('/carts').then(_result4 => {
-    return normalizeCart(_result4);
-  });
-};
-export const addCartItem = (vinylId, quantity = 1) => {
-  return request('/carts/items', jsonRequest('POST', {
-    vinylId,
-    quantity
-  })).then(_result5 => {
-    return normalizeCart(_result5);
-  });
-};
-export const updateCartItem = (vinylId, quantity) => {
-  return request(`/carts/items/${vinylId}`, jsonRequest('PATCH', {
-    quantity
-  })).then(_result6 => {
-    return normalizeCart(_result6);
-  });
-};
-export const removeCartItem = vinylId => {
-  return request(`/carts/items/${vinylId}`, jsonRequest('DELETE')).then(_result7 => {
-    return normalizeCart(_result7);
-  });
-};
-export const clearServerCart = () => {
-  return request('/carts/items', jsonRequest('DELETE')).then(_result8 => {
-    return normalizeCart(_result8);
-  });
-};
-export const getOrders = () => {
-  return Promise.all([request('/orders'), getPayments()]).then(([orders, payments]) => {
-    return Array.isArray(orders) ? orders.map(order => normalizeOrder(order, payments)) : [];
-  });
-};
-export const getOrder = orderId => {
-  return Promise.all([request(`/orders/${orderId}`), getPayments()]).then(([order, payments]) => {
-    return normalizeOrder(order, payments);
-  });
-};
-export const getPayments = () => {
-  return request('/payments').then(data => {
-    return Array.isArray(data) ? data : [];
-  });
-};
-export const createPayment = ({
-  orderId,
-  amount,
-  method = 'SIMULADO',
-  savedCardId,
-  addressId
-}) => request('/payments', jsonRequest('POST', {
-  orderId,
-  amount,
-  method,
-  ...(savedCardId == null ? {} : {
-    savedCardId
-  }),
-  ...(addressId == null ? {} : {
-    addressId
-  })
-}));
-export const createOrder = () => {
-  return request('/orders', jsonRequest('POST')).then(_result9 => {
-    return normalizeOrder(_result9);
-  });
-};
 export const getSavedCards = () => request('/users/me/cards');
 export const saveCard = (card, id) => request(id == null ? '/users/me/cards' : `/users/me/cards/${id}`, jsonRequest(id == null ? 'POST' : 'PATCH', card));
 export const deleteCard = id => request(`/users/me/cards/${id}`, jsonRequest('DELETE'));
@@ -277,13 +187,6 @@ export const createFavorite = vinylId => request('/favorites', jsonRequest('POST
   vinylId
 }));
 export const deleteFavorite = id => request(`/favorites/${id}`, jsonRequest('DELETE'));
-export const cancelOrder = orderId => {
-  return request(`/orders/${orderId}/status`, jsonRequest('PATCH', {
-    status: 'CANCELADA'
-  })).then(_result0 => {
-    return normalizeOrder(_result0);
-  });
-};
 export const getMyReviews = () => {
   return request('/reviews/me').then(reviews => {
     return Array.isArray(reviews) ? reviews : [];
@@ -351,7 +254,7 @@ export const updateReview = (reviewId, {
 }));
 export const getReviewEligibility = vinylId => request(`/reviews/vinyl/${encodeURIComponent(vinylId)}/eligibility`);
 export const deleteReview = reviewId => request(`/reviews/${encodeURIComponent(reviewId)}`, jsonRequest('DELETE'));
-export const getAudioPreview = audioPreviewId => {
-  if (!audioPreviewId) return Promise.resolve(null);
+export const getAudioPreview = async audioPreviewId => {
+  if (!audioPreviewId) return null;
   return request(`/audio-previews/${encodeURIComponent(audioPreviewId)}`);
 };

@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { setCheckoutCardErrors, setCheckoutCardField, setCheckoutSelectedCard } from '../../Redux/slices/ordersSlice';
+import { payOrder } from '../../Redux/slices/ordersSlice';
 import CardBook from '../profile/CardBook';
+
 const isValidCardNumber = value => {
   const digits = value.replace(/\D/g, '');
   if (digits.length < 13 || digits.length > 19) return false;
@@ -17,12 +19,8 @@ const isValidCardNumber = value => {
   }
   return sum % 10 === 0;
 };
-const validateCard = ({
-  holder,
-  number,
-  expiry,
-  securityCode
-}) => {
+
+const validateCard = ({ holder, number, expiry, securityCode }) => {
   const errors = {};
   if (holder.trim().length < 2) errors.holder = 'Ingresá el nombre que figura en la tarjeta.';
   if (!isValidCardNumber(number)) errors.number = 'Ingresá un número de tarjeta válido.';
@@ -40,69 +38,108 @@ const validateCard = ({
   if (!/^\d{3,4}$/.test(securityCode)) errors.securityCode = 'Ingresá un código de 3 o 4 dígitos.';
   return errors;
 };
-const ManualDemoPaymentForm = ({
-  order,
-  onPay,
-  paying,
-  disabled,
-  paymentDisabled = false
-}) => {
+
+const initialCard = { holder: '', number: '', expiry: '', securityCode: '' };
+
+const DemoPaymentForm = ({ order, addressId, disabled = false }) => {
   const dispatch = useDispatch();
-  const { card, cardErrors: errors } = useSelector(state => state.orders.checkoutForm);
-  const updateField = (field, value) => {
-    dispatch(setCheckoutCardField({ field, value }));
+  const ordersLoading = useSelector(state => state.orders.loading);
+  const [selectedCardId, setSelectedCardId] = useState(order.savedCardId ?? null);
+  const [card, setCard] = useState(initialCard);
+  const [errors, setErrors] = useState({});
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
+  const blocked = disabled || ordersLoading || pending;
+
+  const handlePay = savedCardId => {
+    if (blocked || order.total <= 0) return;
+    if (!addressId) {
+      setError('Elegí una dirección de envío antes de pagar.');
+      return;
+    }
+    setPending(true);
+    setError('');
+    setNotice('');
+    dispatch(payOrder({ order, savedCardId, addressId })).then(result => {
+      if (result.error) {
+        setError(`No se pudo pagar la orden: ${result.error.message}`);
+      } else {
+        setNotice('Pago registrado.');
+      }
+      setPending(false);
+    });
   };
+
   const handleSubmit = event => {
     event.preventDefault();
-    if (paying || disabled || paymentDisabled) return;
+    if (blocked || selectedCardId != null || order.total <= 0) return;
     const nextErrors = validateCard(card);
-    dispatch(setCheckoutCardErrors(nextErrors));
-    if (Object.keys(nextErrors).length) return Promise.resolve();
-    return Promise.resolve(onPay(order));
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length) return;
+    handlePay(undefined);
   };
-  return <form className="demo-payment-form" onSubmit={handleSubmit} autoComplete="off">
-      <label>
-        Nombre del titular
-        <input type="text" name="demo-card-holder" autoComplete="off" value={card.holder} onChange={event => updateField('holder', event.target.value)} aria-invalid={Boolean(errors.holder)} aria-describedby={errors.holder ? 'demo-card-holder-error' : undefined} disabled={paying || disabled} />
-        {errors.holder && <span className="demo-payment-error" id="demo-card-holder-error">{errors.holder}</span>}
-      </label>
-      <label>
-        Número de tarjeta
-        <input type="text" name="demo-card-number" inputMode="numeric" autoComplete="off" maxLength={23} value={card.number} onChange={event => updateField('number', event.target.value.replace(/[^\d ]/g, ''))} aria-invalid={Boolean(errors.number)} aria-describedby={errors.number ? 'demo-card-number-error' : undefined} disabled={paying || disabled} />
-        {errors.number && <span className="demo-payment-error" id="demo-card-number-error">{errors.number}</span>}
-      </label>
-      <div className="demo-payment-row">
-        <label>
-          Vencimiento
-          <input type="text" name="demo-card-expiry" inputMode="numeric" autoComplete="off" placeholder="MM/AA" maxLength={5} value={card.expiry} onChange={event => updateField('expiry', event.target.value.replace(/[^\d/]/g, ''))} aria-invalid={Boolean(errors.expiry)} aria-describedby={errors.expiry ? 'demo-card-expiry-error' : undefined} disabled={paying || disabled} />
-          {errors.expiry && <span className="demo-payment-error" id="demo-card-expiry-error">{errors.expiry}</span>}
-        </label>
-        <label>
-          Código de seguridad
-          <input type="password" name="demo-card-security-code" inputMode="numeric" autoComplete="off" maxLength={4} value={card.securityCode} onChange={event => updateField('securityCode', event.target.value.replace(/\D/g, ''))} aria-invalid={Boolean(errors.securityCode)} aria-describedby={errors.securityCode ? 'demo-card-security-error' : undefined} disabled={paying || disabled} />
-          {errors.securityCode && <span className="demo-payment-error" id="demo-card-security-error">{errors.securityCode}</span>}
-        </label>
-      </div>
-      <button className="primary-button" type="submit" disabled={paying || disabled || paymentDisabled || order.total <= 0}>
-        {paying ? 'Procesando…' : 'Confirmar pago'}
-      </button>
-    </form>;
+
+  const updateCard = (field, value) => {
+    setCard(current => ({ ...current, [field]: value }));
+    setErrors(current => ({ ...current, [field]: undefined }));
+  };
+
+  if (order.status !== 'PENDIENTE' && !notice) return null;
+
+  return (
+    <section>
+      {notice ? <p role="status">{notice}</p> : <>
+        <CardBook
+          selectable
+          selectedId={selectedCardId}
+          preferredId={order.savedCardId}
+          onSelect={setSelectedCardId}
+          disabled={blocked}
+        />
+        {selectedCardId != null ? (
+          <button
+            className="primary-button"
+            type="button"
+            disabled={blocked || order.total <= 0}
+            onClick={() => handlePay(selectedCardId)}
+          >
+            {pending ? 'Procesando…' : 'Confirmar pago'}
+          </button>
+        ) : (
+          <form className="demo-payment-form" onSubmit={handleSubmit} autoComplete="off">
+            <label>
+              Nombre del titular
+              <input type="text" name="demo-card-holder" autoComplete="off" value={card.holder} onChange={event => updateCard('holder', event.target.value)} aria-invalid={Boolean(errors.holder)} aria-describedby={errors.holder ? 'demo-card-holder-error' : undefined} disabled={blocked} />
+              {errors.holder && <span className="demo-payment-error" id="demo-card-holder-error">{errors.holder}</span>}
+            </label>
+            <label>
+              Número de tarjeta
+              <input type="text" name="demo-card-number" inputMode="numeric" autoComplete="off" maxLength={23} value={card.number} onChange={event => updateCard('number', event.target.value.replace(/[^\d ]/g, ''))} aria-invalid={Boolean(errors.number)} aria-describedby={errors.number ? 'demo-card-number-error' : undefined} disabled={blocked} />
+              {errors.number && <span className="demo-payment-error" id="demo-card-number-error">{errors.number}</span>}
+            </label>
+            <div className="demo-payment-row">
+              <label>
+                Vencimiento
+                <input type="text" name="demo-card-expiry" inputMode="numeric" autoComplete="off" placeholder="MM/AA" maxLength={5} value={card.expiry} onChange={event => updateCard('expiry', event.target.value.replace(/[^\d/]/g, ''))} aria-invalid={Boolean(errors.expiry)} aria-describedby={errors.expiry ? 'demo-card-expiry-error' : undefined} disabled={blocked} />
+                {errors.expiry && <span className="demo-payment-error" id="demo-card-expiry-error">{errors.expiry}</span>}
+              </label>
+              <label>
+                Código de seguridad
+                <input type="password" name="demo-card-security-code" inputMode="numeric" autoComplete="off" maxLength={4} value={card.securityCode} onChange={event => updateCard('securityCode', event.target.value.replace(/\D/g, ''))} aria-invalid={Boolean(errors.securityCode)} aria-describedby={errors.securityCode ? 'demo-card-security-error' : undefined} disabled={blocked} />
+                {errors.securityCode && <span className="demo-payment-error" id="demo-card-security-error">{errors.securityCode}</span>}
+              </label>
+            </div>
+            <button className="primary-button" type="submit" disabled={blocked || order.total <= 0}>
+              {pending ? 'Procesando…' : 'Confirmar pago'}
+            </button>
+          </form>
+        )}
+        {error && <p className="form-error" role="alert">{error}</p>}
+        <p className="payment-caption">Entorno de prueba: no se realizan cargos reales.</p>
+      </>}
+    </section>
+  );
 };
-const DemoPaymentForm = ({
-  order,
-  onPay,
-  paying,
-  disabled,
-  paymentDisabled = false
-}) => {
-  const dispatch = useDispatch();
-  const selectedId = useSelector(state => state.orders.checkoutForm.selectedCardId);
-  return <section>
-      <CardBook selectable selectedId={selectedId} preferredId={order.savedCardId} onSelect={value => dispatch(setCheckoutSelectedCard(value))} disabled={paying || disabled} />
-      {selectedId != null ? <button className="primary-button" type="button" disabled={paying || disabled || paymentDisabled || order.total <= 0} onClick={() => onPay(order, {
-      savedCardId: selectedId
-    })}>{paying ? 'Procesando…' : 'Confirmar pago'}</button> : <ManualDemoPaymentForm order={order} onPay={onPay} paying={paying} disabled={disabled} paymentDisabled={paymentDisabled} />}
-      <p className="payment-caption">Entorno de prueba: no se realizan cargos reales.</p>
-    </section>;
-};
+
 export default DemoPaymentForm;

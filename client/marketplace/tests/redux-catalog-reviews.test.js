@@ -3,7 +3,7 @@ import { after, beforeEach, test } from 'node:test';
 import { configureStore } from '@reduxjs/toolkit';
 import { http } from '../src/services/api.js';
 import catalog, { selectFilteredVinyls, selectVinyls } from '../src/Redux/slices/catalogSlice.js';
-import reviews, { resetReviews, setReviewOwner, selectMyReviews, selectEligibility, selectReviewData, setDraftComment, selectReviewDraft } from '../src/Redux/slices/reviewsSlice.js';
+import reviews, { resetReviews, setReviewOwner, selectMyReviews, selectEligibility, selectReviewData } from '../src/Redux/slices/reviewsSlice.js';
 import { fetchVinyls, fetchVinylById } from '../src/Redux/actions/catalogActions.js';
 import { createReview, updateReview, deleteReview, fetchMyReviews, fetchReviews, fetchReviewEligibility } from '../src/Redux/actions/reviewsActions.js';
 
@@ -156,11 +156,10 @@ test('crear/editar/eliminar sincroniza estadísticas, mis reseñas y elegibilida
   assert.equal(calls.filter(call => call.key === 'GET /reviews/vinyl/8').length, 1);
 });
 
-test('duplicar una publicación en curso no genera dos POST y preserva borradores al fallar', async () => {
+test('duplicar una publicación en curso no genera dos POST y conserva el envío pendiente', async () => {
   const slow = deferred();
   routes['POST /reviews'] = slow.promise;
   store.dispatch(setReviewOwner(1));
-  store.dispatch(setDraftComment({ vinylId: 7, comment: 'Mi borrador' }));
   const first = store.dispatch(createReview({ vinylId: 7, score: 5, comment: 'Mi borrador' }));
   const duplicate = await store.dispatch(createReview({ vinylId: 7, score: 5, comment: 'Mi borrador' }));
   assert.equal(duplicate.meta.condition, true);
@@ -168,7 +167,6 @@ test('duplicar una publicación en curso no genera dos POST y preserva borradore
   await first;
   assert.equal(calls.filter(call => call.key === 'POST /reviews').length, 1);
   assert.match(store.getState().reviews.error, /Compra no entregada/);
-  assert.equal(selectReviewDraft(7)(store.getState()).comment, 'Mi borrador');
 });
 
 test('un cambio de usuario descarta elegibilidad y mis reseñas tardías sin borrar las públicas', async () => {
