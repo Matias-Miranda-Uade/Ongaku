@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { createOrder } from './ordersSlice.js';
-import { http, normalizeCart, readData } from '../../services/api.js';
+import { http, normalizeCart } from '../../services/api.js';
 
 const initialState = {
   items: [],
@@ -13,13 +13,13 @@ export const syncCart = createAsyncThunk('cart/syncCart', async (userId, { getSt
   const cart = getState().cart;
   const guestItems = cart.ownerId == null ? cart.items : [];
   const { data: cartData } = await http.get('/carts');
-  let serverCart = normalizeCart(readData(cartData));
+  let serverCart = normalizeCart(cartData);
   for (const item of guestItems) {
     const { data } = await http.post('/carts/items', {
       vinylId: item.id,
       quantity: item.quantity
     });
-    serverCart = normalizeCart(readData(data));
+    serverCart = normalizeCart(data);
   }
   return { items: serverCart.items, ownerId: userId };
 });
@@ -35,7 +35,7 @@ export const addItem = createAsyncThunk('cart/addItem', async ({ product, quanti
       vinylId: product.id,
       quantity
     });
-    const serverCart = normalizeCart(readData(data));
+    const serverCart = normalizeCart(data);
     return { items: serverCart.items, ownerId };
   }
   const existing = cart.items.find(item => String(item.id) === String(product.id));
@@ -52,7 +52,7 @@ export const updateQuantity = createAsyncThunk('cart/updateQuantity', async ({ i
   const ownerId = cart.ownerId;
   if (ownerId !== null) {
     const { data } = await http.patch(`/carts/items/${id}`, { quantity });
-    const serverCart = normalizeCart(readData(data));
+    const serverCart = normalizeCart(data);
     return { items: serverCart.items, ownerId };
   }
   const items = cart.items.map(item => String(item.id) === String(id)
@@ -66,7 +66,7 @@ export const removeItem = createAsyncThunk('cart/removeItem', async (id, { getSt
   const ownerId = cart.ownerId;
   if (ownerId !== null) {
     const { data } = await http.delete(`/carts/items/${id}`);
-    const serverCart = normalizeCart(readData(data));
+    const serverCart = normalizeCart(data);
     return { items: serverCart.items, ownerId };
   }
   return { items: cart.items.filter(item => String(item.id) !== String(id)), ownerId };
@@ -76,8 +76,7 @@ export const clearCart = createAsyncThunk('cart/clearCart', async (_, { getState
   const ownerId = getState().cart.ownerId;
   if (ownerId !== null) {
     const { data } = await http.delete('/carts/items');
-    const serverCart = normalizeCart(data);
-    return { items: serverCart.items, ownerId };
+    return { items: normalizeCart(data).items, ownerId };
   }
   return { items: [], ownerId };
 });

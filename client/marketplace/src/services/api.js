@@ -9,7 +9,6 @@ export const setAccessToken = token => {
 export const clearAccessToken = () => {
   window.localStorage.removeItem(TOKEN_STORAGE_KEY);
 };
-export const readData = payload => payload && Object.hasOwn(payload, 'data') ? payload.data : payload;
 export const http = axios.create({
   baseURL: API_BASE_URL
 });
@@ -62,6 +61,10 @@ http.interceptors.response.use(response => {
   if (response.status < 200 || response.status >= 300) {
     return Promise.reject(toApiError(response));
   }
+  if (response.data && typeof response.data === 'object' && 'data' in response.data) {
+    response.data = response.data.data;
+    response.dataEnvelope = true;
+  }
   return response;
 }, error => {
   if (error instanceof ApiError) return Promise.reject(error);
@@ -77,10 +80,10 @@ export const request = (url, options = {}) => http.request({
   url
 }).then(response => {
   if (response.status === 204) return null;
-  if (response.data == null || typeof response.data === 'string') {
+  if ((response.data == null && !response.dataEnvelope) || typeof response.data === 'string') {
     throw new ApiError('El servidor devolvió una respuesta inválida. Verificá la dirección de la API.', 502);
   }
-  return readData(response.data);
+  return response.data;
 });
 export const jsonRequest = (method, data) => ({ method, data });
 const normalizeCartItem = item => ({

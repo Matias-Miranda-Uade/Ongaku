@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { http, normalizeOrder, readData } from '../../services/api.js';
+import { http, normalizeOrder } from '../../services/api.js';
 
 const initialState = {
   items: [],
@@ -8,25 +8,21 @@ const initialState = {
 };
 
 export const fetchOrders = createAsyncThunk('orders/fetchOrders', async () => {
-  const [{ data: orders }, { data: payments }] = await Promise.all([
-    http.get('/orders'),
-    http.get('/payments')
-  ]);
-  const orderData = readData(orders);
-  const paymentData = readData(payments);
-  return Array.isArray(orderData)
-    ? orderData.map(order => normalizeOrder(order, Array.isArray(paymentData) ? paymentData : []))
+  const { data: orders } = await http.get('/orders');
+  const { data: payments } = await http.get('/payments');
+  return Array.isArray(orders)
+    ? orders.map(order => normalizeOrder(order, Array.isArray(payments) ? payments : []))
     : [];
 });
 
 export const createOrder = createAsyncThunk('orders/createOrder', async () => {
   const { data } = await http.post('/orders');
-  return normalizeOrder(readData(data));
+  return normalizeOrder(data);
 });
 
 export const cancelOrder = createAsyncThunk('orders/cancelOrder', async id => {
   const { data } = await http.patch(`/orders/${id}/status`, { status: 'CANCELADA' });
-  return normalizeOrder(readData(data));
+  return normalizeOrder(data);
 });
 
 export const payOrder = createAsyncThunk('orders/payOrder', async ({ order, savedCardId, addressId }) => {
@@ -38,7 +34,7 @@ export const payOrder = createAsyncThunk('orders/payOrder', async ({ order, save
     addressId
   });
   const { data: orderData } = await http.get(`/orders/${order.id}`);
-  return normalizeOrder(readData(orderData), [readData(payment)]);
+  return normalizeOrder(orderData, [payment]);
 });
 
 const ordersSlice = createSlice({
