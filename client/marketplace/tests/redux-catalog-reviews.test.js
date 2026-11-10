@@ -263,3 +263,106 @@ test('una publicación terminada después de cerrar sesión no repuebla los dato
   assert.equal(store.getState().reviews.submittingVinylId, null);
   assert.deepEqual(store.getState().reviews.eligibility, {});
 });
+
+
+test('mis resenas vence a los 30 segundos y deduplica solicitudes en curso', async () => {
+  store.dispatch(setReviewOwner(1));
+  routes['GET /reviews/me'] = [review];
+  await store.dispatch(fetchMyReviews()).unwrap();
+  assert.equal((await store.dispatch(fetchMyReviews())).meta.condition, true);
+  const state = store.getState();
+  store = configureStore({ reducer: { catalog, reviews }, preloadedState: {
+    ...state, reviews: { ...state.reviews, fetchedAt: 0 }
+  } });
+  const slow = deferred();
+  routes['GET /reviews/me'] = slow.promise;
+  const fetching = store.dispatch(fetchMyReviews());
+  assert.equal((await store.dispatch(fetchMyReviews())).meta.condition, true);
+  slow.resolve([{ ...review, comment: 'Actualizada' }]);
+  await fetching.unwrap();
+  assert.equal(selectMyReviews(store.getState())[0].comment, 'Actualizada');
+  assert.equal(calls.filter(call => call.key === 'GET /reviews/me').length, 2);
+});
+
+test('consultas distintas no pisan entidades ni estadisticas con respuestas anteriores', async () => {
+  const slow = deferred();
+  routes['GET /reviews'] = slow.promise;
+  const old = store.dispatch(fetchReviews());
+  routes['GET /reviews/vinyl/7'] = { reviews: [{ ...review, score: 5, comment: 'Reciente' }], averageScore: 5, totalReviews: 1 };
+  await store.dispatch(fetchReviews({ vinylId: 7 })).unwrap();
+  slow.resolve([review]);
+  await old.unwrap();
+  assert.equal(selectReviewData(store.getState(), null).reviews[0].comment, 'Reciente');
+  assert.equal(selectReviewData(store.getState(), null).averageScore, 5);
+  routes['GET /reviews'] = [{ ...review, score: 2 }];
+  await store.dispatch(fetchReviews({ force: true })).unwrap();
+  assert.equal(selectReviewData(store.getState(), 7).averageScore, 2);
+});
+
+test('una consulta privada antigua no revive una resena eliminada', async () => {
+  await setupReviews();
+  await store.dispatch(createReview({ vinylId: 7, score: 4, comment: 'Original' })).unwrap();
+  const slow = deferred();
+  routes['GET /reviews/me'] = slow.promise;
+  const old = store.dispatch(fetchMyReviews({ force: true }));
+  await new Promise(resolve => setImmediate(resolve));
+  routes['GET /reviews/me'] = [];
+  await store.dispatch(deleteReview({ reviewId: 40, vinylId: 7 })).unwrap();
+  slow.resolve([review]);
+  await old;
+  assert.equal(store.getState().reviews.entities[40], undefined);
+  assert.equal(selectMyReviews(store.getState()).length, 0);
+});
+
+test('confirmar una escritura conserva las estadisticas renovadas del backend', async () => {
+  await setupReviews();
+  routes['GET /reviews/vinyl/7'] = { reviews: [{ ...review, score: 5 }], averageScore: 4.75, totalReviews: 20 };
+  await store.dispatch(createReview({ vinylId: 7, score: 5, comment: 'Guardada' })).unwrap();
+  const result = selectReviewData(store.getState(), 7);
+  assert.equal(result.averageScore, 4.75);
+  assert.equal(result.totalReviews, 20);
+});
+
+test('un listado anterior no sobrescribe un detalle mas reciente', async () => {
+  const slow = deferred();
+  routes['GET /vinyls'] = slow.promise;
+  const old = store.dispatch(fetchVinyls());
+  routes['GET /vinyls/7'] = { ...vinyl, price: 350, finalPrice: 350 };
+  await store.dispatch(fetchVinylById({ vinylId: 7 })).unwrap();
+  slow.resolve([vinyl]);
+  await old.unwrap();
+  assert.equal(selectVinyls(store.getState())[0].price, 350);
+});
+
+test('un detalle anterior no sobrescribe el listado ni revive titulos retirados', async () => {
+  const slow = deferred();
+  routes['GET /vinyls/7'] = slow.promise;
+  const old = store.dispatch(fetchVinylById({ vinylId: 7 }));
+  await store.dispatch(fetchVinyls()).unwrap();
+  slow.resolve({ ...vinyl, name: 'Antiguo' });
+  await old;
+  assert.equal(store.getState().catalog.entities[7].name, vinyl.name);
+  const removed = deferred();
+  routes['GET /vinyls/7'] = removed.promise;
+  const detail = store.dispatch(fetchVinylById({ vinylId: 7, force: true }));
+  routes['GET /vinyls'] = [];
+  await store.dispatch(fetchVinyls({ force: true })).unwrap();
+  removed.resolve(vinyl);
+  await detail;
+  assert.equal(store.getState().catalog.entities[7], undefined);
+});
+
+test('busqueda, coleccion, stock y precio se combinan con textos normalizados', async () => {
+  routes['GET /genres'] = [{ id: 3, name: '  ELECTRONICA  ' }];
+  routes['GET /vinyls'] = [
+    { ...vinyl, name: 'Musica', finalPrice: 150 },
+    { ...vinyl, id: 8, name: 'Musica', stock: 0, finalPrice: 10 },
+    { ...vinyl, id: 9, name: 'Musica', finalPrice: 50 }
+  ];
+  await store.dispatch(fetchVinyls()).unwrap();
+  const result = selectFilteredVinyls(store.getState(), {
+    search: ' MUSICA ', stock: 'available', sort: 'price-asc'
+  }, 'electronic');
+  assert.deepEqual(result.map(item => item.id), [9, 7]);
+  assert.equal(selectCuratedCollections(store.getState()).find(item => item.id === 'electronic').vinylCount, 3);
+});
