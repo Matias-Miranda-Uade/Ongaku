@@ -1,7 +1,7 @@
 import { useContext, useState } from 'react';
 import { AuthContext } from '../../context/AuthContext';
 import { useDispatch, useSelector } from 'react-redux';
-import { deleteReview, updateReview } from '../../Redux/actions/reviewsActions.js';
+import { deleteReview, updateReview } from '../../Redux/slices/reviewsSlice.js';
 import { emptyRequest, getMessage } from '../../Redux/requestState.js';
 const ReviewActions = ({
   review,

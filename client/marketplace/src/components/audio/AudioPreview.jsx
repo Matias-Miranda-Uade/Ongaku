@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getAudioPreview } from '../../services/vinylService'
+import { getAudioPreview } from '../../services/api'
 import MediaPlayer from './MediaPlayer'
 
 const AudioPreview = ({ audioPreviewId, externalUrl }) => {

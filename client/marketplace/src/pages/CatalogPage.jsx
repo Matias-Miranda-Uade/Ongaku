@@ -3,8 +3,7 @@ import { collections } from '../data/collections'
 import VinylFilters from '../components/vinyl/VinylFilters'
 import VinylGrid from '../components/vinyl/VinylGrid'
 import { useDispatch, useSelector } from 'react-redux'
-import { fetchVinyls } from '../Redux/actions/catalogActions.js'
-import { selectFilteredVinyls } from '../Redux/slices/catalogSlice.js'
+import { fetchVinyls, selectFilteredVinyls } from '../Redux/slices/catalogSlice.js';
 
 const emptyFilters = { search: '', stock: 'all', sort: 'featured' }
 

@@ -4,8 +4,7 @@ import OrderFilters from '../components/order/OrderFilters';
 import OrderCard from '../components/order/OrderCard';
 import OrderDetailPage from './OrderDetailPage';
 import { AuthContext } from '../context/AuthContext';
-import { createReview } from '../Redux/actions/reviewsActions';
-import { selectMyReviews, selectReviewsError, selectSubmittingVinylId } from '../Redux/slices/reviewsSlice';
+import { createReview, selectMyReviews, selectReviewsError, selectSubmittingVinylId } from '../Redux/slices/reviewsSlice';
 
 const attachReviews = (order, reviews) => order && ({
   ...order,

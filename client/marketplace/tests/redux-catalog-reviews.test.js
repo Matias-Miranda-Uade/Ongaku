@@ -2,10 +2,10 @@
 import { after, beforeEach, test } from 'node:test';
 import { configureStore } from '@reduxjs/toolkit';
 import { http } from '../src/services/api.js';
-import catalog, { selectFilteredVinyls, selectVinyls } from '../src/Redux/slices/catalogSlice.js';
+import catalog, { selectFilteredVinyls, selectVinyls, selectCuratedCollections } from '../src/Redux/slices/catalogSlice.js';
 import reviews, { resetReviews, setReviewOwner, selectMyReviews, selectEligibility, selectReviewData } from '../src/Redux/slices/reviewsSlice.js';
-import { fetchVinyls, fetchVinylById } from '../src/Redux/actions/catalogActions.js';
-import { createReview, updateReview, deleteReview, fetchMyReviews, fetchReviews, fetchReviewEligibility } from '../src/Redux/actions/reviewsActions.js';
+import { fetchVinyls, fetchVinylById } from '../src/Redux/slices/catalogSlice.js';
+import { createReview, updateReview, deleteReview, fetchMyReviews, fetchReviews, fetchReviewEligibility } from '../src/Redux/slices/reviewsSlice.js';
 
 const originalAdapter = http.defaults.adapter;
 const originalWindow = globalThis.window;
@@ -58,6 +58,10 @@ test('catálogo comparte listado/detalle, deduplica GET y conserva filtros sin m
   assert.equal(selectFilteredVinyls(store.getState(), { ...filters, search: 'miles' }, 'jazz').length, 1);
   assert.equal(selectFilteredVinyls(store.getState(), { ...filters, stock: 'unavailable' }).length, 0);
   assert.equal(selectFilteredVinyls(store.getState(), filters, 'rock').length, 0);
+  const curated = selectCuratedCollections(store.getState());
+  assert.equal(curated.find(collection => collection.id === 'jazz').vinylCount, 1);
+  assert.equal(curated.find(collection => collection.id === 'rock').vinylCount, 0);
+  assert.equal(selectCuratedCollections(store.getState()), curated);
   assert.equal(store.getState().catalog.entities[7].stock, 4);
 });
 

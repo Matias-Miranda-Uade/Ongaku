@@ -4,8 +4,7 @@ import ReviewFilters from '../components/review/ReviewFilters'
 import ReviewMetrics from '../components/review/ReviewMetrics'
 import ReviewSummary from '../components/review/ReviewSummary'
 import { useDispatch, useSelector } from 'react-redux'
-import { fetchReviews } from '../Redux/actions/reviewsActions.js'
-import { selectReviewData } from '../Redux/slices/reviewsSlice.js'
+import { fetchReviews, selectReviewData } from '../Redux/slices/reviewsSlice.js';
 
 const ReviewsPage = ({ vinylId = null, onClearVinyl }) => {
   const dispatch = useDispatch()

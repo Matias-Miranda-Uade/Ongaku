@@ -6,9 +6,9 @@ import ReviewComposer from '../components/review/ReviewComposer'
 import RatingStars from '../components/ui/RatingStars'
 import VinylDetailInfo from '../components/vinyl-detail/VinylDetailInfo'
 import VinylGallery from '../components/vinyl-detail/VinylGallery'
-import { fetchVinylById } from '../Redux/actions/catalogActions.js'
-import { fetchReviews } from '../Redux/actions/reviewsActions.js'
-import { selectReviewData } from '../Redux/slices/reviewsSlice.js'
+import { fetchVinylById } from '../Redux/slices/catalogSlice.js';
+import { fetchReviews, selectReviewData } from '../Redux/slices/reviewsSlice.js';
+
 import { emptyRequest } from '../Redux/requestState.js'
 
 const VinylDetailPage = ({ vinylId, onBack, onReviews, onLogin }) => {
