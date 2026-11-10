@@ -7,11 +7,10 @@ import './admin.css';
 import './controls.css';
 import { FavoritesProvider } from './context/FavoritesContext';
 import { AuthContext } from './context/AuthContext';
-import { fetchOrders } from './Redux/slices/ordersSlice';
-import { fetchMyReviews } from './Redux/actions/reviewsActions';
+import { fetchOrders, resetOrders } from './Redux/slices/ordersSlice';
+import { fetchMyReviews, resetReviews, setReviewOwner } from './Redux/slices/reviewsSlice';
 import { resetCart, syncCart } from './Redux/slices/cartSlice';
-import { resetOrders } from './Redux/slices/ordersSlice';
-import { resetReviews, setReviewOwner } from './Redux/slices/reviewsSlice';
+
 import AppRoutes, { ADMIN_BASE_PATH, isAdminPath } from './routes/AppRoutes';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';

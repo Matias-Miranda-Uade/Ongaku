@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { fetchVinyls } from '../../Redux/actions/catalogActions'
-import { addItem } from '../../Redux/slices/cartSlice'
+import { fetchVinyls } from '../../Redux/slices/catalogSlice';
+import { addItem } from '../../Redux/slices/cartSlice';
 import { getVinylPrice } from '../vinyl/vinylUtils'
 
 const SuggestedProducts = ({ disabled = false }) => {

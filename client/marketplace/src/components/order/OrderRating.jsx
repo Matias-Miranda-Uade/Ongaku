@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { createReview } from '../../Redux/actions/reviewsActions';
+import { createReview } from '../../Redux/slices/reviewsSlice';
 
 const OrderRating = ({
   item,

@@ -1,8 +1,16 @@
-import { createSelector, createSlice } from '@reduxjs/toolkit';
-import { fetchVinylById, fetchVinyls } from '../actions/catalogActions.js';
-import { emptyRequest } from '../requestState.js';
-import { collections, matchesCollection } from '../../data/collections.js';
 import { getVinylPrice } from '../../components/vinyl/vinylUtils.js';
+import { collections, matchesCollection } from '../../data/collections.js';
+import { createAsyncThunk, createSelector, createSlice } from '@reduxjs/toolkit';
+import { getVinyls, getVinylById } from '../../services/api.js';
+import { emptyRequest, getMessage, shouldFetch } from '../requestState.js';
+
+export const fetchVinyls = createAsyncThunk('catalog/fetch',
+  (_, { rejectWithValue }) => getVinyls().catch(error => rejectWithValue(getMessage(error))),
+  { condition: (options = {}, { getState }) => shouldFetch(getState().catalog.list, options.force) });
+
+export const fetchVinylById = createAsyncThunk('catalog/fetchById',
+  ({ vinylId }, { rejectWithValue }) => getVinylById(vinylId).catch(error => rejectWithValue(getMessage(error))),
+  { condition: ({ vinylId, force = false }, { getState }) => shouldFetch(getState().catalog.details[vinylId], force) });
 
 const catalogSlice = createSlice({
   name: 'catalog',
@@ -69,5 +77,13 @@ export const selectFilteredVinyls = createSelector(
     if (filters.sort === 'year-desc') result.sort((a, b) => b.year - a.year);
     return result;
   }
+);
+// Curadur?a y cat?logo derivan sus vistas de las mismas entidades.
+export const selectCuratedCollections = createSelector(
+  [selectVinyls],
+  vinyls => collections.map(collection => ({
+    ...collection,
+    vinylCount: vinyls.filter(vinyl => matchesCollection(vinyl, collection)).length
+  }))
 );
 export default catalogSlice.reducer;

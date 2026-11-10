@@ -1,9 +1,9 @@
 import ArchiveCategoryCard from './ArchiveCategoryCard'
 
-const ArchiveCategoryGrid = ({ categories, selectedId, onSelect }) => (
+const ArchiveCategoryGrid = ({ categories, loaded, onSelect }) => (
   <div className="category-grid">
     {categories.map(category => (
-      <ArchiveCategoryCard key={category.id} category={category} selected={selectedId === category.id} onSelect={onSelect} />
+      <ArchiveCategoryCard key={category.id} category={category} loaded={loaded} onSelect={onSelect} />
     ))}
   </div>
 )

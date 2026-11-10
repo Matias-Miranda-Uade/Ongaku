@@ -1,8 +1,8 @@
 import { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../../context/AuthContext';
 import { useDispatch, useSelector } from 'react-redux';
-import { createReview, fetchReviewEligibility } from '../../Redux/actions/reviewsActions.js';
-import { selectEligibility, selectSubmittingVinylId } from '../../Redux/slices/reviewsSlice.js';
+import { createReview, fetchReviewEligibility, selectEligibility, selectSubmittingVinylId } from '../../Redux/slices/reviewsSlice.js';
+
 import { getMessage } from '../../Redux/requestState.js';
 import ReviewCard from './ReviewCard';
 const ReviewComposer = ({

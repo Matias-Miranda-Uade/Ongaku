@@ -2,12 +2,17 @@ import { useNavigate } from 'react-router-dom'
 import HeroSection from '../components/home/HeroSection'
 import ArchiveStrip from '../components/home/ArchiveStrip'
 import ArchiveCategoryGrid from '../components/home/ArchiveCategoryGrid'
-import ArchiveQuote from '../components/home/ArchiveQuote'
 import SectionTitle from '../components/ui/SectionTitle'
-import { collections as categories } from '../data/collections'
+import { useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { fetchVinyls, selectCuratedCollections } from '../Redux/slices/catalogSlice';
 
 const HomePage = ({ user, onNavigate }) => {
   const navigate = useNavigate()
+  const dispatch = useDispatch()
+  const categories = useSelector(selectCuratedCollections)
+  const { status, error } = useSelector(state => state.catalog.list)
+  useEffect(() => { dispatch(fetchVinyls()) }, [dispatch])
   const handleSelect = (id) => navigate(`/app/catalog?collection=${encodeURIComponent(id)}`)
 
   return (
@@ -24,9 +29,9 @@ const HomePage = ({ user, onNavigate }) => {
           <span>04 DIVISIONES DE ARCHIVO</span>
         </div>
         <ArchiveStrip categoryCount={categories.length} />
-        <ArchiveCategoryGrid categories={categories} onSelect={handleSelect} />
+        {error && <div role="alert"><p>{error}</p><button type="button" onClick={() => dispatch(fetchVinyls({ force: true }))}>Reintentar</button></div>}
+        <ArchiveCategoryGrid categories={categories} loaded={status === 'succeeded'} onSelect={handleSelect} />
       </section>
-      <ArchiveQuote quote="La pureza de la cinta máster preservada en surcos de cera virgen." author="BÓVEDA ONGAKU" />
     </>
   )
 }
