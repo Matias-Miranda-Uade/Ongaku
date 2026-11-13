@@ -6,6 +6,10 @@ La estructura sigue los ejemplos Demo Redux y Demo Redux II: `configureStore`,
 sin archivos de acciones separados. Las solicitudes reutilizan `services/api.js`
 para conservar la autenticaci?n, las rutas y los errores del backend de Ongaku.
 
+- `authSlice.js`: login, registro, recuperaci?n y cierre de sesi?n, y edici?n del
+  perfil. `selectAuth` expone el usuario y sus permisos a toda la aplicaci?n.
+  Los estados de carga y errores de estas operaciones tambi?n viven en Redux;
+  el token conserva la persistencia existente en localStorage.
 - `catalogSlice.js`: carga del cat?logo y detalles, b?squeda, stock, ordenamiento
   y colecciones de curadur?a. Listado, detalle, sugerencias y curadur?a comparten
   una entidad por vinilo. Los selectores derivan las vistas sin copiar los datos

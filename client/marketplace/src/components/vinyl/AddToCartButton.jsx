@@ -1,7 +1,7 @@
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getVinylPrice } from './vinylUtils';
-import { AuthContext } from '../../context/AuthContext';
+import { selectAuth } from '../../Redux/slices/authSlice';
 import { addItem } from '../../Redux/slices/cartSlice';
 const AddToCartButton = ({
   vinyl,
@@ -9,7 +9,7 @@ const AddToCartButton = ({
 }) => {
   const {
     isAdmin
-  } = useContext(AuthContext);
+  } = useSelector(selectAuth);
   const dispatch = useDispatch();
   const syncing = useSelector(state => state.cart.loading);
   const [pending, setPending] = useState(false);

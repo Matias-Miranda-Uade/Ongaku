@@ -1,9 +1,9 @@
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import OrderFilters from '../components/order/OrderFilters';
 import OrderCard from '../components/order/OrderCard';
 import OrderDetailPage from './OrderDetailPage';
-import { AuthContext } from '../context/AuthContext';
+import { selectAuth } from '../Redux/slices/authSlice';
 import { createReview, selectMyReviews, selectReviewsError, selectSubmittingVinylId } from '../Redux/slices/reviewsSlice';
 
 const attachReviews = (order, reviews) => order && ({
@@ -15,7 +15,7 @@ const attachReviews = (order, reviews) => order && ({
 });
 
 const OrdersPage = ({ authenticated, selectedOrderId, onNavigate, onSelectOrder, focusReview = false }) => {
-  const { isAdmin } = useContext(AuthContext);
+  const { isAdmin } = useSelector(selectAuth);
   const orders = useSelector(state => state.orders.items);
   const ordersLoading = useSelector(state => state.orders.loading);
   const selectedOrder = useSelector(state => state.orders.items.find(order => String(order.id) === String(selectedOrderId)));

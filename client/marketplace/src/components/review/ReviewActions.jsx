@@ -1,5 +1,5 @@
-import { useContext, useState } from 'react';
-import { AuthContext } from '../../context/AuthContext';
+import { useState } from 'react';
+import { selectAuth } from '../../Redux/slices/authSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { deleteReview, updateReview } from '../../Redux/slices/reviewsSlice.js';
 import { emptyRequest, getMessage } from '../../Redux/requestState.js';
@@ -10,7 +10,7 @@ const ReviewActions = ({
   const {
     user,
     isAdmin
-  } = useContext(AuthContext);
+  } = useSelector(selectAuth);
   const [editing, setEditing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [score, setScore] = useState(review.score != null ? review.score : 5);

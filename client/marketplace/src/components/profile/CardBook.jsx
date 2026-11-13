@@ -1,5 +1,6 @@
-import { useContext, useEffect, useState } from 'react';
-import { AuthContext } from '../../context/AuthContext';
+import { useSelector } from 'react-redux';
+import { useEffect, useState } from 'react';
+import { selectAuth } from '../../Redux/slices/authSlice';
 import { deleteCard, getSavedCards, saveCard } from '../../services/api';
 import { emptySavedCard, toSavedCardPayload, validateSavedCard } from './savedCardModel';
 const CardBook = ({
@@ -13,7 +14,7 @@ const CardBook = ({
   const {
     user,
     isAdmin
-  } = useContext(AuthContext);
+  } = useSelector(selectAuth);
   const [cards, setCards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pending, setPending] = useState(false);

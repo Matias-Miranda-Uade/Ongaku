@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { FavoritesContext } from '../context/FavoritesContext';
 import ProfileHeader from '../components/profile/ProfileHeader';
 import ProfileStats from '../components/profile/ProfileStats';
@@ -7,7 +7,7 @@ import ProfileTabs from '../components/profile/ProfileTabs';
 import AuthenticationCard from '../components/profile/AuthenticationCard';
 import AddressBook from '../components/profile/AddressBook';
 import CardBook from '../components/profile/CardBook';
-import { updateProfile } from '../services/api';
+import { selectAuth, updateProfile } from '../Redux/slices/authSlice';
 const tabs = [{
   id: 'account',
   label: 'Mi cuenta'
@@ -22,10 +22,11 @@ const tabs = [{
   label: 'Seguridad'
 }];
 const ProfilePage = ({
-  user,
-  onNavigate,
-  onUserChange
+  onNavigate
 }) => {
+  const dispatch = useDispatch();
+  const { user, profileStatus, profileError: error } = useSelector(selectAuth);
+  const saving = profileStatus === 'loading';
   const totalProducts = useSelector(state => state.cart.items.length);
   const ordersCount = useSelector(state => state.orders.items.length);
   const {
@@ -35,30 +36,21 @@ const ProfilePage = ({
   const [isEditing, setIsEditing] = useState(false);
   const [firstName, setFirstName] = useState(user?.firstName ?? '');
   const [lastName, setLastName] = useState(user?.lastName ?? '');
-  const [error, setError] = useState('');
   const [message, setMessage] = useState('');
-  const [saving, setSaving] = useState(false);
   useEffect(() => {
     setFirstName(user?.firstName ?? '');
     setLastName(user?.lastName ?? '');
-  }, [user?.id]);
+  }, [user?.id, user?.firstName, user?.lastName]);
   const handleProfileSubmit = event => {
     event.preventDefault();
-    setError('');
     setMessage('');
-    setSaving(true);
-    return updateProfile({
+    return dispatch(updateProfile({
       firstName: firstName.trim(),
       lastName: lastName.trim()
-    }).then(updatedUser => {
-      onUserChange?.(updatedUser);
+    })).unwrap().then(() => {
       setIsEditing(false);
       setMessage('Tus datos se actualizaron correctamente.');
-    }).catch(requestError => {
-      setError(requestError.message);
-    }).finally(() => {
-      setSaving(false);
-    });
+    }).catch(() => {});
   };
   if (!user) {
     return <section className="profile-empty">

@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import './App.css';
@@ -6,7 +6,7 @@ import './persona2.css';
 import './admin.css';
 import './controls.css';
 import { FavoritesProvider } from './context/FavoritesContext';
-import { AuthContext } from './context/AuthContext';
+import { selectAuth, restoreSession, login, register, logout } from './Redux/slices/authSlice';
 import { fetchOrders, resetOrders } from './Redux/slices/ordersSlice';
 import { fetchMyReviews, resetReviews, setReviewOwner } from './Redux/slices/reviewsSlice';
 import { resetCart, syncCart } from './Redux/slices/cartSlice';
@@ -74,15 +74,14 @@ const App = () => {
   } = resolveRoute(location.pathname);
   const {
     user,
-    setUser,
     isAdmin,
     isRestoringSession,
-    sessionError,
-    login,
-    register,
-    logout
-  } = useContext(AuthContext);
+    sessionError
+  } = useSelector(selectAuth);
   const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(restoreSession());
+  }, [dispatch]);
   const previousShopperId = useRef(undefined);
   const ordersError = useSelector(state => state.orders.error);
   const storageError = sessionError || (ordersError ? `No se pudieron cargar tus órdenes: ${ordersError}` : '');
@@ -127,7 +126,7 @@ const App = () => {
     navigate(`/app/catalog/${encodeURIComponent(vinylId)}`);
   };
   const handleLogin = credentials => {
-    return login(credentials).then(profile => {
+    return dispatch(login(credentials)).unwrap().then(profile => {
       const returnTo = location.state?.returnTo;
       if (profile.role !== 'ADMIN' && typeof returnTo === 'string' && returnTo.startsWith('/app/')) navigate(returnTo, {
         replace: true
@@ -135,12 +134,12 @@ const App = () => {
     });
   };
   const handleRegister = account => {
-    return register(account).then(() => {
+    return dispatch(register(account)).unwrap().then(() => {
       openPage('profile');
     });
   };
   const handleLogout = () => {
-    return logout().then(() => {
+    return dispatch(logout()).then(() => {
       openPage('home');
     });
   };
@@ -150,14 +149,13 @@ const App = () => {
   if (!page) return <Navigate to="/" replace />;
   if (isAdmin && page === 'orders') return <Navigate to="/app/admin/orders" replace />;
   return <FavoritesProvider>
-        <AppContent page={page} user={user} onUserChange={setUser} isAdmin={isAdmin} storageError={storageError} selectedVinylId={selectedVinylId} selectedOrderId={selectedOrderId} queryString={location.search} focusCatalogSearch={Boolean(location.state && location.state.focusCatalogSearch)} searchRequest={location.key} openPage={openPage} openVinyl={openVinyl} handleLogin={handleLogin} handleRegister={handleRegister} handleLogout={handleLogout} />
+        <AppContent page={page} user={user} isAdmin={isAdmin} storageError={storageError} selectedVinylId={selectedVinylId} selectedOrderId={selectedOrderId} queryString={location.search} focusCatalogSearch={Boolean(location.state && location.state.focusCatalogSearch)} searchRequest={location.key} openPage={openPage} openVinyl={openVinyl} handleLogin={handleLogin} handleRegister={handleRegister} handleLogout={handleLogout} />
       </FavoritesProvider>
 };
 const AppContent = ({
   page,
   user,
   isAdmin,
-  onUserChange,
   storageError,
   selectedVinylId,
   selectedOrderId,
@@ -199,7 +197,7 @@ const AppContent = ({
             <OrdersPage authenticated={Boolean(user)} selectedOrderId={selectedOrderId} onNavigate={openPage} onSelectOrder={(orderId, focusReview = false) => navigate(`/app/orders/${orderId}${focusReview ? '?focusReview=1' : ''}`)} focusReview={query.get('focusReview') === '1'} />
           </div>}
         {page === 'profile' && <div className="legacy-page">
-            <ProfilePage user={user} onUserChange={onUserChange} onNavigate={openPage} />
+            <ProfilePage onNavigate={openPage} />
           </div>}
       </PageContainer>
       <Footer onNavigate={openPage} />

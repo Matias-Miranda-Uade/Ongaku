@@ -1,10 +1,10 @@
-import { useContext } from 'react'
+import { useSelector } from 'react-redux';
 import { Link, Outlet } from 'react-router-dom'
-import { AuthContext } from '../context/AuthContext'
+import { selectAuth } from '../Redux/slices/authSlice'
 import ProtectedRoute from './ProtectedRoute'
 
 const AdminRoute = ({ children }) => {
-  const { isAdmin } = useContext(AuthContext)
+  const { isAdmin } = useSelector(selectAuth)
 
   return (
     <ProtectedRoute>

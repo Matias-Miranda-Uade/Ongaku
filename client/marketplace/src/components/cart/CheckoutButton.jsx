@@ -1,13 +1,13 @@
-import { useContext, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../../context/AuthContext';
+import { selectAuth } from '../../Redux/slices/authSlice';
 import { createOrder } from '../../Redux/slices/ordersSlice';
 
 const CheckoutButton = ({ disabled = false }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { user, isAdmin } = useContext(AuthContext);
+  const { user, isAdmin } = useSelector(selectAuth);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
 
