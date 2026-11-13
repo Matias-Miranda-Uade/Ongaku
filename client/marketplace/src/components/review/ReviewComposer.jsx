@@ -1,5 +1,5 @@
-import { useContext, useEffect, useState } from 'react';
-import { AuthContext } from '../../context/AuthContext';
+import { useEffect, useState } from 'react';
+import { selectAuth } from '../../Redux/slices/authSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { createReview, fetchReviewEligibility, selectEligibility, selectSubmittingVinylId } from '../../Redux/slices/reviewsSlice.js';
 
@@ -13,7 +13,7 @@ const ReviewComposer = ({
   const {
     user,
     isAdmin
-  } = useContext(AuthContext);
+  } = useSelector(selectAuth);
   const userId = user ? user.id : null;
   const dispatch = useDispatch();
   const request = useSelector(state => selectEligibility(state, userId, vinylId));

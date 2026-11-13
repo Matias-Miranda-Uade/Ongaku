@@ -1,6 +1,6 @@
-import { useContext } from 'react'
+import { useSelector } from 'react-redux';
 import { NavLink, Outlet } from 'react-router-dom'
-import { AuthContext } from '../../context/AuthContext'
+import { selectAuth } from '../../Redux/slices/authSlice'
 
 const sections = [
   { to: '/app/admin/dashboard', label: 'Dashboard', kana: '概要' },
@@ -11,7 +11,7 @@ const sections = [
 ]
 
 const AdminLayout = () => {
-  const { user } = useContext(AuthContext)
+  const { user } = useSelector(selectAuth)
 
   return (
     <div className="admin-shell">

@@ -1,6 +1,5 @@
-import { useContext } from 'react';
 import { useSelector } from 'react-redux';
-import { AuthContext } from '../context/AuthContext';
+import { selectAuth } from '../Redux/slices/authSlice';
 import CartItemsList from '../components/cart/CartItemsList';
 import CartSummary from '../components/cart/CartSummary';
 import CartGuarantees from '../components/cart/CartGuarantees';
@@ -8,7 +7,7 @@ import SuggestedProducts from '../components/cart/SuggestedProducts';
 import ClearCartButton from '../components/cart/ClearCartButton';
 
 const CartPage = ({ onNavigate }) => {
-  const { isAdmin } = useContext(AuthContext);
+  const { isAdmin } = useSelector(selectAuth);
   const items = useSelector(state => state.cart.items);
   const syncing = useSelector(state => state.cart.loading);
   const totalProducts = items.length;

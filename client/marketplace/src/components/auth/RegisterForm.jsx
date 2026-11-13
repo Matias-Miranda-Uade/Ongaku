@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { clearAuthErrors, selectAuth } from '../../Redux/slices/authSlice';
+import { useEffect, useState } from 'react';
 import AuthInput from './AuthInput';
 import PasswordInput from './PasswordInput';
 import Button from '../ui/Button';
@@ -12,7 +14,10 @@ const RegisterForm = ({
   const [password, setPassword] = useState('');
   const [confirmation, setConfirmation] = useState('');
   const [error, setError] = useState('');
-  const [submitting, setSubmitting] = useState(false);
+  const dispatch = useDispatch();
+  const { sessionStatus, registerError } = useSelector(selectAuth);
+  const submitting = sessionStatus === 'loading';
+  useEffect(() => { dispatch(clearAuthErrors()); }, [dispatch]);
   const handleSubmit = event => {
     event.preventDefault();
     if (!firstName.trim() || !lastName.trim() || !email.trim() || !password.trim()) {
@@ -32,17 +37,12 @@ const RegisterForm = ({
       return Promise.resolve();
     }
     setError('');
-    setSubmitting(true);
     return Promise.resolve(onRegister({
       firstName: firstName.trim(),
       lastName: lastName.trim(),
       email: email.trim().toLowerCase(),
       password
-    })).then(() => {}).catch(registerError => {
-      setError(registerError.message);
-    }).finally(() => {
-      setSubmitting(false);
-    });
+    })).catch(() => {});
   };
   return <form onSubmit={handleSubmit}>
       <SectionTitle>Crear tu cuenta</SectionTitle>
@@ -56,7 +56,7 @@ const RegisterForm = ({
         Usá al menos 8 caracteres.
       </p>
       <PasswordInput label="Confirmar contraseña" name="register-confirmation" autoComplete="new-password" required minLength={8} value={confirmation} onChange={event => setConfirmation(event.target.value)} />
-      {error && <p role="alert">{error}</p>}
+      {(error || registerError) && <p role="alert">{error || registerError}</p>}
       <Button className="primary-button" type="submit" disabled={submitting}>
         {submitting ? 'Creando cuenta…' : 'Crear cuenta'}
       </Button>

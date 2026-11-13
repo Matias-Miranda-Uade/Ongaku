@@ -1,7 +1,7 @@
 import { useContext, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { FavoritesContext } from '../context/FavoritesContext'
-import { AuthContext } from '../context/AuthContext'
+import { selectAuth } from '../Redux/slices/authSlice'
 import { addItem } from '../Redux/slices/cartSlice'
 
 const FavoritesPage = ({ onNavigate, onOpenVinyl }) => {
@@ -10,7 +10,7 @@ const FavoritesPage = ({ onNavigate, onOpenVinyl }) => {
     const items = useSelector(state => state.cart.items)
     const syncing = useSelector(state => state.cart.loading)
     const dispatch = useDispatch()
-    const { isAdmin } = useContext(AuthContext)
+    const { isAdmin } = useSelector(selectAuth)
     const [message, setMessage] = useState('')
 
     if (isAdmin) {

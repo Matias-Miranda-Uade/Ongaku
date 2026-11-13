@@ -1,11 +1,12 @@
+import { useSelector } from 'react-redux';
 import { useContext } from 'react'
 import { FavoritesContext } from '../../context/FavoritesContext'
-import { AuthContext } from '../../context/AuthContext'
+import { selectAuth } from '../../Redux/slices/authSlice'
 import { getVinylPrice } from './vinylUtils'
 
 const FavoriteButton = ({ vinyl }) => {
   const { isFavorite, toggleFavorite } = useContext(FavoritesContext)
-  const { isAdmin } = useContext(AuthContext)
+  const { isAdmin } = useSelector(selectAuth)
   const favorite = vinyl ? isFavorite(vinyl.id) : false
 
   if (isAdmin) return null

@@ -1,5 +1,6 @@
-import { useContext, createContext, useEffect, useRef, useState } from 'react';
-import { AuthContext } from './AuthContext';
+import { useSelector } from 'react-redux';
+import { createContext, useEffect, useRef, useState } from 'react';
+import { selectAuth } from '../Redux/slices/authSlice';
 import { createFavorite, deleteFavorite, getFavorites } from '../services/api';
 export const FavoritesContext = createContext(null);
 export const FavoritesProvider = ({
@@ -8,7 +9,7 @@ export const FavoritesProvider = ({
   const {
     user,
     isAdmin
-  } = useContext(AuthContext);
+  } = useSelector(selectAuth);
   const [error, setError] = useState('');
   const busy = useRef(new Set());
   const currentUserId = useRef(user?.id);
