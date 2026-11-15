@@ -1746,6 +1746,14 @@ select:focus-visible {
   color: var(--peach);
 }
 
+.reservation-notice {
+  margin: 20px 0 0;
+  padding: 14px 18px;
+  border: 1px solid var(--peach);
+  background: var(--surface-low);
+  color: var(--ink);
+}
+
 .order-progress-panel {
   margin: 22px 0 34px;
   padding: 22px;

@@ -10,6 +10,7 @@ import OrderTotals from '../components/order/OrderTotals';
 import TrackingButton from '../components/order/TrackingButton';
 import CancelOrderButton from '../components/order/CancelOrderButton';
 import AddressBook from '../components/profile/AddressBook';
+import ReservationNotice from '../components/order/ReservationNotice';
 
 const OrderDetailPage = ({
   order,
@@ -32,6 +33,8 @@ const OrderDetailPage = ({
         </div>
         <OrderStatus status={order.status} />
       </header>
+
+      {pendingCheckout && order.expiresAt && <ReservationNotice expiresAt={order.expiresAt} orderId={order.id} />}
 
       <section className="order-progress-panel" aria-label="Progreso de la orden">
         <OrderProgress status={order.status} />
@@ -72,7 +75,7 @@ const OrderDetailPage = ({
             {pendingCheckout && (
               <div className="order-payment-actions">
                 <h3>Completar pago</h3>
-                {!addressId && <p>Podés cargar la tarjeta ahora. Elegí una dirección de envío antes de confirmar el pago.</p>}
+                {!addressId && <p>Elegí una dirección de envío y una tarjeta guardada para confirmar el pago.</p>}
               </div>
             )}
             <DemoPaymentForm key={order.id} order={order} addressId={addressId} disabled={ordersLoading} />

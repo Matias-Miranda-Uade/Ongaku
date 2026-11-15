@@ -6,4 +6,8 @@ public class ProductDisabledException extends ConflictException {
     public ProductDisabledException() {
         super("El vinilo esta deshabilitado");
     }
+
+    public ProductDisabledException(String vinylName) {
+        super("El vinilo '" + vinylName + "' esta deshabilitado");
+    }
 }

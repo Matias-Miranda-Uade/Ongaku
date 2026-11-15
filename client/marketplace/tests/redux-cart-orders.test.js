@@ -4,6 +4,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import { http } from '../src/services/api.js';
 import cart, { addItem, clearCart, removeItem, syncCart, updateQuantity } from '../src/Redux/slices/cartSlice.js';
 import orders, { cancelOrder, createOrder, payOrder } from '../src/Redux/slices/ordersSlice.js';
+import catalog from '../src/Redux/slices/catalogSlice.js';
 
 const originalAdapter = http.defaults.adapter;
 const originalWindow = globalThis.window;
@@ -81,6 +82,82 @@ test('el carrito invitado se fusiona al iniciar sesión y permite agregar, cambi
   await store.dispatch(clearCart());
   assert.deepEqual(store.getState().cart.items, []);
   assert.equal(calls.filter(call => call.key === 'GET /carts').length, 1);
+});
+
+test('la fusión agrega solo el stock disponible y conserva el usuario autenticado', async () => {
+  const store = createStore();
+  const product = { id: 1, name: 'Disco', artist: 'Artista', price: 100, stock: 3 };
+  await store.dispatch(addItem({ product, quantity: 2 }));
+  let serverItems = [{ vinylId: 1, quantity: 2, unitPrice: 100, artistName: 'Artista' }];
+  const readCart = () => ({ items: serverItems.map(item => ({ ...item })) });
+  routes['GET /carts'] = readCart;
+  routes['POST /carts/items'] = data => {
+    assert.equal(data.quantity, 1);
+    serverItems[0].quantity += data.quantity;
+    return readCart();
+  };
+
+  await store.dispatch(syncCart(22));
+
+  assert.equal(calls.filter(call => call.key === 'POST /carts/items').length, 1);
+  assert.equal(calls.find(call => call.key === 'POST /carts/items').data.quantity, 1);
+  assert.equal(store.getState().cart.ownerId, 22);
+  assert.equal(store.getState().cart.items[0].quantity, 3);
+});
+
+test('la fusión omite productos sin stock disponible', async () => {
+  const store = createStore();
+  const product = { id: 1, name: 'Disco', artist: 'Artista', price: 100, stock: 3 };
+  await store.dispatch(addItem({ product, quantity: 2 }));
+  routes['GET /carts'] = {
+    items: [{ vinylId: 1, quantity: 3, unitPrice: 100, artistName: 'Artista' }]
+  };
+
+  await store.dispatch(syncCart(22));
+
+  assert.deepEqual(calls.map(call => call.key), ['GET /carts']);
+  assert.equal(store.getState().cart.ownerId, 22);
+  assert.equal(store.getState().cart.items[0].quantity, 3);
+});
+
+test('crear y cancelar órdenes sincroniza el stock del catálogo', () => {
+  const store = configureStore({
+    reducer: { cart, orders, catalog },
+    preloadedState: {
+      catalog: { ...catalog(undefined, { type: '@@init' }), entities: { 1: { id: 1, stock: 5 } } }
+    }
+  });
+  const createdOrder = { id: 30, status: 'PENDIENTE', items: [{ vinylId: 1, quantity: 2 }] };
+
+  store.dispatch(createOrder.fulfilled(createdOrder, 'create-order'));
+  assert.equal(store.getState().catalog.entities[1].stock, 3);
+
+  store.dispatch(cancelOrder.fulfilled({ ...createdOrder, status: 'CANCELADA' }, 'cancel-order', 30));
+  assert.equal(store.getState().catalog.entities[1].stock, 5);
+
+  store.dispatch(createOrder.fulfilled({
+    id: 31,
+    status: 'PENDIENTE',
+    items: [{ vinylId: 2, quantity: 4 }]
+  }, 'create-missing-vinyl'));
+  assert.equal(store.getState().catalog.entities[1].stock, 5);
+});
+
+test('crear una orden no reduce el stock del catálogo por debajo de cero', () => {
+  const store = configureStore({
+    reducer: { cart, orders, catalog },
+    preloadedState: {
+      catalog: { ...catalog(undefined, { type: '@@init' }), entities: { 1: { id: 1, stock: 1 } } }
+    }
+  });
+
+  store.dispatch(createOrder.fulfilled({
+    id: 32,
+    status: 'PENDIENTE',
+    items: [{ vinylId: 1, quantity: 3 }]
+  }, 'create-order-out-of-stock'));
+
+  assert.equal(store.getState().catalog.entities[1].stock, 0);
 });
 
 test('crear una orden vacía el carrito sin GET extra y pago/cancelación reemplazan la orden correspondiente', async () => {

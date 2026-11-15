@@ -1,5 +1,6 @@
 package com.uade.tpo.marketplace.repository;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -17,6 +18,9 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select o from Order o where o.id = :id")
     Optional<Order> findForUpdateById(Long id);
+
+    @Query("select o.id from Order o where o.orderStatus.id = :statusId and o.createdAt < :cutoff")
+    List<Long> findPendingOrderIdsCreatedBefore(Long statusId, LocalDateTime cutoff);
 
     /** Trae la orden con sus lineas en una sola consulta. */
     @Query("select o from Order o left join fetch o.items where o.id = :id")

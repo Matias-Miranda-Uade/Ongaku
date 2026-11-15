@@ -15,11 +15,15 @@ export const syncCart = createAsyncThunk('cart/syncCart', async (userId, { getSt
   const { data: cartData } = await http.get('/carts');
   let serverCart = normalizeCart(cartData);
   for (const item of guestItems) {
-    const { data } = await http.post('/carts/items', {
-      vinylId: item.id,
-      quantity: item.quantity
-    });
-    serverCart = normalizeCart(data);
+    const inServer = serverCart.items.find(serverItem => String(serverItem.id) === String(item.id));
+    const quantity = Math.min(item.quantity, item.stock - (inServer ? inServer.quantity : 0));
+    if (quantity > 0) {
+      const { data } = await http.post('/carts/items', {
+        vinylId: item.id,
+        quantity
+      });
+      serverCart = normalizeCart(data);
+    }
   }
   return { items: serverCart.items, ownerId: userId };
 });

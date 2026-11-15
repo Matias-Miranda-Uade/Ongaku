@@ -19,6 +19,8 @@ public interface OrderService {
 
     Order updateStatus(long orderId, OrderStatusType target, String requesterEmail);
 
+    void expirePendingOrder(long orderId);
+
     /** Cambio de estado interno (pagos): no depende de un usuario autenticado. */
     Order applyStatus(Order order, OrderStatusType target);
 }

@@ -81,7 +81,7 @@ public class OrderServiceImpl implements OrderService {
         for (CartItem item : items) {
             Vinyl vinyl = item.getVinyl();
             if (Boolean.FALSE.equals(vinyl.getEnabled())) {
-                throw new ProductDisabledException();
+                throw new ProductDisabledException(vinyl.getName());
             }
             if (vinylRepository.reserveStock(vinyl.getId(), item.getQuantity()) == 0) {
                 throw new InsufficientStockException("El vinilo \'" + vinyl.getName() + "\' no tiene stock disponible para la cantidad pedida");
@@ -120,6 +120,16 @@ public class OrderServiceImpl implements OrderService {
             throw new ForbiddenOperationException("Solo podes cancelar una orden que siga en estado PENDIENTE");
         }
         return applyStatus(order, target);
+    }
+
+    @Override
+    @Transactional
+    public void expirePendingOrder(long orderId) {
+        Order order = orderRepository.findForUpdateById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Orden", orderId));
+        if (order.getStatusType() == OrderStatusType.PENDIENTE) {
+            applyStatus(order, OrderStatusType.CANCELADA);
+        }
     }
 
     @Override

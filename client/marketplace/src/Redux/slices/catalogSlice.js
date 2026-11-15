@@ -1,6 +1,7 @@
 import { getVinylPrice } from '../../components/vinyl/vinylUtils.js';
 import { collections, matchesCollection, normalizeCatalogText } from '../../data/collections.js';
 import { createAsyncThunk, createSelector, createSlice } from '@reduxjs/toolkit';
+import { cancelOrder, createOrder } from './ordersSlice.js';
 import { getVinyls, getVinylById } from '../../services/api.js';
 import { emptyRequest, getMessage, shouldFetch } from '../requestState.js';
 
@@ -62,6 +63,19 @@ const catalogSlice = createSlice({
       if (!request || request.requestId !== action.meta.requestId) return;
       request.status = 'failed';
       request.error = action.payload || action.error.message;
+    }).addCase(createOrder.fulfilled, (state, action) => {
+      action.payload.items.forEach(item => {
+        const entityId = Object.keys(state.entities).find(id => String(id) === String(item.vinylId));
+        if (entityId) {
+          state.entities[entityId].stock = Math.max(0, state.entities[entityId].stock - item.quantity);
+        }
+      });
+    }).addCase(cancelOrder.fulfilled, (state, action) => {
+      if (action.payload.status !== 'CANCELADA') return;
+      action.payload.items.forEach(item => {
+        const entityId = Object.keys(state.entities).find(id => String(id) === String(item.vinylId));
+        if (entityId) state.entities[entityId].stock += item.quantity;
+      });
     });
   }
 });
