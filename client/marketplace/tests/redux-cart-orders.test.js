@@ -83,6 +83,42 @@ test('el carrito invitado se fusiona al iniciar sesión y permite agregar, cambi
   assert.equal(calls.filter(call => call.key === 'GET /carts').length, 1);
 });
 
+test('la fusión agrega solo el stock disponible y conserva el usuario autenticado', async () => {
+  const store = createStore();
+  const product = { id: 1, name: 'Disco', artist: 'Artista', price: 100, stock: 3 };
+  await store.dispatch(addItem({ product, quantity: 2 }));
+  let serverItems = [{ vinylId: 1, quantity: 2, unitPrice: 100, artistName: 'Artista' }];
+  const readCart = () => ({ items: serverItems.map(item => ({ ...item })) });
+  routes['GET /carts'] = readCart;
+  routes['POST /carts/items'] = data => {
+    assert.equal(data.quantity, 1);
+    serverItems[0].quantity += data.quantity;
+    return readCart();
+  };
+
+  await store.dispatch(syncCart(22));
+
+  assert.equal(calls.filter(call => call.key === 'POST /carts/items').length, 1);
+  assert.equal(calls.find(call => call.key === 'POST /carts/items').data.quantity, 1);
+  assert.equal(store.getState().cart.ownerId, 22);
+  assert.equal(store.getState().cart.items[0].quantity, 3);
+});
+
+test('la fusión omite productos sin stock disponible', async () => {
+  const store = createStore();
+  const product = { id: 1, name: 'Disco', artist: 'Artista', price: 100, stock: 3 };
+  await store.dispatch(addItem({ product, quantity: 2 }));
+  routes['GET /carts'] = {
+    items: [{ vinylId: 1, quantity: 3, unitPrice: 100, artistName: 'Artista' }]
+  };
+
+  await store.dispatch(syncCart(22));
+
+  assert.deepEqual(calls.map(call => call.key), ['GET /carts']);
+  assert.equal(store.getState().cart.ownerId, 22);
+  assert.equal(store.getState().cart.items[0].quantity, 3);
+});
+
 test('crear una orden vacía el carrito sin GET extra y pago/cancelación reemplazan la orden correspondiente', async () => {
   const store = createStore();
   const product = { id: 1, name: 'Disco', artist: 'Artista', price: 100, stock: 5 };

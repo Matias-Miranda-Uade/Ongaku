@@ -123,6 +123,16 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional
+    public void expirePendingOrder(long orderId) {
+        Order order = orderRepository.findForUpdateById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Orden", orderId));
+        if (order.getStatusType() == OrderStatusType.PENDIENTE) {
+            applyStatus(order, OrderStatusType.CANCELADA);
+        }
+    }
+
+    @Override
     public Order applyStatus(Order order, OrderStatusType target) {
         OrderStatusType current = order.getStatusType();
         if (current == OrderStatusType.CANCELADA) {

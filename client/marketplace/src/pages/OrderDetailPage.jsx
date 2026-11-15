@@ -72,6 +72,7 @@ const OrderDetailPage = ({
             {pendingCheckout && (
               <div className="order-payment-actions">
                 <h3>Completar pago</h3>
+                <p>Tus discos quedan reservados por 30 minutos. Si no pagás, la orden se cancela sola y el stock vuelve al catálogo.</p>
                 {!addressId && <p>Podés cargar la tarjeta ahora. Elegí una dirección de envío antes de confirmar el pago.</p>}
               </div>
             )}
