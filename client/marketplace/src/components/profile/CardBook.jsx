@@ -101,8 +101,7 @@ const CardBook = ({
       <p>Solo guardamos titular, marca, últimos cuatro dígitos y vencimiento. No ingreses números completos ni códigos de seguridad.</p>
       {error && <div role="alert"><p>{error}</p><button type="button" disabled={blocked} onClick={() => setReload(value => value + 1)}>Reintentar</button></div>}
       {loading && <p role="status">Cargando tarjetas…</p>}
-      {!loading && !cards.length && <p>Todavía no guardaste tarjetas.</p>}
-      {selectable && <label className="saved-card-choice"><input type="radio" name="saved-card" disabled={blocked || loading} checked={selectedId == null} onChange={() => onSelect(null)} /> Usar otra tarjeta</label>}
+      {!loading && !cards.length && <p>{selectable ? 'Todavía no guardaste tarjetas. Agregá una para poder confirmar el pago.' : 'Todavía no guardaste tarjetas.'}</p>}
       {cards.map(card => <article className="shipment-card saved-card" key={card.id}>
         {selectable && <label className="saved-card-choice"><input type="radio" name="saved-card" checked={selectedId === card.id} disabled={blocked || loading || card.expired} onChange={() => onSelect(card.id)} /> Usar esta tarjeta</label>}
         <h3>{card.brand} · •••• {card.lastFour}</h3><p>{card.holder}</p>

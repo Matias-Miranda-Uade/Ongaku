@@ -99,6 +99,7 @@ export const normalizeCart = cart => ({
 export const normalizeOrder = (order, payments = []) => ({
   ...order,
   status: order.orderStatus?.name ?? order.status ?? 'PENDIENTE',
+  expiresAt: order.expiresInSeconds != null ? Date.now() + order.expiresInSeconds * 1000 : null,
   payment: payments.find(payment => String(payment.orderId) === String(order.id)) ?? order.payment ?? null,
   items: (order.items ?? []).map(item => ({
     ...item,

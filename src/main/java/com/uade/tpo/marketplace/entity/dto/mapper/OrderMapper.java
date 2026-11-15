@@ -4,8 +4,10 @@ import java.util.List;
 
 import com.uade.tpo.marketplace.entity.Order;
 import com.uade.tpo.marketplace.entity.OrderItem;
+import com.uade.tpo.marketplace.entity.OrderStatusType;
 import com.uade.tpo.marketplace.entity.dto.OrderItemResponse;
 import com.uade.tpo.marketplace.entity.dto.OrderResponse;
+import com.uade.tpo.marketplace.service.OrderExpirationPolicy;
 
 public final class OrderMapper {
 
@@ -19,6 +21,9 @@ public final class OrderMapper {
         response.setSavedCardId(order.getSavedCardId());
         response.setShippingAddress(order.getShippingAddress());
         response.setCreatedAt(order.getCreatedAt());
+        if (order.getStatusType() == OrderStatusType.PENDIENTE) {
+            response.setExpiresInSeconds(OrderExpirationPolicy.secondsLeft(order.getCreatedAt()));
+        }
         response.setUserId(order.getUser() != null ? order.getUser().getId() : null);
         response.setUserName(order.getUser() != null ? order.getUser().getFullName() : null);
         response.setOrderStatus(OrderStatusMapper.toResponse(order.getOrderStatus()));

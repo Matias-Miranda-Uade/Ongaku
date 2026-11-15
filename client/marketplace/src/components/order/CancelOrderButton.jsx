@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { cancelOrder } from '../../Redux/slices/ordersSlice';
+import { cancelOrder, fetchOrders } from '../../Redux/slices/ordersSlice';
 
 const CancelOrderButton = ({ orderId, disabled = false }) => {
   const dispatch = useDispatch();
@@ -13,7 +13,10 @@ const CancelOrderButton = ({ orderId, disabled = false }) => {
     setPending(true);
     setError('');
     dispatch(cancelOrder(orderId)).then(result => {
-      if (result.error) setError(result.error.message);
+      if (result.error) {
+        setError(result.error.message);
+        dispatch(fetchOrders());
+      }
       setPending(false);
     });
   };

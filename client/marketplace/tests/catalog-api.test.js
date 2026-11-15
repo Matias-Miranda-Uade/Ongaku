@@ -4,7 +4,7 @@ import { configureStore } from '@reduxjs/toolkit'
 import { http } from '../src/services/api.js'
 import { createArtist, deleteArtist, createCategory, getCatalogLookups, uploadCover } from '../src/services/adminService.js'
 import {
-  ApiError, createFavorite, createReview, deleteAddress, deleteCard, deleteFavorite, deleteReview, getAddresses, getAudioPreview, getFavorites, getSavedCards, saveAddress, saveCard,
+  ApiError, createFavorite, createReview, deleteAddress, deleteCard, deleteFavorite, deleteReview, getAddresses, getAudioPreview, getFavorites, getSavedCards, normalizeOrder, saveAddress, saveCard,
   getReviewEligibility, getReviews, getReviewsByVinyl, getVinylById, getVinyls, request, updateReview, login, logout, getAccessToken,
 } from '../src/services/api.js'
 import ordersReducer, { createOrder, fetchOrders, payOrder } from '../src/Redux/slices/ordersSlice.js'
@@ -64,6 +64,15 @@ after(() => {
   if (originalWindow === undefined) delete globalThis.window
   else globalThis.window = originalWindow
 })
+
+test('normalizeOrder calcula expiresAt y lo deja nulo si no hay vencimiento', () => {
+  const before = Date.now();
+  const order = normalizeOrder({ id: 9, status: 'PENDIENTE', expiresInSeconds: 90 });
+  const after = Date.now();
+  assert.ok(order.expiresAt >= before + 90000);
+  assert.ok(order.expiresAt <= after + 90000);
+  assert.equal(normalizeOrder({ id: 10, status: 'PAGADA' }).expiresAt, null);
+});
 
 test('iniciar sesión guarda el token y lo utiliza al recuperar el perfil', () => {
   routes['/api/v1/auth/authenticate'] = { accessToken: 'new-session-token' }

@@ -1,9 +1,10 @@
-import { useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import OrderFilters from '../components/order/OrderFilters';
 import OrderCard from '../components/order/OrderCard';
 import OrderDetailPage from './OrderDetailPage';
 import { selectAuth } from '../Redux/slices/authSlice';
+import { fetchOrders } from '../Redux/slices/ordersSlice';
 import { createReview, selectMyReviews, selectReviewsError, selectSubmittingVinylId } from '../Redux/slices/reviewsSlice';
 
 const attachReviews = (order, reviews) => order && ({
@@ -15,6 +16,7 @@ const attachReviews = (order, reviews) => order && ({
 });
 
 const OrdersPage = ({ authenticated, selectedOrderId, onNavigate, onSelectOrder, focusReview = false }) => {
+  const dispatch = useDispatch();
   const { isAdmin } = useSelector(selectAuth);
   const orders = useSelector(state => state.orders.items);
   const ordersLoading = useSelector(state => state.orders.loading);
@@ -23,6 +25,9 @@ const OrdersPage = ({ authenticated, selectedOrderId, onNavigate, onSelectOrder,
   const reviewError = useSelector(selectReviewsError);
   const submittingVinylId = useSelector(selectSubmittingVinylId);
   const [status, setStatus] = useState('TODAS');
+  useEffect(() => {
+    if (authenticated && !isAdmin) dispatch(fetchOrders());
+  }, [authenticated, isAdmin, dispatch]);
   const filtered = status === 'TODAS'
     ? orders
     : orders.filter(order => order.status === status);
@@ -79,7 +84,7 @@ const OrdersPage = ({ authenticated, selectedOrderId, onNavigate, onSelectOrder,
         <span className="orders-count">{orders.length} {orders.length === 1 ? 'ORDEN' : 'ÓRDENES'}</span>
         <OrderFilters status={status} onChange={setStatus} />
       </div>
-      {ordersLoading ? (
+      {ordersLoading && orders.length === 0 ? (
         <p className="orders-loading" role="status">Cargando órdenes…</p>
       ) : filtered.length === 0 ? (
         <section className="empty-state-card">

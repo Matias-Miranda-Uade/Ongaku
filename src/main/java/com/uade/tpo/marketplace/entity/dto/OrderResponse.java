@@ -19,6 +19,7 @@ public class OrderResponse {
     private int totalProducts;
     private int totalUnits;
     private double total;
+    private Integer expiresInSeconds;
 
     public OrderResponse() {
     }
@@ -59,6 +60,10 @@ public class OrderResponse {
         return this.total;
     }
 
+    public Integer getExpiresInSeconds() {
+        return expiresInSeconds;
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -93,6 +98,10 @@ public class OrderResponse {
 
     public void setTotal(double total) {
         this.total = total;
+    }
+
+    public void setExpiresInSeconds(Integer expiresInSeconds) {
+        this.expiresInSeconds = expiresInSeconds;
     }
 
     @Override
