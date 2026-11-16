@@ -29,7 +29,7 @@ const catalogSlice = createSlice({
         if (!currentIds.has(String(id)) && (state.entityVersions[id] || 0) <= state.list.version) {
           state.entityVersions[id] = state.list.version;
           delete state.entities[id];
-          delete state.details[id];
+          state.details[id] = { status: 'failed', error: 'Este álbum ya no está disponible en el catálogo.' };
         }
       });
       state.ids = action.payload.map(vinyl => vinyl.id);

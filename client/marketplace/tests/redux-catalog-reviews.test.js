@@ -228,13 +228,18 @@ test('una respuesta antigua no pisa la consulta renovada después de crear una r
   assert.equal(selectReviewData(store.getState(), 7).totalReviews, 1);
 });
 
-test('renovar el catálogo elimina del detalle los títulos que dejaron de publicarse', async () => {
+test('un álbum retirado del catálogo muestra un error en el detalle y permite recargarlo', async () => {
   await store.dispatch(fetchVinyls());
   routes['GET /vinyls'] = [];
   await store.dispatch(fetchVinyls({ force: true }));
   assert.deepEqual(selectVinyls(store.getState()), []);
   assert.equal(store.getState().catalog.entities[7], undefined);
-  assert.equal(store.getState().catalog.details[7], undefined);
+  assert.equal(store.getState().catalog.details[7].status, 'failed');
+  assert.match(store.getState().catalog.details[7].error, /ya no está disponible/);
+  await store.dispatch(fetchVinylById({ vinylId: 7 }));
+  assert.equal(store.getState().catalog.details[7].status, 'succeeded');
+  assert.equal(store.getState().catalog.details[7].error, '');
+  assert.equal(store.getState().catalog.entities[7].id, 7);
 });
 
 test('editar una reseña mantiene el orden de publicación devuelto por el backend', async () => {
