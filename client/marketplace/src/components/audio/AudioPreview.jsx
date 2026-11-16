@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getAudioPreview } from '../../services/api'
+import { getCachedAudioPreview } from '../../services/audioPreviewCache'
 import MediaPlayer from './MediaPlayer'
 import { getMediaSource } from './mediaSource'
 
@@ -13,7 +13,7 @@ const AudioPreview = ({ audioPreviewId, externalUrl }) => {
     setPreview(null)
     setError('')
     setLoading(true)
-    getAudioPreview(audioPreviewId)
+    getCachedAudioPreview(audioPreviewId)
       .then((data) => { if (active) setPreview(data) })
       .catch((requestError) => { if (active) setError(requestError.message) })
       .finally(() => { if (active) setLoading(false) })
