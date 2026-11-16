@@ -31,7 +31,9 @@ const RandomAlbumSection = () => {
       return audio ? { ...album, preview: audio } : null
     })).then(results => {
       if (active) {
-        setAlbums(results.filter(Boolean))
+        const available = results.filter(Boolean)
+        setAlbums(available)
+        setSelected(current => current ? available.find(album => String(album.id) === String(current.id)) || null : null)
         setLoading(false)
       }
     })
@@ -39,11 +41,11 @@ const RandomAlbumSection = () => {
   }, [vinyls, retry])
 
   const chooseAlbum = () => {
-    const candidates = albums.filter(album => album.id !== selected?.id)
+    const candidates = albums.filter(album => String(album.id) !== String(selected?.id))
     if (candidates.length) setSelected(candidates[Math.floor(Math.random() * candidates.length)])
   }
   const busy = loading || status === 'loading' || status === 'idle'
-  const canChoose = albums.some(album => album.id !== selected?.id)
+  const canChoose = albums.some(album => String(album.id) !== String(selected?.id))
 
   return <section className="random-album" aria-labelledby="random-album-heading" aria-busy={busy}>
     <div className="random-album-intro">

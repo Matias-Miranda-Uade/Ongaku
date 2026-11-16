@@ -11,6 +11,7 @@ const VinylCard = ({ vinyl, onOpen }) => (
       tabIndex={0}
       onClick={() => { if (onOpen) onOpen(vinyl.id) }}
       onKeyDown={(event) => {
+        if (event.target !== event.currentTarget) return
         if ((event.key === 'Enter' || event.key === ' ') && onOpen) {
           event.preventDefault()
           onOpen(vinyl.id)

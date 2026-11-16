@@ -366,3 +366,45 @@ test('busqueda, coleccion, stock y precio se combinan con textos normalizados', 
   assert.deepEqual(result.map(item => item.id), [9, 7]);
   assert.equal(selectCuratedCollections(store.getState()).find(item => item.id === 'electronic').vinylCount, 3);
 });
+
+test('un listado iniciado antes de crear una orden no repone el stock anterior', async () => {
+  const { createOrder } = await import('../src/Redux/slices/ordersSlice.js');
+  await store.dispatch(fetchVinyls()).unwrap();
+  const slow = deferred();
+  routes['GET /vinyls'] = slow.promise;
+  const request = store.dispatch(fetchVinyls({ force: true }));
+  store.dispatch(createOrder.fulfilled({ id: 70, items: [{ vinylId: 7, quantity: 2 }] }, 'stock-create'));
+  slow.resolve([vinyl]);
+  await request.unwrap();
+  assert.equal(store.getState().catalog.entities[7].stock, 2);
+});
+
+test('un detalle iniciado antes de cancelar una orden no pisa el stock restituido', async () => {
+  const { cancelOrder } = await import('../src/Redux/slices/ordersSlice.js');
+  await store.dispatch(fetchVinyls()).unwrap();
+  const slow = deferred();
+  routes['GET /vinyls/7'] = slow.promise;
+  const request = store.dispatch(fetchVinylById({ vinylId: 7, force: true }));
+  store.dispatch(cancelOrder.fulfilled({ id: 71, status: 'CANCELADA', items: [{ vinylId: 7, quantity: 2 }] }, 'stock-cancel', 71));
+  slow.resolve(vinyl);
+  await request.unwrap();
+  assert.equal(store.getState().catalog.entities[7].stock, 6);
+});
+
+test('un store vacío obtiene el catálogo y conserva los campos utilizados en la Home', async () => {
+  const { getAudioPreview } = await import('../src/services/api.js');
+  const { getAlbumPreview } = await import('../src/components/home/albumPreview.js');
+  routes['GET /vinyls'] = [
+    { ...vinyl, image: '/covers/real/kind-of-blue.jpg', audioPreviewId: 3 },
+    { ...vinyl, id: 8, albumUrl: 'https://music.apple.com/us/album/animals/1065974284' }
+  ];
+  routes['GET /audio-previews/3'] = { id: 3, url: '/audio/real.mp3', durationSeconds: 15 };
+  assert.deepEqual(selectVinyls(store.getState()), []);
+  await store.dispatch(fetchVinyls()).unwrap();
+  const albums = selectVinyls(store.getState());
+  assert.equal(albums[0].artistName, 'Miles Davis');
+  assert.equal(albums[0].audioPreviewId, 3);
+  assert.equal(albums[0].image, '/covers/real/kind-of-blue.jpg');
+  assert.equal(getAlbumPreview(albums[0], await getAudioPreview(albums[0].audioPreviewId)).url, '/audio/real.mp3');
+  assert.equal(getAlbumPreview(albums[1], null).url, albums[1].albumUrl);
+});

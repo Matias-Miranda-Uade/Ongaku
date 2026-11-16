@@ -6,25 +6,32 @@ import {
 import { eligibilityKey, emptyRequest, getMessage, reviewsKey, shouldFetch } from '../requestState.js';
 
 export const fetchMyReviews = createAsyncThunk('reviews/fetchMine',
-  (_, { rejectWithValue }) => getMyReviews().catch(error => rejectWithValue(getMessage(error))),
+  async (_, { rejectWithValue }) => {
+    try { return await getMyReviews(); }
+    catch (error) { return rejectWithValue(getMessage(error)); }
+  },
   { condition: (options = {}, { getState }) => {
     const state = getState().reviews;
     return shouldFetch(state, options.force, options.replace);
   } });
 
 export const fetchReviews = createAsyncThunk('reviews/fetch',
-  ({ vinylId = null } = {}, { rejectWithValue }) => {
-    const request = vinylId == null
-      ? getReviews().then(reviews => ({ reviews, totalReviews: reviews.length,
-        averageScore: reviews.length ? reviews.reduce((sum, review) => sum + Number(review.score), 0) / reviews.length : 0 }))
-      : getReviewsByVinyl(vinylId);
-    return request.catch(error => rejectWithValue(getMessage(error)));
+  async ({ vinylId = null } = {}, { rejectWithValue }) => {
+    try {
+      if (vinylId != null) return await getReviewsByVinyl(vinylId);
+      const reviews = await getReviews();
+      return { reviews, totalReviews: reviews.length,
+        averageScore: reviews.length ? reviews.reduce((sum, review) => sum + Number(review.score), 0) / reviews.length : 0 };
+    } catch (error) { return rejectWithValue(getMessage(error)); }
   },
   { condition: ({ vinylId = null, force = false, replace = false } = {}, { getState }) =>
     shouldFetch(getState().reviews.queries[reviewsKey(vinylId)], force, replace) });
 
 export const fetchReviewEligibility = createAsyncThunk('reviews/fetchEligibility',
-  ({ vinylId }, { rejectWithValue }) => getReviewEligibility(vinylId).catch(error => rejectWithValue(getMessage(error))),
+  async ({ vinylId }, { rejectWithValue }) => {
+    try { return await getReviewEligibility(vinylId); }
+    catch (error) { return rejectWithValue(getMessage(error)); }
+  },
   { condition: ({ userId, vinylId, force = false, replace = false }, { getState }) => {
     const state = getState().reviews;
     return userId != null && String(userId) === String(state.ownerId) &&
@@ -46,21 +53,15 @@ const refreshQueries = (vinylId, api) => {
   return Promise.all(requests);
 };
 
-// Apply confirmed writes before refreshing queries and discard writes from an old session.
-const confirmReview = async (review, removed, api, creating = false) => {
-  const state = api.getState().reviews;
-  const requestId = creating ? state.submitRequestId : state.mutations[review.id]?.requestId;
-  if (requestId !== api.requestId) return review;
-  api.dispatch(reviewsSlice.actions.reviewSaved({ review, removed, requestId, creating }));
-  await refreshQueries(review.vinylId, api);
-  return review;
-};
-
 export const createReview = createAsyncThunk('reviews/create',
   async (review, api) => {
     try {
       const saved = await createReviewRequest(review);
-      return await confirmReview(saved, false, api, true);
+      if (api.getState().reviews.submitRequestId === api.requestId) {
+        api.dispatch(reviewsSlice.actions.reviewSaved({ review: saved, requestId: api.requestId, creating: true }));
+        await refreshQueries(saved.vinylId, api);
+      }
+      return saved;
     } catch (error) { return api.rejectWithValue(getMessage(error)); }
   },
   { condition: (_, { getState }) => getState().reviews.submittingVinylId == null });
@@ -72,7 +73,11 @@ export const updateReview = createAsyncThunk('reviews/update',
   async ({ reviewId, score, comment }, api) => {
     try {
       const saved = await updateReviewRequest(reviewId, { score, comment });
-      return await confirmReview(saved, false, api);
+      if (api.getState().reviews.mutations[reviewId]?.requestId === api.requestId) {
+        api.dispatch(reviewsSlice.actions.reviewSaved({ review: saved, requestId: api.requestId }));
+        await refreshQueries(saved.vinylId, api);
+      }
+      return saved;
     } catch (error) { return api.rejectWithValue(getMessage(error)); }
   },
   { condition: canMutate });
@@ -81,7 +86,12 @@ export const deleteReview = createAsyncThunk('reviews/delete',
   async ({ reviewId, vinylId }, api) => {
     try {
       await deleteReviewRequest(reviewId);
-      return await confirmReview({ id: reviewId, vinylId }, true, api);
+      const removed = { id: reviewId, vinylId };
+      if (api.getState().reviews.mutations[reviewId]?.requestId === api.requestId) {
+        api.dispatch(reviewsSlice.actions.reviewSaved({ review: removed, removed: true, requestId: api.requestId }));
+        await refreshQueries(vinylId, api);
+      }
+      return removed;
     } catch (error) { return api.rejectWithValue(getMessage(error)); }
   },
   { condition: canMutate });
@@ -249,20 +259,30 @@ const reviewsSlice = createSlice({
       state.submittingVinylId = null;
       state.submitRequestId = null;
     });
-    for (const thunk of [updateReview, deleteReview]) {
-      builder.addCase(thunk.pending, (state, action) => {
-        state.mutations[action.meta.arg.reviewId] = { status: 'loading', error: '', requestId: action.meta.requestId };
-      }).addCase(thunk.fulfilled, (state, action) => {
-        const request = state.mutations[action.meta.arg.reviewId];
-        if (!request || request.requestId !== action.meta.requestId) return;
-        request.status = 'succeeded';
-      }).addCase(thunk.rejected, (state, action) => {
-        const request = state.mutations[action.meta.arg.reviewId];
-        if (!request || request.requestId !== action.meta.requestId) return;
-        request.status = 'failed';
-        request.error = getError(action);
-      });
-    }
+    builder.addCase(updateReview.pending, (state, action) => {
+      state.mutations[action.meta.arg.reviewId] = { status: 'loading', error: '', requestId: action.meta.requestId };
+    }).addCase(updateReview.fulfilled, (state, action) => {
+      const request = state.mutations[action.meta.arg.reviewId];
+      if (!request || request.requestId !== action.meta.requestId) return;
+      request.status = 'succeeded';
+    }).addCase(updateReview.rejected, (state, action) => {
+      const request = state.mutations[action.meta.arg.reviewId];
+      if (!request || request.requestId !== action.meta.requestId) return;
+      request.status = 'failed';
+      request.error = getError(action);
+    });
+    builder.addCase(deleteReview.pending, (state, action) => {
+      state.mutations[action.meta.arg.reviewId] = { status: 'loading', error: '', requestId: action.meta.requestId };
+    }).addCase(deleteReview.fulfilled, (state, action) => {
+      const request = state.mutations[action.meta.arg.reviewId];
+      if (!request || request.requestId !== action.meta.requestId) return;
+      request.status = 'succeeded';
+    }).addCase(deleteReview.rejected, (state, action) => {
+      const request = state.mutations[action.meta.arg.reviewId];
+      if (!request || request.requestId !== action.meta.requestId) return;
+      request.status = 'failed';
+      request.error = getError(action);
+    });
   }
 });
 

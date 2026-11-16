@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import AudioProgress from './AudioProgress';
 import AudioWaveform from './AudioWaveform';
+import { claimPlayback } from './playback';
 const AudioPlayer = ({
   preview,
   autoPlay = false
 }) => {
   const audioRef = useRef(null);
+  const releaseRef = useRef(null);
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [error, setError] = useState('');
@@ -21,7 +23,10 @@ const AudioPlayer = ({
     if (autoPlay && audio) {
       audio.play().catch(() => setError('No se pudo iniciar el audio. Presioná reproducir para escucharlo.'));
     }
-    return () => { if (audio) audio.pause(); };
+    return () => {
+      if (audio) audio.pause();
+      releaseRef.current?.();
+    };
   }, [autoPlay, preview?.id, preview?.url]);
   const toggle = () => {
     if (!preview?.url) return Promise.resolve();
@@ -44,6 +49,9 @@ const AudioPlayer = ({
       const seconds = event.currentTarget.duration;
       if (Number.isFinite(seconds)) setDuration(seconds);
     }} onPlay={event => {
+      const current = event.currentTarget;
+      releaseRef.current?.();
+      releaseRef.current = claimPlayback(() => current.pause());
       document.querySelectorAll('audio').forEach(audio => {
         if (audio !== event.currentTarget) audio.pause();
       });
