@@ -1,13 +1,14 @@
 import { useState } from 'react';
-import { createArtist, deleteArtist } from '../../../services/adminService';
+import { useDispatch } from 'react-redux';
+import { createAdminArtist, deleteAdminArtist } from '../../../Redux/slices/adminCatalogSlice';
 import { normalizeText } from '../adminUtils';
 const ArtistCreator = ({
   artists,
-  onCreated,
   onSelect,
   selectedId,
   onDeleted
 }) => {
+  const dispatch = useDispatch();
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState('');
   const [error, setError] = useState('');
@@ -19,7 +20,7 @@ const ArtistCreator = ({
     const id = deletingArtist.id;
     setBusy(true);
     setError('');
-    return deleteArtist(id)
+    return dispatch(deleteAdminArtist({ artistId: id })).unwrap()
       .then(() => {
         onDeleted(id);
         setDeletingArtist(null);
@@ -43,8 +44,7 @@ const ArtistCreator = ({
     }
     setBusy(true);
     setError('');
-    return Promise.resolve(createArtist(trimmed)).then(artist => {
-      onCreated(artist);
+    return dispatch(createAdminArtist(trimmed)).unwrap().then(artist => {
       onSelect(String(artist.id));
       setAdding(false);
       setName('');

@@ -1,7 +1,7 @@
 import { statusLabels } from '../../../data/orderStatuses'
 import { ORDER_TRANSITIONS, formatDateTime, formatMoney, orderStatusName } from '../adminUtils'
 
-const RecentOrdersTable = ({ orders = [], limit = 8, loading = false, updatingId = null, onStatusChange }) => {
+const RecentOrdersTable = ({ orders = [], limit = 8, loading = false, updatingIds = new Set(), onStatusChange }) => {
   const recent = [...orders]
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     .slice(0, limit)
@@ -35,7 +35,7 @@ const RecentOrdersTable = ({ orders = [], limit = 8, loading = false, updatingId
               {recent.map((order) => {
                 const status = orderStatusName(order)
                 const nextStatuses = ORDER_TRANSITIONS[status] ?? []
-                const isUpdating = updatingId === order.id
+                const isUpdating = updatingIds.has(order.id)
                 return (
                   <tr key={order.id}>
                     <td className="mono">#{String(order.id).padStart(5, '0')}</td>

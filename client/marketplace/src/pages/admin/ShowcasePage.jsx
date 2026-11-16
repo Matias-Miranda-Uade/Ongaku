@@ -1,37 +1,34 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import ShowcaseHeader from '../../components/admin/showcase/ShowcaseHeader';
 import ShowcaseFilters, { DEFAULT_SHOWCASE_FILTERS } from '../../components/admin/showcase/ShowcaseFilters';
 import ShowcaseTable from '../../components/admin/showcase/ShowcaseTable';
-import { indexById, normalizeText } from '../../components/admin/adminUtils';
-import { getAdminVinyls, getCatalogLookups, setVinylEnabled } from '../../services/adminService';
+import { normalizeText } from '../../components/admin/adminUtils';
+import { fetchAdminLookups, fetchAdminVinyls, selectAdminGenres, selectAdminLookupsRequest, selectAdminVinylRows, selectAdminVinylsRequest, selectBusyVinylIds, setAdminVinylEnabled } from '../../Redux/slices/adminCatalogSlice';
 const MODE_STORAGE_KEY = 'ongaku-admin-showcase-mode';
 const readStoredMode = () => window.localStorage.getItem(MODE_STORAGE_KEY) === 'batch' ? 'batch' : 'instant';
 const ShowcasePage = () => {
-  const [lookups, setLookups] = useState({
-    artists: [],
-    genres: [],
-    categories: []
-  });
-  const {
-    genres
-  } = lookups;
-  const artistsById = indexById(lookups.artists);
-  const genresById = indexById(lookups.genres);
-  useEffect(() => {
-    let active = true;
-    getCatalogLookups().then(data => {
-      if (active) setLookups(data);
-    }).catch(error => {
-      if (active) setError(error.message);
-    });
-    return () => {
-      active = false;
-    };
-  }, []);
-  const [vinyls, setVinyls] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const dispatch = useDispatch();
+  const rows = useSelector(selectAdminVinylRows);
+  const genres = useSelector(selectAdminGenres);
+  const request = useSelector(selectAdminVinylsRequest);
+  const lookupsRequest = useSelector(selectAdminLookupsRequest);
+  const savingIds = useSelector(selectBusyVinylIds);
+  const [actionError, setActionError] = useState('');
   const [notice, setNotice] = useState('');
+  const loading = request.status === 'idle' || request.status === 'loading';
+  const error = actionError
+    || (request.status === 'failed' ? request.error : '')
+    || (lookupsRequest.status === 'failed' ? lookupsRequest.error : '');
+  useEffect(() => {
+    dispatch(fetchAdminLookups());
+    dispatch(fetchAdminVinyls());
+  }, [dispatch]);
+  const load = () => {
+    setActionError('');
+    dispatch(fetchAdminLookups({ force: lookupsRequest.status === 'failed' }));
+    return dispatch(fetchAdminVinyls({ force: true }));
+  };
   const [mode, setMode] = useState('instant');
   useEffect(() => {
     Promise.resolve().then(readStoredMode).then(setMode).catch(() => setMode('instant'));
@@ -39,22 +36,7 @@ const ShowcasePage = () => {
   const [filters, setFilters] = useState(DEFAULT_SHOWCASE_FILTERS);
   const [pending, setPending] = useState(() => new Map());
   const [selection, setSelection] = useState(() => new Set());
-  const [savingIds, setSavingIds] = useState(() => new Set());
   const [applying, setApplying] = useState(false);
-  const load = useCallback(() => {
-    setLoading(true);
-    setError('');
-    return getAdminVinyls().then(_result => {
-      setVinyls(_result);
-    }).catch(loadError => {
-      setError(loadError.message);
-    }).finally(() => {
-      setLoading(false);
-    });
-  }, []);
-  useEffect(() => {
-    load();
-  }, [load]);
   useEffect(() => {
     Promise.resolve()
       .then(() => window.localStorage.setItem(MODE_STORAGE_KEY, mode))
@@ -71,11 +53,6 @@ const ShowcasePage = () => {
   }, [pending]);
   const isEnabled = useCallback(vinyl => pending.has(vinyl.id) ? pending.get(vinyl.id) : Boolean(vinyl.enabled), [pending]);
   const isPending = useCallback(id => pending.has(id), [pending]);
-  const rows = vinyls.map(vinyl => ({
-    ...vinyl,
-    artistName: artistsById[String(vinyl.artistId)]?.name ?? '',
-    genreName: (vinyl.genreIds?.length ? vinyl.genreIds : [vinyl.genreId]).map(id => genresById[String(id)]?.name).filter(Boolean).join(' / ')
-  }));
   function calculateVisibleRows() {
     const term = normalizeText(filters.search);
     return rows.filter(row => {
@@ -102,46 +79,34 @@ const ShowcasePage = () => {
     hidden: 0,
     soldOut: []
   });
-  const markSaving = (ids, saving) => setSavingIds(current => {
-    const next = new Set(current);
-    ids.forEach(id => saving ? next.add(id) : next.delete(id));
-    return next;
-  });
-  const persist = changes => {
-    const ids = changes.map(([id]) => id);
-    markSaving(ids, true);
-    return Promise.allSettled(changes.map(([id, enabled]) => setVinylEnabled(id, enabled))).then(results => {
-      markSaving(ids, false);
-      const updated = new Map();
-      const failed = [];
-      results.forEach((result, index) => {
-        if (result.status === 'fulfilled') updated.set(result.value.id, result.value);else failed.push({
-          id: changes[index][0],
-          message: result.reason?.message
-        });
+  // Cada cambio es una escritura independiente: los que fallan no frenan al resto.
+  const persist = changes => Promise.allSettled(changes.map(([vinylId, enabled]) =>
+    dispatch(setAdminVinylEnabled({ vinylId, enabled })).unwrap())).then(results => {
+    const updatedIds = [];
+    const failed = [];
+    results.forEach((result, index) => {
+      if (result.status === 'fulfilled') updatedIds.push(result.value.id);else failed.push({
+        id: changes[index][0],
+        message: result.reason?.message
       });
-      setVinyls(current => current.map(vinyl => updated.has(vinyl.id) ? {
-        ...vinyl,
-        ...updated.get(vinyl.id)
-      } : vinyl));
-      return {
-        updatedIds: [...updated.keys()],
-        failed
-      };
     });
-  };
+    return {
+      updatedIds,
+      failed
+    };
+  });
   const describeResult = (updatedCount, failed) => {
     if (failed.length === 0) {
       setNotice(`${updatedCount} vinilo${updatedCount === 1 ? '' : 's'} actualizado${updatedCount === 1 ? '' : 's'} en la vitrina.`);
-      setError('');
+      setActionError('');
     } else {
       setNotice(updatedCount ? `${updatedCount} actualizados.` : '');
-      setError(`${failed.length} cambio${failed.length === 1 ? '' : 's'} no se pudo aplicar: ${failed[0].message}`);
+      setActionError(`${failed.length} cambio${failed.length === 1 ? '' : 's'} no se pudo aplicar: ${failed[0].message}`);
     }
   };
   const changeVisibility = (ids, enabled) => {
     setNotice('');
-    const byId = new Map(vinyls.map(vinyl => [vinyl.id, vinyl]));
+    const byId = new Map(rows.map(vinyl => [vinyl.id, vinyl]));
     if (mode === 'batch') {
       setPending(current => {
         const next = new Map(current);

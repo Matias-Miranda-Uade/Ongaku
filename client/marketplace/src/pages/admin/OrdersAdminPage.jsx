@@ -1,48 +1,33 @@
-import { useCallback, useEffect, useState } from 'react';
-import { getAllOrders, updateOrderStatus } from '../../services/adminService';
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchAdminOrders, selectAdminOrders, selectAdminOrdersRequest, selectUpdatingOrderIds, updateAdminOrderStatus } from '../../Redux/slices/adminOrdersSlice';
 import { ORDER_TRANSITIONS, formatDateTime, formatMoney, orderStatusName } from '../../components/admin/adminUtils';
 import { statusLabels } from '../../data/orderStatuses';
 const OrdersAdminPage = () => {
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [updatingId, setUpdatingId] = useState(null);
-  const [error, setError] = useState('');
+  const dispatch = useDispatch();
+  const sortedOrders = useSelector(selectAdminOrders);
+  const request = useSelector(selectAdminOrdersRequest);
+  const updatingIds = useSelector(selectUpdatingOrderIds);
+  const [actionError, setActionError] = useState('');
   const [notice, setNotice] = useState('');
-  const load = useCallback(() => {
-    setLoading(true);
-    setError('');
-    return getAllOrders().then(_result => {
-      setOrders(_result);
-    }).catch(requestError => {
-      setError(requestError.message || 'No se pudieron cargar las órdenes.');
-    }).finally(() => {
-      setLoading(false);
-    });
-  }, []);
+  const loading = request.status === 'loading' || request.status === 'idle';
+  const error = actionError || (request.status === 'failed' ? request.error || 'No se pudieron cargar las órdenes.' : '');
   useEffect(() => {
-    load();
-  }, [load]);
+    dispatch(fetchAdminOrders());
+  }, [dispatch]);
+  const load = () => {
+    setActionError('');
+    return dispatch(fetchAdminOrders({ force: true }));
+  };
   const changeStatus = (order, status) => {
-    setUpdatingId(order.id);
-    setError('');
+    setActionError('');
     setNotice('');
-    return Promise.resolve(updateOrderStatus(order.id, status)).then(updated => {
-      setOrders(current => current.map(item => item.id === order.id ? {
-        ...item,
-        ...updated,
-        orderStatus: updated.orderStatus ?? {
-          ...item.orderStatus,
-          name: status
-        }
-      } : item));
+    return dispatch(updateAdminOrderStatus({ orderId: order.id, status })).unwrap().then(() => {
       setNotice(`La orden #${order.id} ahora está ${statusLabels[status]?.toLowerCase() ?? status}.`);
     }).catch(requestError => {
-      setError(requestError.message || 'No se pudo actualizar el estado de la orden.');
-    }).finally(() => {
-      setUpdatingId(null);
+      setActionError(requestError.message || 'No se pudo actualizar el estado de la orden.');
     });
   };
-  const sortedOrders = [...orders].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   return <section className="admin-page" aria-labelledby="admin-orders-title">
       <header className="admin-page-header">
         <div>
@@ -68,7 +53,7 @@ const OrdersAdminPage = () => {
                     <td className="mono muted">{formatDateTime(order.createdAt)}</td>
                     <td className="num">{order.totalUnits ?? order.items?.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0) ?? '—'}</td>
                     <td className="num">{formatMoney(order.total)}</td>
-                    <td>{nextStatuses.length === 0 ? <span className={`order-pill order-pill-${status.toLowerCase()}`}>{statusLabels[status] ?? status}</span> : <label className="order-status-select"><span className="sr-only">Cambiar estado de la orden {order.id}</span><select value={status} disabled={updatingId === order.id} onChange={event => changeStatus(order, event.target.value)}><option value={status}>{statusLabels[status] ?? status}</option>{nextStatuses.map(next => <option key={next} value={next}>{statusLabels[next]}</option>)}</select></label>}</td>
+                    <td>{nextStatuses.length === 0 ? <span className={`order-pill order-pill-${status.toLowerCase()}`}>{statusLabels[status] ?? status}</span> : <label className="order-status-select"><span className="sr-only">Cambiar estado de la orden {order.id}</span><select value={status} disabled={updatingIds.has(order.id)} onChange={event => changeStatus(order, event.target.value)}><option value={status}>{statusLabels[status] ?? status}</option>{nextStatuses.map(next => <option key={next} value={next}>{statusLabels[next]}</option>)}</select></label>}</td>
                     <td><details className="admin-order-detail"><summary>Ver detalle</summary><ul>{(order.items ?? []).map((item, index) => <li key={item.vinylId ?? index}>{item.name} × {item.quantity}</li>)}</ul></details></td>
                   </tr>;
             })}</tbody>

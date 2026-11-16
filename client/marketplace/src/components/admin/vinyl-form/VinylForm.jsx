@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import VinylFormFields from './VinylFormFields';
 import CoverUploader from './CoverUploader';
 import AudioUploader from './AudioUploader';
@@ -9,7 +10,7 @@ import VinylDescriptionInput from './VinylDescriptionInput';
 import PublicationToggle from './PublicationToggle';
 import VinylFormActions from './VinylFormActions';
 import { FIELD_ORDER, MAX_ALBUM_URL_LENGTH, mapServerFieldErrors, toFormValues, toVinylPayload, validateVinyl } from './vinylFormModel';
-import { createAudioPreview, createVinyl, getAdminVinyls, getAudioPreviews, getCatalogLookups, setVinylEnabled, updateVinyl } from '../../../services/adminService';
+import { createAdminAudioPreview, fetchAdminLookups, fetchAdminVinyls, fetchAudioPreviews, saveAdminVinyl, selectAdminArtists, selectAdminCategories, selectAdminGenres, selectAdminLookupsRequest, selectAudioPreviews, selectUsedPreviewIds } from '../../../Redux/slices/adminCatalogSlice';
 import { getAlbumUrl } from '../../vinyl-detail/albumUrl';
 const FOCUS_TARGETS = {
   genreId: '#vf-genre-label + .genre-chips button',
@@ -26,36 +27,19 @@ const VinylForm = ({
 }) => {
   const isEdit = mode === 'edit';
   const initialValues = toFormValues(initialData);
-  const [lookups, setLookups] = useState({
-    artists: [],
-    genres: [],
-    categories: []
-  });
-  const [lookupError, setLookupError] = useState('');
-  const [lookupReload, setLookupReload] = useState(0);
-  const {
-    artists,
-    categories,
-    genres
-  } = lookups;
+  const dispatch = useDispatch();
+  const artists = useSelector(selectAdminArtists);
+  const categories = useSelector(selectAdminCategories);
+  const genres = useSelector(selectAdminGenres);
+  const lookupsRequest = useSelector(selectAdminLookupsRequest);
+  const previews = useSelector(selectAudioPreviews);
+  const usedPreviewIds = useSelector(selectUsedPreviewIds);
+  const lookupError = lookupsRequest.status === 'failed' ? lookupsRequest.error : '';
   useEffect(() => {
-    let active = true;
-    setLookupError('');
-    getCatalogLookups().then(data => {
-      if (active) setLookups(data);
-    }).catch(error => {
-      if (active) setLookupError(error.message);
-    });
-    return () => {
-      active = false;
-    };
-  }, [lookupReload]);
-  const addGenre = genre => {
-    setLookups(current => ({
-      ...current,
-      genres: [...current.genres, genre]
-    }));
-  };
+    dispatch(fetchAdminLookups());
+    dispatch(fetchAudioPreviews());
+    dispatch(fetchAdminVinyls());
+  }, [dispatch]);
   const [values, setValues] = useState(initialValues);
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
@@ -63,26 +47,11 @@ const VinylForm = ({
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState('');
   const [coverStatus, setCoverStatus] = useState('idle');
-  const [previews, setPreviews] = useState([]);
-  const [usedPreviewIds, setUsedPreviewIds] = useState(() => new Set());
   const createdAudio = useRef(null);
   const formRef = useRef(null);
   useEffect(() => {
     setValues(toFormValues(initialData));
   }, [initialData]);
-  useEffect(() => {
-    let active = true;
-    Promise.allSettled([getAudioPreviews(), getAdminVinyls()]).then(([previewsResult, vinylsResult]) => {
-      if (!active) return;
-      if (previewsResult.status === 'fulfilled') setPreviews(previewsResult.value);
-      if (vinylsResult.status === 'fulfilled') {
-        setUsedPreviewIds(new Set(vinylsResult.value.filter(vinyl => vinyl.audioPreviewId).map(vinyl => String(vinyl.audioPreviewId))));
-      }
-    });
-    return () => {
-      active = false;
-    };
-  }, []);
   const dirty = JSON.stringify(values) !== JSON.stringify(initialValues);
   useEffect(() => {
     if (!dirty || submitting) return undefined;
@@ -154,15 +123,14 @@ const VinylForm = ({
     if (audio.mode !== 'new') return Promise.resolve(null);
     const key = `${audio.url.trim()}|${audio.durationSeconds}`;
     if (createdAudio.current?.key === key) return Promise.resolve(createdAudio.current.id);
-    return Promise.resolve(createAudioPreview({
+    return dispatch(createAdminAudioPreview({
       url: audio.url.trim(),
       durationSeconds: Number(audio.durationSeconds) || 30
-    })).then(preview => {
+    })).unwrap().then(preview => {
       createdAudio.current = {
         key,
         id: preview.id
       };
-      setPreviews(current => [...current, preview]);
       return preview.id;
     });
   };
@@ -180,20 +148,13 @@ const VinylForm = ({
     }
     setSubmitting(true);
     return resolveAudioPreviewId().then(audioPreviewId => {
-      const payload = toVinylPayload(values, audioPreviewId);
-      return (isEdit ? Promise.resolve(updateVinyl(initialData.id, payload)) : Promise.resolve(createVinyl(payload))).then(saved => {
-        const wantedEnabled = Boolean(values.enabled);
-        const savedEnabled = saved?.enabled ?? true;
-        if (wantedEnabled !== savedEnabled) {
-          return setVinylEnabled(saved.id, wantedEnabled).then(_result => {
-            saved = _result;
-            createdAudio.current = null;
-            onSuccess?.(saved);
-          });
-        } else {
-          createdAudio.current = null;
-          onSuccess?.(saved);
-        }
+      return dispatch(saveAdminVinyl({
+        vinylId: isEdit ? initialData.id : null,
+        payload: toVinylPayload(values, audioPreviewId),
+        enabled: values.enabled
+      })).unwrap().then(saved => {
+        createdAudio.current = null;
+        onSuccess?.(saved);
       });
     }).catch(submitError => {
       const fieldErrors = mapServerFieldErrors(submitError.fieldErrors);
@@ -235,7 +196,7 @@ const VinylForm = ({
   };
   const errorCount = Object.keys(visibleErrors).length;
   return <form ref={formRef} className="vinyl-form" onSubmit={handleSubmit} noValidate aria-busy={submitting}>
-      {lookupError && <div className="admin-alert" role="alert"><p>No se pudieron cargar artistas, categorías o géneros: {lookupError}</p><button type="button" onClick={() => setLookupReload(n => n + 1)}>Reintentar</button></div>}
+      {lookupError && <div className="admin-alert" role="alert"><p>No se pudieron cargar artistas, categorías o géneros: {lookupError}</p><button type="button" onClick={() => dispatch(fetchAdminLookups({ force: true }))}>Reintentar</button></div>}
       {serverError && <div className="admin-alert" role="alert">
           <p>{serverError}</p>
         </div>}
@@ -245,20 +206,13 @@ const VinylForm = ({
 
       <div className="vinyl-form-grid">
         <div className="vinyl-form-main">
-          <VinylFormFields values={values} errors={visibleErrors} onChange={handleChange} onBlur={handleBlur} artists={artists} onArtistCreated={artist => setLookups(current => ({
-          ...current,
-          artists: [...current.artists, artist]
-        }))} onArtistDeleted={id => {
-          setLookups(current => ({ ...current, artists: current.artists.filter(artist => String(artist.id) !== String(id)) }));
+          <VinylFormFields values={values} errors={visibleErrors} onChange={handleChange} onBlur={handleBlur} artists={artists} onArtistDeleted={id => {
           setValues(current => String(current.artistId) === String(id) ? { ...current, artistId: '' } : current);
-        }} categories={categories} onCategoryCreated={category => setLookups(current => ({
-          ...current,
-          categories: [...current.categories, category]
-        }))} lockedRelations={lockedRelations} />
+        }} categories={categories} lockedRelations={lockedRelations} />
 
           <fieldset className="vf-section">
             <legend><span className="vf-step">02</span> Género y descripción</legend>
-            <GenreSelector value={values.genreIds} onChange={genreIds => handleChange('genreIds', genreIds)} genres={genres} onGenreCreated={addGenre} error={visibleErrors.genreIds || visibleErrors.genreId} locked={lockedRelations.genreId} />
+            <GenreSelector value={values.genreIds} onChange={genreIds => handleChange('genreIds', genreIds)} genres={genres} error={visibleErrors.genreIds || visibleErrors.genreId} locked={lockedRelations.genreId} />
             <VinylDescriptionInput value={values.description} onChange={handleChange} onBlur={handleBlur} error={visibleErrors.description} />
           </fieldset>
 

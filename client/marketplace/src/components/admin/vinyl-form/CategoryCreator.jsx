@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { createCategory } from '../../../services/adminService';
+import { useDispatch } from 'react-redux';
+import { createAdminCategory } from '../../../Redux/slices/adminCatalogSlice';
 import { normalizeText } from '../adminUtils';
 const CategoryCreator = ({
   categories,
-  onCreated,
   onSelect
 }) => {
+  const dispatch = useDispatch();
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState('');
   const [error, setError] = useState('');
@@ -26,8 +27,7 @@ const CategoryCreator = ({
     }
     setBusy(true);
     setError('');
-    return Promise.resolve(createCategory(trimmed)).then(category => {
-      onCreated(category);
+    return dispatch(createAdminCategory(trimmed)).unwrap().then(category => {
       onSelect(String(category.id));
       setAdding(false);
       setName('');

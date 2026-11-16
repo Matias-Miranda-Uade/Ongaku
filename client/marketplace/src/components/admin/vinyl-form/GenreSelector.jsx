@@ -1,14 +1,15 @@
 import { useState } from 'react';
-import { createGenre } from '../../../services/adminService';
+import { useDispatch } from 'react-redux';
+import { createAdminGenre } from '../../../Redux/slices/adminCatalogSlice';
 import { FieldError } from './VinylFormFields';
 import { normalizeText } from '../adminUtils';
 const GenreSelector = ({
   value = [],
   onChange,
   genres = [],
-  onGenreCreated,
   error
 }) => {
+  const dispatch = useDispatch();
   const [adding, setAdding] = useState(false);
   const [newName, setNewName] = useState('');
   const [createError, setCreateError] = useState('');
@@ -30,8 +31,7 @@ const GenreSelector = ({
     }
     setCreating(true);
     setCreateError('');
-    return Promise.resolve(createGenre(name)).then(genre => {
-      onGenreCreated?.(genre);
+    return dispatch(createAdminGenre(name)).unwrap().then(genre => {
       select(String(genre.id));
       setAdding(false);
       setNewName('');

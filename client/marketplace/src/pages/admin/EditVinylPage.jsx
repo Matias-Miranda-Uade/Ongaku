@@ -1,30 +1,24 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import VinylForm from '../../components/admin/vinyl-form/VinylForm';
-import { getAdminVinylById } from '../../services/adminService';
+import { fetchAdminVinylById, selectAdminVinylDetail } from '../../Redux/slices/adminCatalogSlice';
 import { RouteLoader } from '../../routes/ProtectedRoute';
 const EditVinylPage = () => {
   const {
     vinylId
   } = useParams();
   const navigate = useNavigate();
-  const [vinyl, setVinyl] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const load = useCallback(() => {
-    setLoading(true);
-    setError(null);
-    return Promise.resolve(getAdminVinylById(vinylId)).then(_result => {
-      setVinyl(_result);
-    }).catch(loadError => {
-      setError(loadError);
-    }).finally(() => {
-      setLoading(false);
-    });
-  }, [vinylId]);
+  const dispatch = useDispatch();
+  const detail = useSelector(state => selectAdminVinylDetail(state, vinylId));
+  // Se pide siempre el detalle actualizado antes de editar; el listado puede tener hasta 30 s.
+  const load = () => dispatch(fetchAdminVinylById({ vinylId, force: true }));
   useEffect(() => {
     load();
-  }, [load]);
+  }, [dispatch, vinylId]);
+  const loading = detail.status === 'idle' || detail.status === 'loading';
+  const vinyl = detail.status === 'succeeded' ? detail.vinyl : null;
+  const error = detail.status === 'failed' ? { message: detail.error, isNotFound: detail.notFound } : null;
   return <section className="admin-page" aria-labelledby="edit-vinyl-title">
       <header className="admin-page-header">
         <div>

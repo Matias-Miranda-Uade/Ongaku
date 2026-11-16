@@ -1,144 +1,79 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import InventoryStats from '../../components/admin/inventory/InventoryStats';
 import InventoryActions from '../../components/admin/inventory/InventoryActions';
 import InventoryFilters, { DEFAULT_INVENTORY_FILTERS } from '../../components/admin/inventory/InventoryFilters';
 import InventoryTable from '../../components/admin/inventory/InventoryTable';
-import { getStockStatus, indexById, normalizeText } from '../../components/admin/adminUtils';
-import { adjustVinylStock, deleteVinyl, getAdminVinyls, getCatalogLookups, setVinylEnabled } from '../../services/adminService';
-const compare = (a, b) => {
-  if (typeof a === 'number' && typeof b === 'number') return a - b;
-  return String(a ?? '').localeCompare(String(b ?? ''), 'es', {
-    sensitivity: 'base'
-  });
-};
+import { adjustAdminVinylStock, deleteAdminVinyl, fetchAdminLookups, fetchAdminVinyls, selectAdminCategories, selectAdminGenres, selectAdminLookupsRequest, selectAdminVinyls, selectAdminVinylsRequest, selectBusyVinylIds, selectInventoryRows, setAdminVinylEnabled } from '../../Redux/slices/adminCatalogSlice';
 const InventoryPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [lookups, setLookups] = useState({
-    artists: [],
-    genres: [],
-    categories: []
-  });
-  const {
-    genres,
-    categories
-  } = lookups;
-  const artistsById = indexById(lookups.artists);
-  const genresById = indexById(lookups.genres);
-  useEffect(() => {
-    let active = true;
-    getCatalogLookups().then(data => {
-      if (active) setLookups(data);
-    }).catch(error => {
-      if (active) setError(error.message);
-    });
-    return () => {
-      active = false;
-    };
-  }, []);
-  const [vinyls, setVinyls] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [notice, setNotice] = useState(location.state?.flash ?? '');
-  const [blockedDelete, setBlockedDelete] = useState(null);
+  const dispatch = useDispatch();
   const [filters, setFilters] = useState(DEFAULT_INVENTORY_FILTERS);
   const [sort, setSort] = useState({
     key: 'name',
     direction: 'asc'
   });
-  const [busyIds, setBusyIds] = useState(() => new Set());
+  const vinyls = useSelector(selectAdminVinyls);
+  const visibleRows = useSelector(state => selectInventoryRows(state, filters, sort));
+  const genres = useSelector(selectAdminGenres);
+  const categories = useSelector(selectAdminCategories);
+  const request = useSelector(selectAdminVinylsRequest);
+  const lookupsRequest = useSelector(selectAdminLookupsRequest);
+  const busyIds = useSelector(selectBusyVinylIds);
+  const [actionError, setActionError] = useState('');
+  const [notice, setNotice] = useState(location.state?.flash ?? '');
+  const [blockedDelete, setBlockedDelete] = useState(null);
+  const loading = request.status === 'idle' || request.status === 'loading';
+  const error = actionError
+    || (request.status === 'failed' ? request.error : '')
+    || (lookupsRequest.status === 'failed' ? lookupsRequest.error : '');
   useEffect(() => {
     if (location.state?.flash) navigate(location.pathname, {
       replace: true,
       state: null
     });
   }, [location, navigate]);
-  const load = useCallback(() => {
-    setLoading(true);
-    setError('');
-    return getAdminVinyls().then(_result => {
-      setVinyls(_result);
-    }).catch(loadError => {
-      setError(loadError.message);
-    }).finally(() => {
-      setLoading(false);
-    });
-  }, []);
   useEffect(() => {
-    load();
-  }, [load]);
-  const rows = vinyls.map(vinyl => ({
-    ...vinyl,
-    artistName: artistsById[String(vinyl.artistId)]?.name ?? '',
-    genreName: (vinyl.genreIds?.length ? vinyl.genreIds : [vinyl.genreId]).map(id => genresById[String(id)]?.name).filter(Boolean).join(' / '),
-    finalPrice: vinyl.finalPrice ?? vinyl.price
-  }));
-  function calculateVisibleRows() {
-    const term = normalizeText(filters.search);
-    const filtered = rows.filter(row => {
-      if (term && ![row.name, row.artistName, String(row.id)].some(value => normalizeText(value).includes(term))) return false;
-      if (filters.genreId && !(row.genreIds?.length ? row.genreIds : [row.genreId]).map(String).includes(filters.genreId)) return false;
-      if (filters.categoryId && String(row.categoryId) !== filters.categoryId) return false;
-      if (filters.stock !== 'all' && getStockStatus(row.stock) !== filters.stock) return false;
-      if (filters.visibility === 'visible' && !row.enabled) return false;
-      if (filters.visibility === 'hidden' && row.enabled) return false;
-      return true;
-    });
-    const direction = sort.direction === 'asc' ? 1 : -1;
-    return filtered.sort((a, b) => compare(a[sort.key], b[sort.key]) * direction);
-  }
-  const visibleRows = calculateVisibleRows();
+    dispatch(fetchAdminLookups());
+    dispatch(fetchAdminVinyls());
+  }, [dispatch]);
+  const load = () => {
+    setActionError('');
+    dispatch(fetchAdminLookups({ force: lookupsRequest.status === 'failed' }));
+    return dispatch(fetchAdminVinyls({ force: true }));
+  };
   const handleSort = key => {
     setSort(current => ({
       key,
       direction: current.key === key && current.direction === 'asc' ? 'desc' : 'asc'
     }));
   };
-  const withBusy = (id, task) => {
-    setBusyIds(current => new Set(current).add(id));
-    return Promise.resolve(task()).finally(() => {
-      setBusyIds(current => {
-        const next = new Set(current);
-        next.delete(id);
-        return next;
-      });
+  const handleAdjustStock = (vinyl, delta) => {
+    setActionError('');
+    return dispatch(adjustAdminVinylStock({ vinylId: vinyl.id, quantity: delta })).unwrap().catch(stockError => {
+      setActionError(stockError.message);
     });
   };
-  const replaceVinyl = updated => {
-    setVinyls(current => current.map(vinyl => vinyl.id === updated.id ? {
-      ...vinyl,
-      ...updated
-    } : vinyl));
-  };
-  const handleAdjustStock = (vinyl, delta) => withBusy(vinyl.id, () => {
-    setError('');
-    return Promise.resolve(adjustVinylStock(vinyl.id, delta)).then(_result3 => {
-      replaceVinyl(_result3);
-    }).catch(stockError => {
-      setError(stockError.message);
-    });
-  });
-  const handleDelete = vinyl => withBusy(vinyl.id, () => {
-    setError('');
+  const handleDelete = vinyl => {
+    setActionError('');
     setNotice('');
     setBlockedDelete(null);
-    return Promise.resolve(deleteVinyl(vinyl.id)).then(() => {
-      setVinyls(current => current.filter(item => item.id !== vinyl.id));
+    return dispatch(deleteAdminVinyl({ vinylId: vinyl.id })).unwrap().then(() => {
       setNotice(`"${vinyl.name}" se eliminó del inventario.`);
     }).catch(deleteError => {
-      if (deleteError.isConflict) setBlockedDelete(vinyl);else setError(deleteError.message);
+      if (deleteError.isConflict) setBlockedDelete(vinyl);else setActionError(deleteError.message);
     });
-  });
-  const handleHideInstead = vinyl => withBusy(vinyl.id, () => {
-    return setVinylEnabled(vinyl.id, false).then(_result5 => {
-      replaceVinyl(_result5);
+  };
+  const handleHideInstead = vinyl => {
+    return dispatch(setAdminVinylEnabled({ vinylId: vinyl.id, enabled: false })).unwrap().then(() => {
       setBlockedDelete(null);
       setNotice(`"${vinyl.name}" quedó oculto de la vitrina.`);
     }).catch(hideError => {
-      setError(hideError.message);
+      setActionError(hideError.message);
     });
-  });
+  };
   return <section className="admin-page" aria-labelledby="inventory-title">
       <header className="admin-page-header">
         <div>
