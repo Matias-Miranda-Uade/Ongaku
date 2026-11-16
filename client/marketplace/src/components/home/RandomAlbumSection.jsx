@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { selectVinyls } from '../../Redux/slices/catalogSlice'
-import { getAudioPreview } from '../../services/api'
+import { getCachedAudioPreview } from '../../services/audioPreviewCache'
 import { getAlbumPreview } from './albumPreview'
 import MediaPlayer from '../audio/MediaPlayer'
 import VinylCover from '../vinyl/VinylCover'
@@ -23,7 +23,7 @@ const RandomAlbumSection = () => {
     Promise.all(vinyls.map(async album => {
       let preview = null
       try {
-        preview = album.audioPreviewId ? await getAudioPreview(album.audioPreviewId) : null
+        preview = await getCachedAudioPreview(album.audioPreviewId)
       } catch {
         if (active) setFailed(true)
       }
