@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getAudioPreview } from '../../services/api'
 import MediaPlayer from './MediaPlayer'
+import { getMediaSource } from './mediaSource'
 
 const AudioPreview = ({ audioPreviewId, externalUrl }) => {
   const [preview, setPreview] = useState(null)
@@ -20,6 +21,7 @@ const AudioPreview = ({ audioPreviewId, externalUrl }) => {
   }, [audioPreviewId])
 
   if (!audioPreviewId && !externalUrl) return null
+  const source = getMediaSource(preview?.url) || getMediaSource(externalUrl)
   return (
     <section className="audio-preview-section">
       <div>
@@ -27,8 +29,8 @@ const AudioPreview = ({ audioPreviewId, externalUrl }) => {
         <h2>Escuchá el vinilo</h2>
       </div>
       {loading ? <p role="status">Cargando audio…</p>
-        : error ? <p role="alert">{error}</p>
-          : preview?.url || externalUrl ? <MediaPlayer id={preview?.id} url={preview?.url || externalUrl} durationSeconds={preview?.durationSeconds} /> : <p>No hay audio disponible.</p>}
+        : source ? <MediaPlayer key={source.url} id={preview?.id} url={source.url} durationSeconds={preview?.durationSeconds} />
+          : error ? <p role="alert">{error}</p> : <p>No hay audio disponible.</p>}
     </section>
   )
 }

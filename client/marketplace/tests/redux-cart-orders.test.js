@@ -196,3 +196,17 @@ test('crear una orden vacía el carrito sin GET extra y pago/cancelación reempl
   assert.equal(ordersStore.getState().orders.items.length, 2);
   assert.equal(ordersStore.getState().orders.items.find(order => order.id === 8).status, 'CANCELADA');
 });
+
+test('confirmaciones repetidas no descuentan ni restituyen stock dos veces', () => {
+  const store = configureStore({ reducer: { catalog }, preloadedState: {
+    catalog: { ...catalog(undefined, { type: '@@init' }), entities: { 1: { id: 1, stock: 5 } } }
+  } });
+  const order = { id: 50, status: 'PENDIENTE', items: [{ vinylId: 1, quantity: 2 }] };
+  store.dispatch(createOrder.fulfilled(order, 'first'));
+  store.dispatch(createOrder.fulfilled(order, 'duplicate'));
+  assert.equal(store.getState().catalog.entities[1].stock, 3);
+  store.dispatch(cancelOrder.fulfilled({ ...order, status: 'CANCELADA' }, 'cancel', 50));
+  store.dispatch(cancelOrder.fulfilled({ ...order, status: 'CANCELADA' }, 'duplicate-cancel', 50));
+  store.dispatch(createOrder.fulfilled(order, 'late-create'));
+  assert.equal(store.getState().catalog.entities[1].stock, 5);
+});

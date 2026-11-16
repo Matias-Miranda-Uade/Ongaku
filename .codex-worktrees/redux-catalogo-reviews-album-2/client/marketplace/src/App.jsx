@@ -1,0 +1,209 @@
+import { useContext, useEffect, useRef } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import './App.css';
+import './persona2.css';
+import './admin.css';
+import './controls.css';
+import { FavoritesProvider } from './context/FavoritesContext';
+import { AuthContext } from './context/AuthContext';
+import { fetchOrders, resetOrders } from './Redux/slices/ordersSlice';
+import { fetchMyReviews, resetReviews, setReviewOwner } from './Redux/slices/reviewsSlice';
+import { resetCart, syncCart } from './Redux/slices/cartSlice';
+
+import AppRoutes, { ADMIN_BASE_PATH, isAdminPath } from './routes/AppRoutes';
+import Header from './components/layout/Header';
+import Footer from './components/layout/Footer';
+import PageContainer from './components/layout/PageContainer';
+import HomePage from './pages/HomePage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import ProfilePage from './pages/ProfilePage';
+import FavoritesPage from './pages/FavoritesPage';
+import CartPage from './pages/CartPage';
+import OrdersPage from './pages/OrdersPage';
+import CatalogPage from './pages/CatalogPage';
+import VinylDetailPage from './pages/VinylDetailPage';
+import ReviewsPage from './pages/ReviewsPage';
+const pagePaths = {
+  home: '/',
+  login: '/app/login',
+  register: '/app/register',
+  profile: '/app/profile',
+  favorites: '/app/favorites',
+  cart: '/app/cart',
+  orders: '/app/orders',
+  catalog: '/app/catalog',
+  reviews: '/app/reviews',
+  admin: `${ADMIN_BASE_PATH}/dashboard`
+};
+const resolveRoute = pathname => {
+  if (isAdminPath(pathname)) return {
+    page: 'admin',
+    vinylId: null,
+    orderId: null
+  };
+  const vinylMatch = pathname.match(/^\/app\/catalog\/([^/]+)$/);
+  if (vinylMatch) {
+    return {
+      page: 'vinyl-detail',
+      vinylId: decodeURIComponent(vinylMatch[1])
+    };
+  }
+  const orderMatch = pathname.match(/^\/app\/orders\/(\d+)$/);
+  if (orderMatch) {
+    return {
+      page: 'orders',
+      orderId: orderMatch[1]
+    };
+  }
+  const page = Object.entries(pagePaths).find(([, path]) => path === pathname)?.[0];
+  return {
+    page: page ?? null,
+    vinylId: null,
+    orderId: null
+  };
+};
+const App = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const {
+    page,
+    vinylId: selectedVinylId,
+    orderId: selectedOrderId
+  } = resolveRoute(location.pathname);
+  const {
+    user,
+    setUser,
+    isAdmin,
+    isRestoringSession,
+    sessionError,
+    login,
+    register,
+    logout
+  } = useContext(AuthContext);
+  const dispatch = useDispatch();
+  const previousShopperId = useRef(undefined);
+  const ordersError = useSelector(state => state.orders.error);
+  const storageError = sessionError || (ordersError ? `No se pudieron cargar tus órdenes: ${ordersError}` : '');
+  const shopper = user && !isAdmin ? user : null;
+  useEffect(() => {
+    if (location.state && location.state.focusCatalogSearch) return;
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  }, [location.pathname, location.state]);
+  useEffect(() => {
+    const nextShopperId = shopper?.id ?? null;
+    const previousId = previousShopperId.current;
+    const sameSession = previousId === nextShopperId
+      || previousId != null && nextShopperId != null && String(previousId) === String(nextShopperId);
+    if (previousId !== undefined && sameSession) return;
+    previousShopperId.current = nextShopperId;
+    dispatch(setReviewOwner(nextShopperId));
+    if (shopper) {
+      if (previousId != null && String(previousId) !== String(shopper.id)) {
+        dispatch(resetCart());
+      }
+      dispatch(resetOrders());
+      dispatch(syncCart(shopper.id));
+      dispatch(fetchOrders());
+      dispatch(fetchMyReviews());
+    } else {
+      dispatch(resetCart());
+      dispatch(resetOrders());
+      dispatch(resetReviews());
+    }
+  }, [dispatch, shopper?.id]);
+  const openPage = nextPage => {
+    if (nextPage === 'orders' && isAdmin) {
+      navigate('/app/admin/orders');
+      return;
+    }
+    navigate(pagePaths[nextPage] ?? '/');
+  };
+  const openVinyl = vinylId => {
+    navigate(`/app/catalog/${encodeURIComponent(vinylId)}`);
+  };
+  const handleLogin = credentials => {
+    return login(credentials).then(profile => {
+      const returnTo = location.state?.returnTo;
+      if (profile.role !== 'ADMIN' && typeof returnTo === 'string' && returnTo.startsWith('/app/')) navigate(returnTo, {
+        replace: true
+      });else openPage(profile.role === 'ADMIN' ? 'admin' : 'home');
+    });
+  };
+  const handleRegister = account => {
+    return register(account).then(() => {
+      openPage('profile');
+    });
+  };
+  const handleLogout = () => {
+    return logout().then(() => {
+      openPage('home');
+    });
+  };
+  if (isRestoringSession) {
+    return <main className="app-shell"><p role="status">Recuperando tu sesión…</p></main>;
+  }
+  if (!page) return <Navigate to="/" replace />;
+  if (isAdmin && page === 'orders') return <Navigate to="/app/admin/orders" replace />;
+  return <FavoritesProvider>
+        <AppContent page={page} user={user} onUserChange={setUser} isAdmin={isAdmin} storageError={storageError} selectedVinylId={selectedVinylId} selectedOrderId={selectedOrderId} queryString={location.search} focusCatalogSearch={Boolean(location.state && location.state.focusCatalogSearch)} searchRequest={location.key} openPage={openPage} openVinyl={openVinyl} handleLogin={handleLogin} handleRegister={handleRegister} handleLogout={handleLogout} />
+      </FavoritesProvider>
+};
+const AppContent = ({
+  page,
+  user,
+  isAdmin,
+  onUserChange,
+  storageError,
+  selectedVinylId,
+  selectedOrderId,
+  queryString,
+  focusCatalogSearch,
+  searchRequest,
+  openPage,
+  openVinyl,
+  handleLogin,
+  handleRegister,
+  handleLogout
+}) => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const cartError = useSelector(state => state.cart.error);
+  const query = new URLSearchParams(queryString);
+  return <>
+    {cartError && <p className="storage-notice" role="alert">{cartError}</p>}
+    <div className="app-shell">
+      <Header page={page} onNavigate={openPage} onSearch={() => navigate(pagePaths.catalog, {
+      state: {
+        focusCatalogSearch: true
+      }
+    })} user={user} isAdmin={isAdmin} onLogout={handleLogout} />
+      {storageError && <p className="storage-notice" role="alert">{storageError}</p>}
+      <PageContainer>
+        {page === 'admin' && <AppRoutes />}
+        {page === 'home' && <HomePage user={user} onNavigate={openPage} />}
+        {page === 'login' && <LoginPage onNavigate={openPage} onLogin={handleLogin} />}
+        {page === 'register' && <RegisterPage onNavigate={openPage} onRegister={handleRegister} />}
+        {page === 'catalog' && <CatalogPage onOpenVinyl={openVinyl} collectionId={query.get('collection')} onClearCollection={() => navigate('/app/catalog')} focusSearch={focusCatalogSearch} searchRequest={searchRequest} />}
+        {page === 'vinyl-detail' && selectedVinylId && <VinylDetailPage vinylId={selectedVinylId} onBack={() => openPage('catalog')} onReviews={() => navigate(`/app/reviews?vinylId=${encodeURIComponent(selectedVinylId)}`)} onLogin={() => openPage('login')} />}
+        {page === 'reviews' && <ReviewsPage vinylId={query.get('vinylId')} onClearVinyl={() => navigate('/app/reviews')} />}
+        {page === 'favorites' && <div className="legacy-page"><FavoritesPage onNavigate={openPage} onOpenVinyl={openVinyl} /></div>}
+        {page === 'cart' && <div className="legacy-page">
+            <CartPage onNavigate={openPage} />
+          </div>}
+        {page === 'orders' && <div className="legacy-page">
+            <OrdersPage authenticated={Boolean(user)} selectedOrderId={selectedOrderId} onNavigate={openPage} onSelectOrder={(orderId, focusReview = false) => navigate(`/app/orders/${orderId}${focusReview ? '?focusReview=1' : ''}`)} focusReview={query.get('focusReview') === '1'} />
+          </div>}
+        {page === 'profile' && <div className="legacy-page">
+            <ProfilePage user={user} onUserChange={onUserChange} onNavigate={openPage} />
+          </div>}
+      </PageContainer>
+      <Footer onNavigate={openPage} />
+    </div>
+  </>;
+};
+export default App;

@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import HeroSection from '../components/home/HeroSection'
 import ArchiveStrip from '../components/home/ArchiveStrip'
 import ArchiveCategoryGrid from '../components/home/ArchiveCategoryGrid'
+import RandomAlbumSection from '../components/home/RandomAlbumSection'
 import SectionTitle from '../components/ui/SectionTitle'
 import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
@@ -20,6 +21,7 @@ const HomePage = ({ user, onNavigate }) => {
       {user && <p className="welcome-notice" role="status">Qué bueno verte, {user.firstName || user.name}.</p>}
       <HeroSection onExplore={() => onNavigate('catalog')} />
       <div className="archive-promise">ENVÍOS CUIDADOS · PRENSADOS SELECCIONADOS · HISTORIAS PARA VOLVER A ESCUCHAR</div>
+      <RandomAlbumSection />
       <section className="home-archive" aria-labelledby="archive-heading">
         <div className="archive-section-heading">
           <div>

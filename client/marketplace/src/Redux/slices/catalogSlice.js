@@ -6,16 +6,22 @@ import { getVinyls, getVinylById } from '../../services/api.js';
 import { emptyRequest, getMessage, shouldFetch } from '../requestState.js';
 
 export const fetchVinyls = createAsyncThunk('catalog/fetch',
-  (_, { rejectWithValue }) => getVinyls().catch(error => rejectWithValue(getMessage(error))),
+  async (_, { rejectWithValue }) => {
+    try { return await getVinyls(); }
+    catch (error) { return rejectWithValue(getMessage(error)); }
+  },
   { condition: (options = {}, { getState }) => shouldFetch(getState().catalog.list, options.force) });
 
 export const fetchVinylById = createAsyncThunk('catalog/fetchById',
-  ({ vinylId }, { rejectWithValue }) => getVinylById(vinylId).catch(error => rejectWithValue(getMessage(error))),
+  async ({ vinylId }, { rejectWithValue }) => {
+    try { return await getVinylById(vinylId); }
+    catch (error) { return rejectWithValue(getMessage(error)); }
+  },
   { condition: ({ vinylId, force = false }, { getState }) => shouldFetch(getState().catalog.details[vinylId], force) });
 
 const catalogSlice = createSlice({
   name: 'catalog',
-  initialState: { entities: {}, ids: [], version: 0, entityVersions: {}, list: { ...emptyRequest }, details: {} },
+  initialState: { entities: {}, ids: [], version: 0, entityVersions: {}, list: { ...emptyRequest }, details: {}, stockChanges: {} },
   reducers: {},
   extraReducers: builder => {
     builder.addCase(fetchVinyls.pending, (state, action) => {
@@ -64,18 +70,30 @@ const catalogSlice = createSlice({
       request.status = 'failed';
       request.error = action.payload || action.error.message;
     }).addCase(createOrder.fulfilled, (state, action) => {
+      const orderId = action.payload.id;
+      if (state.stockChanges[orderId]) return;
+      state.stockChanges[orderId] = 'created';
       action.payload.items.forEach(item => {
-        const entityId = Object.keys(state.entities).find(id => String(id) === String(item.vinylId));
-        if (entityId) {
-          state.entities[entityId].stock = Math.max(0, state.entities[entityId].stock - item.quantity);
+        const vinyl = state.entities[item.vinylId];
+        if (vinyl) {
+          vinyl.stock = Math.max(0, Number(vinyl.stock) - Number(item.quantity));
+          state.entityVersions[item.vinylId] = ++state.version;
         }
       });
+      state.list.fetchedAt = 0;
     }).addCase(cancelOrder.fulfilled, (state, action) => {
       if (action.payload.status !== 'CANCELADA') return;
+      const orderId = action.payload.id;
+      if (state.stockChanges[orderId] === 'cancelled') return;
+      state.stockChanges[orderId] = 'cancelled';
       action.payload.items.forEach(item => {
-        const entityId = Object.keys(state.entities).find(id => String(id) === String(item.vinylId));
-        if (entityId) state.entities[entityId].stock += item.quantity;
+        const vinyl = state.entities[item.vinylId];
+        if (vinyl) {
+          vinyl.stock = Number(vinyl.stock) + Number(item.quantity);
+          state.entityVersions[item.vinylId] = ++state.version;
+        }
       });
+      state.list.fetchedAt = 0;
     });
   }
 });
