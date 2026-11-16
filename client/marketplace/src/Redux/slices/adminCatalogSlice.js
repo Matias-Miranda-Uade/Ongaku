@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSelector, createSlice } from '@reduxjs/toolkit';
 import {
   adjustVinylStock, createArtist, createAudioPreview, createCategory, createGenre, createVinyl, deleteArtist,
-  deleteVinyl, getAdminVinylById, getAdminVinyls, getAudioPreviews, getCatalogLookups, setVinylEnabled, updateVinyl
+  deleteCategory, deleteGenre, deleteVinyl, getAdminVinylById, getAdminVinyls, getAudioPreviews, getCatalogLookups, setVinylEnabled, updateVinyl
 } from '../../services/adminService.js';
 import { getStockStatus, indexById, normalizeText } from '../../components/admin/adminUtils.js';
 import { emptyRequest, getErrorDetails, getMessage, shouldFetch } from '../requestState.js';
@@ -61,12 +61,25 @@ export const deleteAdminVinyl = write('adminCatalog/deleteVinyl', async ({ vinyl
 }, { condition: canMutate });
 
 export const createAdminArtist = write('adminCatalog/createArtist', name => createArtist(name));
-export const deleteAdminArtist = write('adminCatalog/deleteArtist', async ({ artistId }) => {
+// Borrar un artista, género o categoría no borra sus vinilos: el backend los deja sin esa relación.
+// La tienda muestra nombres de artista y categoría, así que también se renueva.
+export const deleteAdminArtist = write('adminCatalog/deleteArtist', async ({ artistId }, api) => {
   await deleteArtist(artistId);
+  refreshStorefront(api);
   return { id: artistId };
 });
 export const createAdminGenre = write('adminCatalog/createGenre', name => createGenre(name));
+export const deleteAdminGenre = write('adminCatalog/deleteGenre', async ({ genreId }, api) => {
+  await deleteGenre(genreId);
+  refreshStorefront(api);
+  return { id: genreId };
+});
 export const createAdminCategory = write('adminCatalog/createCategory', description => createCategory(description));
+export const deleteAdminCategory = write('adminCatalog/deleteCategory', async ({ categoryId }, api) => {
+  await deleteCategory(categoryId);
+  refreshStorefront(api);
+  return { id: categoryId };
+});
 export const createAdminAudioPreview = write('adminCatalog/createPreview', preview => createAudioPreview(preview));
 
 const initialState = {
@@ -181,8 +194,24 @@ const adminCatalogSlice = createSlice({
       });
     }).addCase(createAdminGenre.fulfilled, (state, action) => {
       pushUnique(state.lookups.genres, action.payload);
+    }).addCase(deleteAdminGenre.fulfilled, (state, action) => {
+      const { id } = action.payload;
+      state.lookups.genres = state.lookups.genres.filter(genre => !sameId(genre.id, id));
+      // Igual que el backend: si era el género principal, toma su lugar el primero que quede.
+      Object.values(state.entities).forEach(vinyl => {
+        if (!genreIdsOf(vinyl).some(genreId => sameId(genreId, id))) return;
+        const remaining = genreIdsOf(vinyl).filter(genreId => !sameId(genreId, id));
+        vinyl.genreIds = remaining;
+        vinyl.genreId = remaining[0] ?? null;
+      });
     }).addCase(createAdminCategory.fulfilled, (state, action) => {
       pushUnique(state.lookups.categories, action.payload);
+    }).addCase(deleteAdminCategory.fulfilled, (state, action) => {
+      const { id } = action.payload;
+      state.lookups.categories = state.lookups.categories.filter(category => !sameId(category.id, id));
+      Object.values(state.entities).forEach(vinyl => {
+        if (sameId(vinyl.categoryId, id)) vinyl.categoryId = null;
+      });
     }).addCase(createAdminAudioPreview.fulfilled, (state, action) => {
       pushUnique(state.previews.items, action.payload);
     });

@@ -6,18 +6,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.uade.tpo.marketplace.entity.Category;
+import com.uade.tpo.marketplace.entity.Vinyl;
 import com.uade.tpo.marketplace.exceptions.badrequest.InvalidFieldException;
 import com.uade.tpo.marketplace.exceptions.conflict.DuplicateResourceException;
 import com.uade.tpo.marketplace.exceptions.notfound.ResourceNotFoundException;
 import com.uade.tpo.marketplace.repository.CategoryRepository;
+import com.uade.tpo.marketplace.repository.VinylRepository;
 
 @Service
 public class CategoryServiceImpl implements CategoryService {
 
     @Autowired
     private CategoryRepository categoryRepository;
+
+    @Autowired
+    private VinylRepository vinylRepository;
 
     @Override
     public Page<Category> getCategories(PageRequest pageable) {
@@ -46,5 +52,19 @@ public class CategoryServiceImpl implements CategoryService {
         }
 
         return categoryRepository.save(new Category(description));
+    }
+
+    // Igual que con los artistas: los vinilos se conservan y quedan sin categoria.
+    @Override
+    @Transactional
+    public void deleteCategory(Long categoryId) {
+        Category category = getCategoryById(categoryId);
+        List<Vinyl> vinyls = vinylRepository.findAllByCategoryId(categoryId);
+        if (!vinyls.isEmpty()) {
+            vinyls.forEach(vinyl -> vinyl.setCategory(null));
+            vinylRepository.saveAll(vinyls);
+            vinylRepository.flush();
+        }
+        categoryRepository.delete(category);
     }
 }

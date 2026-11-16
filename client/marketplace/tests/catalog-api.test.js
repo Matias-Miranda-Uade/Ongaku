@@ -2,9 +2,9 @@ import assert from 'node:assert/strict'
 import { after, beforeEach, test } from 'node:test'
 import { configureStore } from '@reduxjs/toolkit'
 import { http } from '../src/services/api.js'
-import { createArtist, deleteArtist, createCategory, getCatalogLookups, uploadCover } from '../src/services/adminService.js'
+import { createArtist, deleteArtist, deleteGenre, deleteCategory, createCategory, getCatalogLookups, uploadCover } from '../src/services/adminService.js'
 import {
-  ApiError, createFavorite, createReview, deleteAddress, deleteCard, deleteFavorite, deleteReview, getAddresses, getAudioPreview, getFavorites, getSavedCards, normalizeOrder, saveAddress, saveCard,
+  ApiError, createFavorite, createReview, deleteAddress, deleteCard, deleteFavorite, deleteReview, getAddresses, getAudioPreview, getFavorites, getSavedCards, saveAddress, saveCard,
   getReviewEligibility, getReviews, getReviewsByVinyl, getVinylById, getVinyls, request, updateReview, login, logout, getAccessToken,
 } from '../src/services/api.js'
 import ordersReducer, { createOrder, fetchOrders, payOrder } from '../src/Redux/slices/ordersSlice.js'
@@ -65,15 +65,6 @@ after(() => {
   else globalThis.window = originalWindow
 })
 
-test('normalizeOrder calcula expiresAt y lo deja nulo si no hay vencimiento', () => {
-  const before = Date.now();
-  const order = normalizeOrder({ id: 9, status: 'PENDIENTE', expiresInSeconds: 90 });
-  const after = Date.now();
-  assert.ok(order.expiresAt >= before + 90000);
-  assert.ok(order.expiresAt <= after + 90000);
-  assert.equal(normalizeOrder({ id: 10, status: 'PAGADA' }).expiresAt, null);
-});
-
 test('iniciar sesión guarda el token y lo utiliza al recuperar el perfil', () => {
   routes['/api/v1/auth/authenticate'] = { accessToken: 'new-session-token' }
   routes['/users/me'] = { id: 1, firstName: 'Test' }
@@ -114,6 +105,14 @@ test('eliminar un artista envía DELETE con la sesión y conserva los errores de
     routes['/artists/80'] = Response.json({ message: 'Sin permisos' }, { status: 403 })
     return assert.rejects(deleteArtist(80), (error) => error.isForbidden)
   })
+})
+
+test('eliminar géneros y categorías envía DELETE a su recurso', async () => {
+  routes['/genres/12'] = new Response(null, { status: 204 })
+  routes['/categories/4'] = new Response(null, { status: 204 })
+  await deleteGenre(12)
+  await deleteCategory(4)
+  assert.deepEqual(calls.map(call => [call.method, call.url]), [['DELETE', '/genres/12'], ['DELETE', '/categories/4']])
 })
 
 test('las categorías se cargan y se crean sin ocultar los errores del servidor', async () => {

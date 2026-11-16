@@ -5,7 +5,7 @@ import { http } from '../src/services/api.js';
 import catalog, { fetchVinyls } from '../src/Redux/slices/catalogSlice.js';
 import { logout } from '../src/Redux/slices/authSlice.js';
 import adminCatalog, {
-  adjustAdminVinylStock, deleteAdminArtist, deleteAdminVinyl, fetchAdminLookups, fetchAdminVinylById, fetchAdminVinyls,
+  adjustAdminVinylStock, deleteAdminArtist, deleteAdminCategory, deleteAdminGenre, deleteAdminVinyl, fetchAdminLookups, fetchAdminVinylById, fetchAdminVinyls,
   saveAdminVinyl, selectAdminVinylDetail, selectAdminVinylRows, selectAdminVinyls, selectBusyVinylIds,
   selectInventoryRows, selectInventoryTotals, selectUsedPreviewIds, setAdminVinylEnabled
 } from '../src/Redux/slices/adminCatalogSlice.js';
@@ -128,7 +128,7 @@ test('admin: alta ajusta la publicación, se suma al listado y renueva la tienda
     error => error.fieldErrors.name === 'no puede estar vacío');
 });
 
-test('admin: detalle con 404 y artista eliminado deja sus vinilos sin artista', async () => {
+test('admin: detalle con 404 y borrar artista, género o categoría conserva los vinilos', async () => {
   routes['GET /admin/vinyls/99'] = response({ message: 'No existe' }, 404);
   await store.dispatch(fetchAdminVinylById({ vinylId: '99' }));
   assert.equal(selectAdminVinylDetail(store.getState(), '99').notFound, true);
@@ -140,6 +140,19 @@ test('admin: detalle con 404 y artista eliminado deja sus vinilos sin artista', 
   await store.dispatch(deleteAdminArtist({ artistId: 2 })).unwrap();
   assert.equal(store.getState().adminCatalog.entities[7].artistId, null);
   assert.ok(!store.getState().adminCatalog.lookups.artists.some(artist => artist.id === 2));
+
+  routes['GET /admin/vinyls'] = [{ ...vinyl, genreId: 3, genreIds: [3, 4] }];
+  await store.dispatch(fetchAdminVinyls({ force: true }));
+  routes['DELETE /genres/3'] = response(null, 204);
+  await store.dispatch(deleteAdminGenre({ genreId: 3 })).unwrap();
+  assert.deepEqual(store.getState().adminCatalog.entities[7].genreIds, [4]);
+  assert.equal(store.getState().adminCatalog.entities[7].genreId, 4);
+  assert.ok(!store.getState().adminCatalog.lookups.genres.some(genre => genre.id === 3));
+
+  routes['DELETE /categories/1'] = response(null, 204);
+  await store.dispatch(deleteAdminCategory({ categoryId: 1 })).unwrap();
+  assert.equal(store.getState().adminCatalog.entities[7].categoryId, null);
+  assert.equal(store.getState().adminCatalog.lookups.categories.length, 0);
 });
 
 test('admin: órdenes ordenadas, cambio de estado con resumen renovado y limpieza al cerrar sesión', async () => {

@@ -58,6 +58,8 @@ export const createArtist = name => request('/artists', jsonRequest('POST', {
   name
 }));
 export const deleteArtist = (artistId) => request(`/artists/${artistId}`, jsonRequest('DELETE'));
+export const deleteGenre = genreId => request(`/genres/${genreId}`, jsonRequest('DELETE'));
+export const deleteCategory = categoryId => request(`/categories/${categoryId}`, jsonRequest('DELETE'));
 export const createCategory = description => request('/categories', jsonRequest('POST', {
   description
 }));
@@ -104,6 +106,8 @@ const adminService = {
   createGenre,
   createArtist,
   deleteArtist,
+  deleteGenre,
+  deleteCategory,
   createCategory,
   uploadCover,
   createAudioPreview,

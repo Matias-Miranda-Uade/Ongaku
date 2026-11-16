@@ -25,8 +25,9 @@ para conservar la autenticaci?n, las rutas y los errores del backend de Ongaku.
 - `cartSlice.js` y `ordersSlice.js`: conservan las operaciones de carrito y ?rdenes.
 - `adminCatalogSlice.js`: datos del panel de administración sobre vinilos. Listado
   y detalle administrativos, artistas, géneros, categorías y previews de audio, y
-  las escrituras (alta, edición, publicación, stock, borrado y altas de artistas,
-  géneros, categorías y previews). Cada vinilo se guarda una sola vez; inventario,
+  las escrituras (alta, edición, publicación, stock y borrado de vinilos; alta y
+  borrado de artistas, géneros y categorías; alta de previews). Al borrar un
+  artista, género o categoría sus vinilos se conservan sin esa relación. Cada vinilo se guarda una sola vez; inventario,
   vitrina, dashboard y formulario derivan sus vistas con selectores. El estado de
   cada escritura se guarda por vinilo para deshabilitar sólo las filas afectadas.
   Si el catálogo público ya se cargó, se renueva después de cada escritura.

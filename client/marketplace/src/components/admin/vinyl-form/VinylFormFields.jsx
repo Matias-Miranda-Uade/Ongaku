@@ -12,7 +12,7 @@ export const fieldA11y = (name, error, hintId) => ({
   'aria-describedby': [error ? `vf-${name}-error` : null, hintId].filter(Boolean).join(' ') || undefined,
 })
 
-const VinylFormFields = ({ values, errors, onChange, onBlur, onArtistDeleted, artists = [], categories = [], lockedRelations = {} }) => (
+const VinylFormFields = ({ values, errors, onChange, onBlur, onArtistDeleted, onCategoryDeleted, artists = [], categories = [], lockedRelations = {} }) => (
   <fieldset className="vf-section">
     <legend><span className="vf-step">01</span> Datos del disco</legend>
 
@@ -79,7 +79,7 @@ const VinylFormFields = ({ values, errors, onChange, onBlur, onArtistDeleted, ar
       </select>
       <FieldError id="vf-categoryId-error" message={errors.categoryId} />
       {categories.length === 0 && <p className="vf-hint">No hay categorías cargadas. Podés crear una abajo.</p>}
-      <CategoryCreator categories={categories} onSelect={(id) => onChange('categoryId', id)} />
+      <CategoryCreator categories={categories} selectedId={values.categoryId} onDeleted={onCategoryDeleted} onSelect={(id) => onChange('categoryId', id)} />
     </div>
   </fieldset>
 )

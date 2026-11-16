@@ -132,6 +132,8 @@
 .artist-actions { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; }
 .artist-delete-confirm { flex-basis: 100%; padding: 12px; border: 1px solid var(--line); background: var(--surface); }
 .artist-delete-confirm p { margin-top: 0; font-size: 15px; line-height: 1.5; }
+.artist-delete-confirm label { display: block; margin-bottom: 6px; }
+.artist-delete-confirm select { display: block; margin-bottom: 12px; }
 .payment-caption { margin: 12px 0 0; font-size: 13px; line-height: 1.5; color: var(--muted); }
 .app-shell .vf-section legend { float: none; width: auto; max-width: 100%; margin: 0; padding: 0 10px; text-align: left; line-height: 1.5; }
 .app-shell .vf-section .vf-step { display: inline-flex; justify-content: center; align-items: center; min-width: 28px; height: 28px; margin-right: 8px; font-size: 12px; line-height: 1; vertical-align: middle; }

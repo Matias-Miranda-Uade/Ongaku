@@ -208,6 +208,8 @@ const VinylForm = ({
         <div className="vinyl-form-main">
           <VinylFormFields values={values} errors={visibleErrors} onChange={handleChange} onBlur={handleBlur} artists={artists} onArtistDeleted={id => {
           setValues(current => String(current.artistId) === String(id) ? { ...current, artistId: '' } : current);
+        }} onCategoryDeleted={id => {
+          setValues(current => String(current.categoryId) === String(id) ? { ...current, categoryId: '' } : current);
         }} categories={categories} lockedRelations={lockedRelations} />
 
           <fieldset className="vf-section">

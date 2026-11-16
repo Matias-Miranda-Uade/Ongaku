@@ -1,8 +1,10 @@
 package com.uade.tpo.marketplace.service;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.uade.tpo.marketplace.entity.Genre;
 import com.uade.tpo.marketplace.entity.Vinyl;
@@ -78,9 +80,26 @@ public class GenreServiceImpl implements GenreService {
         return genreRepository.save(current);
     }
 
+    // Antes de borrar se quita el genero de los vinilos que lo usan, como principal o adicional,
+    // para no violar las claves foraneas. Si era el principal, toma su lugar el primer adicional.
     @Override
+    @Transactional
     public void deleteGenre(int id) {
         Genre genre = getGenreById(id);
+        List<Vinyl> vinyls = vinylRepository.findAllByGenreId((long) id);
+        for (Vinyl vinyl : vinyls) {
+            if (vinyl.getAdditionalGenres() != null) {
+                vinyl.getAdditionalGenres().removeIf(item -> item.getId().equals(genre.getId()));
+            }
+            if (vinyl.getGenre() != null && vinyl.getGenre().getId().equals(genre.getId())) {
+                List<Genre> remaining = vinyl.getAdditionalGenres();
+                vinyl.setGenre(remaining == null || remaining.isEmpty() ? null : remaining.remove(0));
+            }
+        }
+        if (!vinyls.isEmpty()) {
+            vinylRepository.saveAll(vinyls);
+            vinylRepository.flush();
+        }
         genreRepository.delete(genre);
     }
 
