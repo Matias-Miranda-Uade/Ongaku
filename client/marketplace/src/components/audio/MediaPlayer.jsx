@@ -1,14 +1,14 @@
 import { getMediaSource } from './mediaSource'
 import AudioPlayer from './AudioPlayer'
 
-const MediaPlayer = ({ url, durationSeconds, id }) => {
+const MediaPlayer = ({ url, durationSeconds, id, autoPlay = false }) => {
   const source = getMediaSource(url)
   if (!source) return <p role="alert">Este enlace no es compatible. Usá un archivo de audio o un enlace de Spotify, Apple Music o YouTube.</p>
   return <div className="media-player">
     {source.type === 'embed'
-      ? <iframe key={source.embedUrl} src={source.embedUrl} title={`Escuchar en ${source.platform}`}
+      ? <iframe key={source.embedUrl} src={autoPlay ? `${source.embedUrl}${source.embedUrl.includes('?') ? '&' : '?'}autoplay=1` : source.embedUrl} title={`Escuchar en ${source.platform}`}
           width="100%" height={source.height} loading="lazy" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowFullScreen />
-      : <AudioPlayer preview={{ id: id ?? source.url, url: source.url, durationSeconds }} />}
+      : <AudioPlayer preview={{ id: id ?? source.url, url: source.url, durationSeconds }} autoPlay={autoPlay} />}
     {source.type === 'audio' && <a className="text-link" href={source.url} target="_blank" rel="noopener noreferrer">Abrir audio ↗</a>}
   </div>
 }

@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import AudioProgress from './AudioProgress';
 import AudioWaveform from './AudioWaveform';
 const AudioPlayer = ({
-  preview
+  preview,
+  autoPlay = false
 }) => {
   const audioRef = useRef(null);
   const [playing, setPlaying] = useState(false);
@@ -15,6 +16,13 @@ const AudioPlayer = ({
     setError('');
     setDuration(Number(preview?.durationSeconds) || 0);
   }, [preview?.id, preview?.url]);
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (autoPlay && audio) {
+      audio.play().catch(() => setError('No se pudo iniciar el audio. Presioná reproducir para escucharlo.'));
+    }
+    return () => { if (audio) audio.pause(); };
+  }, [autoPlay, preview?.id, preview?.url]);
   const toggle = () => {
     if (!preview?.url) return Promise.resolve();
     const audio = audioRef.current;
@@ -35,7 +43,13 @@ const AudioPlayer = ({
       {preview?.url && <audio ref={audioRef} src={preview.url} preload="metadata" onLoadedMetadata={event => {
       const seconds = event.currentTarget.duration;
       if (Number.isFinite(seconds)) setDuration(seconds);
-    }} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onTimeUpdate={event => setCurrentTime(event.currentTarget.currentTime)} onEnded={() => setPlaying(false)} onError={() => {
+    }} onPlay={event => {
+      document.querySelectorAll('audio').forEach(audio => {
+        if (audio !== event.currentTarget) audio.pause();
+      });
+      setError('');
+      setPlaying(true);
+    }} onPause={() => setPlaying(false)} onTimeUpdate={event => setCurrentTime(event.currentTarget.currentTime)} onEnded={() => setPlaying(false)} onError={() => {
       setPlaying(false);
       setError('No se pudo cargar el audio.');
     }} />}
