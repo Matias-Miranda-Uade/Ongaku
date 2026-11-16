@@ -1,16 +1,33 @@
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { createAdminCategory } from '../../../Redux/slices/adminCatalogSlice';
+import { createAdminCategory, deleteAdminCategory } from '../../../Redux/slices/adminCatalogSlice';
 import { normalizeText } from '../adminUtils';
 const CategoryCreator = ({
   categories,
-  onSelect
+  onSelect,
+  selectedId,
+  onDeleted
 }) => {
   const dispatch = useDispatch();
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [deletingCategory, setDeletingCategory] = useState(null);
+  const selectedCategory = categories.find(category => String(category.id) === String(selectedId));
+  const remove = () => {
+    if (!deletingCategory || busy) return;
+    const id = deletingCategory.id;
+    setBusy(true);
+    setError('');
+    return dispatch(deleteAdminCategory({ categoryId: id })).unwrap()
+      .then(() => {
+        onDeleted(id);
+        setDeletingCategory(null);
+      })
+      .catch(failure => setError(failure.message || 'No se pudo eliminar la categoría.'))
+      .finally(() => setBusy(false));
+  };
   const save = () => {
     const trimmed = name.trim();
     if (!trimmed) {
@@ -37,7 +54,16 @@ const CategoryCreator = ({
       setBusy(false);
     });
   };
-  if (!adding) return <button type="button" className="link-button" onClick={() => setAdding(true)}>+ Nueva categoría</button>;
+  if (!adding) return <div className="artist-actions">
+    <button type="button" className="link-button" disabled={busy} onClick={() => { setAdding(true); setError(''); setDeletingCategory(null); }}>+ Nueva categoría</button>
+    {selectedCategory && !deletingCategory && <button type="button" className="link-button" disabled={busy} onClick={() => { setDeletingCategory(selectedCategory); setError(''); }}>Eliminar categoría seleccionada</button>}
+    {deletingCategory && <div className="artist-delete-confirm" role="group" aria-label="Confirmar eliminación de categoría">
+      <p>¿Eliminar la categoría <strong>{deletingCategory.description}</strong>? Sus vinilos se conservarán y quedarán sin categoría.</p>
+      <button type="button" className="secondary-button small" disabled={busy} onClick={remove}>{busy ? 'Eliminando…' : 'Confirmar eliminación'}</button>
+      <button type="button" className="link-button" disabled={busy} onClick={() => { setDeletingCategory(null); setError(''); }}>Cancelar</button>
+    </div>}
+    {error && <p className="field-error" role="alert">{error}</p>}
+  </div>;
   return <div className="genre-create">
       <label htmlFor="vf-new-category">Nombre de la nueva categoría</label>
       <input id="vf-new-category" value={name} maxLength={255} autoFocus disabled={busy} aria-invalid={Boolean(error)} aria-describedby={error ? 'vf-new-category-error' : undefined} onChange={event => setName(event.target.value)} onKeyDown={event => {
