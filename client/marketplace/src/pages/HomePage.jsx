@@ -11,7 +11,8 @@ import { fetchVinyls, selectCuratedCollections } from '../Redux/slices/catalogSl
 const HomePage = ({ user, onNavigate }) => {
   const navigate = useNavigate()
   const dispatch = useDispatch()
-  const categories = useSelector(selectCuratedCollections)
+  const catalog = useSelector(state => state.catalog)
+  const categories = selectCuratedCollections({ catalog })
   const { status, error } = useSelector(state => state.catalog.list)
   useEffect(() => { dispatch(fetchVinyls()) }, [dispatch])
   const handleSelect = (id) => navigate(`/app/catalog?collection=${encodeURIComponent(id)}`)

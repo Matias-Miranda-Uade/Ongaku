@@ -27,7 +27,8 @@ const CatalogPage = ({ onOpenVinyl, collectionId, onClearCollection, focusSearch
 
   useEffect(() => { dispatch(fetchVinyls()) }, [dispatch])
 
-  const filteredVinyls = useSelector(state => selectFilteredVinyls(state, filters, collectionId))
+  const catalog = useSelector(state => state.catalog)
+  const filteredVinyls = selectFilteredVinyls({ catalog }, filters, collectionId)
 
   return (
     <div className={`page catalog-page ${motionPaused ? 'disc-animation-paused' : ''}`}>

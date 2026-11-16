@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { readFile } from 'node:fs/promises'
-import { getAlbumPreview } from '../src/components/home/albumPreview.js'
+import { chooseRandomAlbum, getAlbumPreview } from '../src/components/home/albumPreview.js'
 
 test('los enlaces reales de Apple Music del catálogo no se descartan por ser embeds', async () => {
   const albums = JSON.parse(await readFile(new URL('../../../catalog/albums.json', import.meta.url), 'utf8'))
@@ -21,4 +21,18 @@ test('una preview ausente o inválida no oculta un albumUrl compatible', () => {
   assert.equal(getAlbumPreview(album, null).url, album.albumUrl)
   assert.equal(getAlbumPreview(album, { url: 'javascript:alert(1)' }).url, album.albumUrl)
   assert.equal(getAlbumPreview({}, null), null)
+})
+
+test('la selección aleatoria excluye el anterior incluso si el ID cambia de tipo', () => {
+  const originalRandom = Math.random
+  const albums = [{ id: 1 }, { id: 2 }, { id: 3 }]
+  try {
+    Math.random = () => 0
+    assert.equal(chooseRandomAlbum(albums, '1').id, 2)
+    Math.random = () => 0.999
+    assert.equal(chooseRandomAlbum(albums, 1).id, 3)
+    assert.equal(chooseRandomAlbum([], null), null)
+    assert.equal(chooseRandomAlbum([{ id: 1 }], 1), null)
+    assert.equal(chooseRandomAlbum([{ id: 1 }], null).id, 1)
+  } finally { Math.random = originalRandom }
 })

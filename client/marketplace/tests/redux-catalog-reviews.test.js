@@ -53,7 +53,7 @@ test('catálogo comparte listado/detalle, deduplica GET y conserva filtros sin m
   await first.unwrap();
   await store.dispatch(fetchVinylById({ vinylId: 7 }));
   assert.equal(calls.filter(call => call.key === 'GET /vinyls').length, 1);
-  assert.equal(calls.filter(call => call.key === 'GET /vinyls/7').length, 0);
+  assert.equal(calls.filter(call => call.key === 'GET /vinyls/7').length, 1);
   assert.equal(selectVinyls(store.getState())[0].artistName, 'Miles Davis');
   assert.equal(selectFilteredVinyls(store.getState(), { ...filters, search: 'miles' }, 'jazz').length, 1);
   assert.equal(selectFilteredVinyls(store.getState(), { ...filters, stock: 'unavailable' }).length, 0);
@@ -61,7 +61,7 @@ test('catálogo comparte listado/detalle, deduplica GET y conserva filtros sin m
   const curated = selectCuratedCollections(store.getState());
   assert.equal(curated.find(collection => collection.id === 'jazz').vinylCount, 1);
   assert.equal(curated.find(collection => collection.id === 'rock').vinylCount, 0);
-  assert.equal(selectCuratedCollections(store.getState()), curated);
+  assert.deepEqual(selectCuratedCollections(store.getState()), curated);
   assert.equal(store.getState().catalog.entities[7].stock, 4);
 });
 
@@ -75,18 +75,16 @@ test('búsqueda, stock, precios con descuento/cero y año ordenan una copia del 
   assert.deepEqual(store.getState().catalog.ids, [7, 8]);
 });
 
-test('catálogo permite reintentar errores y renueva su caché vencida', async () => {
+test('catálogo permite reintentar errores y renueva los datos al solicitarlo de nuevo', async () => {
   routes['GET /vinyls'] = response({ message: 'No disponible' }, 500);
   await store.dispatch(fetchVinyls());
   assert.equal(store.getState().catalog.list.status, 'failed');
   routes['GET /vinyls'] = [vinyl];
   await store.dispatch(fetchVinyls({ force: true })).unwrap();
   assert.equal(store.getState().catalog.list.error, '');
-  const old = store.getState();
-  const expired = configureStore({ reducer: { catalog, reviews }, preloadedState: {
-    ...old, catalog: { ...old.catalog, list: { ...old.catalog.list, fetchedAt: 0 } }
-  } });
-  await expired.dispatch(fetchVinyls()).unwrap();
+  routes['GET /vinyls'] = [{ ...vinyl, stock: 2 }];
+  await store.dispatch(fetchVinyls()).unwrap();
+  assert.equal(selectVinyls(store.getState())[0].stock, 2);
   assert.equal(calls.filter(call => call.key === 'GET /vinyls').length, 3);
 });
 
@@ -109,7 +107,7 @@ test('detalle y página de reseñas comparten consulta por vinilo y promedio del
   await store.dispatch(fetchReviews({ vinylId: '7' }));
   await first;
   await store.dispatch(fetchReviews({ vinylId: 7 }));
-  assert.equal(calls.length, 1);
+  assert.equal(calls.length, 2);
   const data = selectReviewData(store.getState(), 7);
   assert.equal(data.averageScore, 4);
   assert.equal(data.reviews[0].comment, review.comment);
@@ -197,7 +195,8 @@ test('errores al editar/borrar conservan la reseña y su mensaje de permisos', a
   await setupReviews();
   await store.dispatch(createReview({ vinylId: 7, score: 5, comment: 'Original' }));
   routes['PATCH /reviews/40'] = response({ message: 'Sin permisos' }, 403);
-  await assert.rejects(store.dispatch(updateReview({ reviewId: 40, vinylId: 7, score: 1, comment: 'Cambio' })).unwrap(), /Sin permisos/);
+  const failed = await store.dispatch(updateReview({ reviewId: 40, vinylId: 7, score: 1, comment: 'Cambio' }));
+  assert.equal(failed.error.message, 'Sin permisos');
   routes['DELETE /reviews/40'] = response({ message: 'Sin permisos' }, 403);
   await store.dispatch(deleteReview({ reviewId: 40, vinylId: 7 }));
   assert.equal(selectReviewData(store.getState(), 7).reviews[0].comment, 'Original');
@@ -265,15 +264,10 @@ test('una publicación terminada después de cerrar sesión no repuebla los dato
 });
 
 
-test('mis resenas vence a los 30 segundos y deduplica solicitudes en curso', async () => {
+test('mis reseñas se renueva al solicitarla y deduplica solicitudes en curso', async () => {
   store.dispatch(setReviewOwner(1));
   routes['GET /reviews/me'] = [review];
   await store.dispatch(fetchMyReviews()).unwrap();
-  assert.equal((await store.dispatch(fetchMyReviews())).meta.condition, true);
-  const state = store.getState();
-  store = configureStore({ reducer: { catalog, reviews }, preloadedState: {
-    ...state, reviews: { ...state.reviews, fetchedAt: 0 }
-  } });
   const slow = deferred();
   routes['GET /reviews/me'] = slow.promise;
   const fetching = store.dispatch(fetchMyReviews());

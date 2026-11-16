@@ -15,7 +15,8 @@ const VinylDetailPage = ({ vinylId, onBack, onReviews, onLogin }) => {
   const dispatch = useDispatch()
   const vinyl = useSelector(state => state.catalog.entities[vinylId])
   const detailRequest = useSelector(state => state.catalog.details[vinylId] || emptyRequest)
-  const reviewData = useSelector(state => selectReviewData(state, vinylId))
+  const reviewState = useSelector(state => state.reviews)
+  const reviewData = selectReviewData({ reviews: reviewState }, vinylId)
   const error = detailRequest.error
   const reviewError = reviewData.error
   const reviewsLoading = reviewData.status === 'idle' || reviewData.status === 'loading'

@@ -1,41 +1,30 @@
-import { createAsyncThunk, createSelector, createSlice } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import {
   createReview as createReviewRequest, updateReview as updateReviewRequest,
   deleteReview as deleteReviewRequest, getMyReviews, getReviews, getReviewsByVinyl, getReviewEligibility
 } from '../../services/api.js';
-import { eligibilityKey, emptyRequest, getMessage, reviewsKey, shouldFetch } from '../requestState.js';
+import { eligibilityKey, reviewsKey } from '../requestState.js';
 
 export const fetchMyReviews = createAsyncThunk('reviews/fetchMine',
-  async (_, { rejectWithValue }) => {
-    try { return await getMyReviews(); }
-    catch (error) { return rejectWithValue(getMessage(error)); }
-  },
-  { condition: (options = {}, { getState }) => {
-    const state = getState().reviews;
-    return shouldFetch(state, options.force, options.replace);
-  } });
+  async () => await getMyReviews(),
+  { condition: (options = {}, { getState }) => options.replace || getState().reviews.status !== 'loading' });
 
 export const fetchReviews = createAsyncThunk('reviews/fetch',
-  async ({ vinylId = null } = {}, { rejectWithValue }) => {
-    try {
-      if (vinylId != null) return await getReviewsByVinyl(vinylId);
-      const reviews = await getReviews();
-      return { reviews, totalReviews: reviews.length,
-        averageScore: reviews.length ? reviews.reduce((sum, review) => sum + Number(review.score), 0) / reviews.length : 0 };
-    } catch (error) { return rejectWithValue(getMessage(error)); }
+  async ({ vinylId = null } = {}) => {
+    if (vinylId != null) return await getReviewsByVinyl(vinylId);
+    const reviews = await getReviews();
+    return { reviews, totalReviews: reviews.length,
+      averageScore: reviews.length ? reviews.reduce((sum, review) => sum + Number(review.score), 0) / reviews.length : 0 };
   },
-  { condition: ({ vinylId = null, force = false, replace = false } = {}, { getState }) =>
-    shouldFetch(getState().reviews.queries[reviewsKey(vinylId)], force, replace) });
+  { condition: ({ vinylId = null, replace = false } = {}, { getState }) =>
+    replace || getState().reviews.queries[reviewsKey(vinylId)]?.status !== 'loading' });
 
 export const fetchReviewEligibility = createAsyncThunk('reviews/fetchEligibility',
-  async ({ vinylId }, { rejectWithValue }) => {
-    try { return await getReviewEligibility(vinylId); }
-    catch (error) { return rejectWithValue(getMessage(error)); }
-  },
-  { condition: ({ userId, vinylId, force = false, replace = false }, { getState }) => {
+  async ({ vinylId }) => await getReviewEligibility(vinylId),
+  { condition: ({ userId, vinylId, replace = false }, { getState }) => {
     const state = getState().reviews;
     return userId != null && String(userId) === String(state.ownerId) &&
-      shouldFetch(state.eligibility[eligibilityKey(userId, vinylId)], force, replace);
+      (replace || state.eligibility[eligibilityKey(userId, vinylId)]?.status !== 'loading');
   } });
 
 // Solo se renuevan consultas utilizadas que contienen el vinilo modificado.
@@ -55,14 +44,12 @@ const refreshQueries = (vinylId, api) => {
 
 export const createReview = createAsyncThunk('reviews/create',
   async (review, api) => {
-    try {
-      const saved = await createReviewRequest(review);
-      if (api.getState().reviews.submitRequestId === api.requestId) {
-        api.dispatch(reviewsSlice.actions.reviewSaved({ review: saved, requestId: api.requestId, creating: true }));
-        await refreshQueries(saved.vinylId, api);
-      }
-      return saved;
-    } catch (error) { return api.rejectWithValue(getMessage(error)); }
+    const saved = await createReviewRequest(review);
+    if (api.getState().reviews.submitRequestId === api.requestId) {
+      api.dispatch(reviewsSlice.actions.reviewSaved({ review: saved, requestId: api.requestId, creating: true }));
+      await refreshQueries(saved.vinylId, api);
+    }
+    return saved;
   },
   { condition: (_, { getState }) => getState().reviews.submittingVinylId == null });
 
@@ -71,46 +58,44 @@ const canMutate = ({ reviewId }, { getState }) =>
 
 export const updateReview = createAsyncThunk('reviews/update',
   async ({ reviewId, score, comment }, api) => {
-    try {
-      const saved = await updateReviewRequest(reviewId, { score, comment });
-      if (api.getState().reviews.mutations[reviewId]?.requestId === api.requestId) {
-        api.dispatch(reviewsSlice.actions.reviewSaved({ review: saved, requestId: api.requestId }));
-        await refreshQueries(saved.vinylId, api);
-      }
-      return saved;
-    } catch (error) { return api.rejectWithValue(getMessage(error)); }
+    const saved = await updateReviewRequest(reviewId, { score, comment });
+    if (api.getState().reviews.mutations[reviewId]?.requestId === api.requestId) {
+      api.dispatch(reviewsSlice.actions.reviewSaved({ review: saved, requestId: api.requestId }));
+      await refreshQueries(saved.vinylId, api);
+    }
+    return saved;
   },
   { condition: canMutate });
 
 export const deleteReview = createAsyncThunk('reviews/delete',
   async ({ reviewId, vinylId }, api) => {
-    try {
-      await deleteReviewRequest(reviewId);
-      const removed = { id: reviewId, vinylId };
-      if (api.getState().reviews.mutations[reviewId]?.requestId === api.requestId) {
-        api.dispatch(reviewsSlice.actions.reviewSaved({ review: removed, removed: true, requestId: api.requestId }));
-        await refreshQueries(vinylId, api);
-      }
-      return removed;
-    } catch (error) { return api.rejectWithValue(getMessage(error)); }
+    await deleteReviewRequest(reviewId);
+    const removed = { id: reviewId, vinylId };
+    if (api.getState().reviews.mutations[reviewId]?.requestId === api.requestId) {
+      api.dispatch(reviewsSlice.actions.reviewSaved({ review: removed, removed: true, requestId: api.requestId }));
+      await refreshQueries(vinylId, api);
+    }
+    return removed;
   },
   { condition: canMutate });
 
+
 const initialState = {
+  // requestId descarta respuestas de otra sesión o solicitudes reemplazadas.
+  // Las versiones evitan que una lectura antigua reviva una reseña eliminada.
   entities: {}, queries: {}, eligibility: {}, mutations: {}, ownerId: null,
-  myReviewIds: [], status: 'idle', fetchRequestId: null, fetchedAt: 0, fetchVersion: 0, error: '',
+  myReviews: [], status: 'idle', fetchRequestId: null, fetchVersion: 0, error: '',
   version: 0, entityVersions: {},
   submittingVinylId: null, submitRequestId: null
 };
 const sameId = (left, right) => String(left) === String(right);
-const emptyQuery = Object.freeze({ ...emptyRequest, ids: [], averageScore: 0, totalReviews: 0 });
-const emptyEligibility = Object.freeze({ ...emptyRequest, data: null });
-const getError = action => action.payload || action.error.message || '';
+const emptyQuery = { status: 'idle', error: '', ids: [], averageScore: 0, totalReviews: 0 };
+const emptyEligibility = { status: 'idle', error: '', data: null };
+const getError = action => action.error.message || '';
 const clearPrivateState = state => {
-  state.myReviewIds = [];
+  state.myReviews = [];
   state.status = 'idle';
   state.fetchRequestId = null;
-  state.fetchedAt = 0;
   state.error = '';
   state.submittingVinylId = null;
   state.submitRequestId = null;
@@ -122,13 +107,14 @@ const applyReview = (state, review, removed = false) => {
   state.entityVersions[review.id] = ++state.version;
   if (removed) {
     delete state.entities[review.id];
-    state.myReviewIds = state.myReviewIds.filter(id => !sameId(id, review.id));
+    state.myReviews = state.myReviews.filter(item => !sameId(item.id, review.id));
   } else {
     state.entities[review.id] = review;
-    if (state.ownerId != null && sameId(state.ownerId, review.userId) && !state.myReviewIds.some(id => sameId(id, review.id))) {
-      state.myReviewIds.push(review.id);
+    if (state.ownerId != null && sameId(state.ownerId, review.userId) && !state.myReviews.some(item => sameId(item.id, review.id))) {
+      state.myReviews.push(review);
     }
   }
+  state.myReviews = state.myReviews.map(item => state.entities[item.id]).filter(Boolean);
   for (const key of ['all', reviewsKey(review.vinylId)]) {
     const query = state.queries[key];
     if (!query) continue;
@@ -138,7 +124,7 @@ const applyReview = (state, review, removed = false) => {
   }
 };
 
-// Request versions protect entities shared by independent queries, including deletions.
+// Conserva las escrituras y lecturas más recientes entre las distintas páginas.
 const mergeReviews = (state, reviews, version) => {
   for (const review of reviews) {
     if ((state.entityVersions[review.id] || 0) > version) continue;
@@ -151,6 +137,7 @@ const mergeReviews = (state, reviews, version) => {
       }
     }
   }
+  state.myReviews = state.myReviews.map(item => state.entities[item.id]).filter(Boolean);
 };
 const reconcileIds = (state, reviews, version, matches) => {
   const ids = reviews.map(review => review.id).filter(id => state.entities[id]);
@@ -194,9 +181,8 @@ const reviewsSlice = createSlice({
     }).addCase(fetchMyReviews.fulfilled, (state, action) => {
       if (state.fetchRequestId !== action.meta.requestId) return;
       mergeReviews(state, action.payload, state.fetchVersion);
-      state.myReviewIds = reconcileIds(state, action.payload, state.fetchVersion,
-        review => sameId(review.userId, state.ownerId));
-      state.fetchedAt = Date.now();
+      state.myReviews = reconcileIds(state, action.payload, state.fetchVersion,
+        review => sameId(review.userId, state.ownerId)).map(id => state.entities[id]);
       state.status = 'succeeded';
       state.fetchRequestId = null;
     }).addCase(fetchMyReviews.rejected, (state, action) => {
@@ -221,7 +207,6 @@ const reviewsSlice = createSlice({
         updateStatistics(state, query);
       }
       query.status = 'succeeded';
-      query.fetchedAt = Date.now();
     }).addCase(fetchReviews.rejected, (state, action) => {
       const query = state.queries[reviewsKey(action.meta.arg && action.meta.arg.vinylId)];
       if (!query || query.requestId !== action.meta.requestId) return;
@@ -238,7 +223,6 @@ const reviewsSlice = createSlice({
       if (review) mergeReviews(state, [review], request.version);
       request.data = { ...data, reviewId: review ? review.id : null };
       request.status = 'succeeded';
-      request.fetchedAt = Date.now();
     }).addCase(fetchReviewEligibility.rejected, (state, action) => {
       const { userId, vinylId } = action.meta.arg;
       const request = state.eligibility[eligibilityKey(userId, vinylId)];
@@ -287,22 +271,18 @@ const reviewsSlice = createSlice({
 });
 
 export const { resetReviews, setReviewOwner } = reviewsSlice.actions;
-export const selectMyReviews = createSelector(
-  [state => state.reviews.myReviewIds, state => state.reviews.entities],
-  (ids, entities) => ids.map(id => entities[id]).filter(Boolean)
-);
+export const selectMyReviews = state => state.reviews.myReviews;
 export const selectReviewsError = state => state.reviews.error;
 export const selectSubmittingVinylId = state => state.reviews.submittingVinylId;
 export const selectReviewQuery = (state, vinylId) => state.reviews.queries[reviewsKey(vinylId)] || emptyQuery;
-export const selectReviewData = createSelector(
-  [selectReviewQuery, state => state.reviews.entities],
-  (query, entities) => ({ ...query, reviews: query.ids.map(id => entities[id]).filter(Boolean) })
-);
-export const selectEligibility = createSelector(
-  [(state, userId, vinylId) => state.reviews.eligibility[eligibilityKey(userId, vinylId)] || emptyEligibility,
-    state => state.reviews.entities],
-  (request, entities) => ({ ...request, data: request.data ? {
-    ...request.data, review: request.data.reviewId == null ? null : entities[request.data.reviewId]
-  } : null })
-);
+export const selectReviewData = (state, vinylId) => {
+  const query = selectReviewQuery(state, vinylId);
+  return { ...query, reviews: query.ids.map(id => state.reviews.entities[id]).filter(Boolean) };
+};
+export const selectEligibility = (state, userId, vinylId) => {
+  const request = state.reviews.eligibility[eligibilityKey(userId, vinylId)] || emptyEligibility;
+  return { ...request, data: request.data ? {
+    ...request.data, review: request.data.reviewId == null ? null : state.reviews.entities[request.data.reviewId]
+  } : null };
+};
 export default reviewsSlice.reducer;
