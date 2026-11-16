@@ -13,13 +13,15 @@ para conservar la autenticaci?n, las rutas y los errores del backend de Ongaku.
 - `catalogSlice.js`: carga del cat?logo y detalles, b?squeda, stock, ordenamiento
   y colecciones de curadur?a. Listado, detalle, sugerencias y curadur?a comparten
   una entidad por vinilo. Los selectores derivan las vistas sin copiar los datos
-  a estados locales. La cach? evita repetir solicitudes durante 30 segundos;
-  los botones de reintento fuerzan una nueva carga.
+  a estados locales. Cada entrada a la página solicita datos actuales; solo se
+  evitan peticiones simultáneas del mismo recurso, sin caché temporal del slice.
 - `reviewsSlice.js`: consultas p?blicas y personales, elegibilidad y creaci?n,
-  edici?n y eliminaci?n de rese?as. Cada rese?a se guarda una sola vez y las
-  consultas conservan sus identificadores. Las escrituras sincronizan las vistas
-  utilizadas y sus estad?sticas. El cambio de sesi?n limpia los datos privados
-  y descarta respuestas anteriores. El backend valida los permisos y las compras.
+  edición y eliminación de reseñas. Las vistas públicas comparten entidades y
+  los identificadores de sus consultas; mis reseñas usa un array directo. Las
+  escrituras sincronizan las vistas utilizadas y sus estadísticas. El cambio de
+  sesión limpia los datos privados. El backend valida permisos y compras.
+  Se conservan requestId y versiones para descartar lecturas atrasadas que
+  reviertan una edición, revivan una reseña eliminada o alteren el stock.
 - `cartSlice.js` y `ordersSlice.js`: conservan las operaciones de carrito y ?rdenes.
 - `adminCatalogSlice.js`: datos del panel de administración sobre vinilos. Listado
   y detalle administrativos, artistas, géneros, categorías y previews de audio, y
@@ -47,3 +49,10 @@ Los filtros, formularios y controles visuales usan estado local; los datos del
 servidor viven en Redux. No hay servicios intermediarios que solo reexporten la API.
 
 Validaci?n desde `client/marketplace`: `npm test` y `npm run build`.
+
+Los selectores de catálogo y reseñas son funciones comunes, sin createSelector.
+Los formularios de reseñas revisan result.error, sin unwrap ni rejectWithValue.
+Sorprendeme no consulta todas las previews: selecciona un disco del catálogo y
+solo resuelve su audioPreviewId. Home y detalle comparten una caché de audio
+independiente de 30 segundos para no repetir esa petición. Los enlaces externos
+usan los controles oficiales de su plataforma; no se garantiza autoplay.

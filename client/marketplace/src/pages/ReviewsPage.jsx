@@ -8,7 +8,8 @@ import { fetchReviews, selectReviewData } from '../Redux/slices/reviewsSlice.js'
 
 const ReviewsPage = ({ vinylId = null, onClearVinyl }) => {
   const dispatch = useDispatch()
-  const { reviews, averageScore, totalReviews, status, error } = useSelector(state => selectReviewData(state, vinylId))
+  const reviewState = useSelector(state => state.reviews)
+  const { reviews, averageScore, totalReviews, status, error } = selectReviewData({ reviews: reviewState }, vinylId)
   const loading = status === 'idle' || status === 'loading'
   const [score, setScore] = useState('all')
 

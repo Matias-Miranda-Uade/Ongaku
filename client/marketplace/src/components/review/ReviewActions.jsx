@@ -33,7 +33,11 @@ const ReviewActions = ({
       vinylId: review.vinylId,
       score: Number(score),
       comment: comment.trim()
-    })).unwrap().then(() => {
+    })).then(result => {
+      if (result.error) {
+        setError(result.error?.message || 'No se pudo guardar el cambio.');
+        return;
+      }
       setEditing(false);
       if (onChanged) onChanged();
     }).catch(requestError => {
@@ -42,7 +46,11 @@ const ReviewActions = ({
   };
   const remove = () => {
     setError('');
-    return dispatch(deleteReview({ reviewId: review.id, vinylId: review.vinylId })).unwrap().then(() => {
+    return dispatch(deleteReview({ reviewId: review.id, vinylId: review.vinylId })).then(result => {
+      if (result.error) {
+        setError(result.error?.message || 'No se pudo guardar el cambio.');
+        return;
+      }
       if (onChanged) onChanged();
     }).catch(requestError => {
       setError(getMessage(requestError));

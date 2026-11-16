@@ -16,7 +16,8 @@ const ReviewComposer = ({
   } = useSelector(selectAuth);
   const userId = user ? user.id : null;
   const dispatch = useDispatch();
-  const request = useSelector(state => selectEligibility(state, userId, vinylId));
+  const reviewState = useSelector(state => state.reviews);
+  const request = selectEligibility({ reviews: reviewState }, userId, vinylId);
   const ownerId = useSelector(state => state.reviews.ownerId);
   const eligibility = request.data;
   const loading = request.status === 'idle' || request.status === 'loading';
@@ -42,7 +43,11 @@ const ReviewComposer = ({
       vinylId: Number(vinylId),
       score: Number(score),
       comment: comment.trim()
-    })).unwrap().then(() => {
+    })).then(result => {
+      if (result.error) {
+        setError(result.error?.message || 'No se pudo guardar el cambio.');
+        return;
+      }
       setComment('');
       if (onChanged) onChanged();
     }).catch(requestError => {
