@@ -1,0 +1,195 @@
+package com.uade.tpo.marketplace.entity.dto;
+
+public class VinylRequest {
+    private String name;
+    private String description;
+    private Integer price;
+    private Integer discountPercentage;
+    private Integer stock;
+    private String image;
+    private String albumUrl;
+
+    public String getAlbumUrl() { return albumUrl; }
+    public void setAlbumUrl(String albumUrl) { this.albumUrl = albumUrl; }
+    private Long categoryId;
+    private Long artistId;
+    private boolean artistProvided;
+    public boolean hasArtistId() { return artistProvided; }
+    private Long genreId;
+    private java.util.List<Long> genreIds;
+    private boolean audioPreviewProvided;
+    private boolean categoryProvided;
+    public java.util.List<Long> getGenreIds() { return genreIds; }
+    public void setGenreIds(java.util.List<Long> genreIds) { this.genreIds = genreIds; }
+    public boolean hasAudioPreviewId() { return audioPreviewProvided; }
+    public boolean hasCategoryId() { return categoryProvided; }
+    private Long audioPreviewId;
+    private Integer year;
+
+    public VinylRequest() {
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public String getDescription() {
+        return this.description;
+    }
+
+    public Integer getPrice() {
+        return this.price;
+    }
+
+    public Integer getDiscountPercentage() {
+        return this.discountPercentage;
+    }
+
+    public Integer getStock() {
+        return this.stock;
+    }
+
+    public String getImage() {
+        return this.image;
+    }
+
+    public Long getCategoryId() {
+        return this.categoryId;
+    }
+
+    public Long getArtistId() {
+        return this.artistId;
+    }
+
+    public Long getGenreId() {
+        return this.genreId;
+    }
+
+    public Long getAudioPreviewId() {
+        return this.audioPreviewId;
+    }
+
+    public Integer getYear() {
+        return this.year;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setPrice(Integer price) {
+        this.price = price;
+    }
+
+    public void setDiscountPercentage(Integer discountPercentage) {
+        this.discountPercentage = discountPercentage;
+    }
+
+    public void setStock(Integer stock) {
+        this.stock = stock;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
+    public void setCategoryId(Long categoryId) {
+        categoryProvided = true;
+        this.categoryId = categoryId;
+    }
+
+    public void setArtistId(Long artistId) {
+        artistProvided = true;
+        this.artistId = artistId;
+    }
+
+    public void setGenreId(Long genreId) {
+        this.genreId = genreId;
+    }
+
+    public void setAudioPreviewId(Long audioPreviewId) {
+        audioPreviewProvided = true;
+        this.audioPreviewId = audioPreviewId;
+    }
+
+    public void setYear(Integer year) {
+        this.year = year;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) return true;
+        if (!(o instanceof VinylRequest)) return false;
+        if (!java.util.Objects.equals(this.getAlbumUrl(), ((VinylRequest) o).getAlbumUrl())) return false;
+        VinylRequest other = (VinylRequest) o;
+        if (!other.canEqual((Object) this)) return false;
+        if (!java.util.Objects.equals(this.getPrice(), other.getPrice())) return false;
+        if (!java.util.Objects.equals(this.getStock(), other.getStock())) return false;
+        if (!java.util.Objects.equals(this.getYear(), other.getYear())) return false;
+        Object this$discountPercentage = this.getDiscountPercentage();
+        Object other$discountPercentage = other.getDiscountPercentage();
+        if (this$discountPercentage == null ? other$discountPercentage != null : !this$discountPercentage.equals(other$discountPercentage)) return false;
+        Object this$categoryId = this.getCategoryId();
+        Object other$categoryId = other.getCategoryId();
+        if (this$categoryId == null ? other$categoryId != null : !this$categoryId.equals(other$categoryId)) return false;
+        Object this$artistId = this.getArtistId();
+        Object other$artistId = other.getArtistId();
+        if (this$artistId == null ? other$artistId != null : !this$artistId.equals(other$artistId)) return false;
+        Object this$genreId = this.getGenreId();
+        Object other$genreId = other.getGenreId();
+        if (this$genreId == null ? other$genreId != null : !this$genreId.equals(other$genreId)) return false;
+        Object this$audioPreviewId = this.getAudioPreviewId();
+        Object other$audioPreviewId = other.getAudioPreviewId();
+        if (this$audioPreviewId == null ? other$audioPreviewId != null : !this$audioPreviewId.equals(other$audioPreviewId)) return false;
+        Object this$name = this.getName();
+        Object other$name = other.getName();
+        if (this$name == null ? other$name != null : !this$name.equals(other$name)) return false;
+        Object this$description = this.getDescription();
+        Object other$description = other.getDescription();
+        if (this$description == null ? other$description != null : !this$description.equals(other$description)) return false;
+        Object this$image = this.getImage();
+        Object other$image = other.getImage();
+        if (this$image == null ? other$image != null : !this$image.equals(other$image)) return false;
+        return true;
+    }
+
+    protected boolean canEqual(Object other) {
+        return other instanceof VinylRequest;
+    }
+
+    @Override
+    public int hashCode() {
+        int PRIME = 59;
+        int result = 1;
+        result = result * PRIME + java.util.Objects.hashCode(albumUrl);
+        result = result * PRIME + (this.getPrice() == null ? 43 : this.getPrice().hashCode());
+        result = result * PRIME + (this.getStock() == null ? 43 : this.getStock().hashCode());
+        result = result * PRIME + (this.getYear() == null ? 43 : this.getYear().hashCode());
+        Object $discountPercentage = this.getDiscountPercentage();
+        result = result * PRIME + ($discountPercentage == null ? 43 : $discountPercentage.hashCode());
+        Object $categoryId = this.getCategoryId();
+        result = result * PRIME + ($categoryId == null ? 43 : $categoryId.hashCode());
+        Object $artistId = this.getArtistId();
+        result = result * PRIME + ($artistId == null ? 43 : $artistId.hashCode());
+        Object $genreId = this.getGenreId();
+        result = result * PRIME + ($genreId == null ? 43 : $genreId.hashCode());
+        Object $audioPreviewId = this.getAudioPreviewId();
+        result = result * PRIME + ($audioPreviewId == null ? 43 : $audioPreviewId.hashCode());
+        Object $name = this.getName();
+        result = result * PRIME + ($name == null ? 43 : $name.hashCode());
+        Object $description = this.getDescription();
+        result = result * PRIME + ($description == null ? 43 : $description.hashCode());
+        Object $image = this.getImage();
+        result = result * PRIME + ($image == null ? 43 : $image.hashCode());
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "VinylRequest(name=" + this.getName() + ", description=" + this.getDescription() + ", price=" + this.getPrice() + ", discountPercentage=" + this.getDiscountPercentage() + ", stock=" + this.getStock() + ", image=" + this.getImage() + ", categoryId=" + this.getCategoryId() + ", artistId=" + this.getArtistId() + ", genreId=" + this.getGenreId() + ", audioPreviewId=" + this.getAudioPreviewId() + ", year=" + this.getYear() + ")";
+    }
+}
